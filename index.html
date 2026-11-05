@@ -7,9 +7,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
-    <meta name="description" content="A comprehensive Web Music Player">
+    <meta name="description" content="A highly stable Web Music Player">
     
-    <title>Streamify - Premium</title>
+    <title>Streamify - iTunes Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -163,18 +163,13 @@
         </nav>
 
         <div class="mt-8 pt-6 border-t border-app-highlight">
-            <a href="#" class="flex items-center gap-4 text-app-muted hover:text-white transition text-sm font-semibold mb-4">
-                <div class="w-6 h-6 bg-app-muted rounded-sm flex items-center justify-center text-black">
-                    <i class="fa-solid fa-plus text-xs"></i>
-                </div>
-                Create Playlist
-            </a>
             <a href="#" class="flex items-center gap-4 text-app-muted hover:text-white transition text-sm font-semibold nav-link" data-target="libraryView">
                 <div class="w-6 h-6 bg-gradient-to-br from-indigo-600 to-blue-300 rounded-sm flex items-center justify-center text-white">
                     <i class="fa-solid fa-heart text-xs"></i>
                 </div>
                 Liked Songs
             </a>
+            <p class="text-xs text-app-muted mt-8 opacity-50">Powered by iTunes Search API<br>(30s Official Previews)</p>
         </div>
     </aside>
 
@@ -198,21 +193,21 @@
                     </div>
                 </div>
                 
-                <h2 class="text-xl font-bold mb-4">Trending Now</h2>
+                <h2 class="text-xl font-bold mb-4" id="homeTitle">Trending Now</h2>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="trendingList">
                     <div class="col-span-full py-10 text-center opacity-70">
                         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i>
-                        <p>Loading tracks via Audius...</p>
+                        <p>Loading catalog from Apple...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Search View (Hidden by default) -->
+            <!-- Search View -->
             <div id="searchView" class="view-section hidden pt-6">
                 <h1 class="text-2xl font-bold mb-6">Search</h1>
                 <form id="searchForm" class="relative mb-8 max-w-2xl mx-auto">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-800 text-lg"></i>
-                    <input type="text" id="searchInput" placeholder="What do you want to listen to?" 
+                    <input type="text" id="searchInput" placeholder="Search songs, artists, or albums..." 
                         class="w-full bg-white text-black rounded-full py-3.5 pl-12 pr-12 font-medium focus:outline-none focus:ring-2 focus:ring-white transition shadow-md">
                     <button type="button" id="clearSearch" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-800 p-1">
                         <i class="fa-solid fa-xmark text-lg"></i>
@@ -266,16 +261,16 @@
                     <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-earth-americas text-app-accent"></i> Music Region
                     </h2>
-                    <p class="text-sm text-app-muted mb-4">Select your region to tailor your home screen suggestions.</p>
+                    <p class="text-sm text-app-muted mb-4">Select your region to tailor iTunes suggestions.</p>
                     
                     <div class="relative">
                         <select id="regionSelect" class="w-full bg-app-highlight text-white p-3 rounded-lg border border-white/10 focus:outline-none focus:border-app-accent transition-colors appearance-none cursor-pointer">
-                            <option value="global">Global (Trending)</option>
-                            <option value="india">India (Bollywood / Punjabi)</option>
-                            <option value="usa">USA (Pop / Hip Hop)</option>
-                            <option value="uk">UK (Drill / Grime)</option>
-                            <option value="skorea">South Korea (K-Pop)</option>
-                            <option value="latam">Latin America (Reggaeton)</option>
+                            <option value="US">United States (Global Top)</option>
+                            <option value="IN">India (Bollywood & Pop)</option>
+                            <option value="GB">United Kingdom (UK Pop)</option>
+                            <option value="KR">South Korea (K-Pop)</option>
+                            <option value="MX">Mexico (Latino)</option>
+                            <option value="JP">Japan (J-Pop)</option>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-app-muted"></i>
                     </div>
@@ -325,7 +320,7 @@
             </button>
         </div>
 
-        <!-- Mini Progress Bar (Bottom Edge) -->
+        <!-- Mini Progress Bar -->
         <div class="absolute bottom-0 left-2 right-2 h-[2px] bg-white/10 rounded-full overflow-hidden">
             <div id="miniProgressBar" class="h-full bg-white w-0 rounded-full transition-all duration-100"></div>
         </div>
@@ -348,9 +343,7 @@
             <div class="flex flex-col items-center text-xs font-bold uppercase tracking-widest text-app-muted">
                 Now Playing
             </div>
-            <button class="w-10 h-10 flex items-center justify-center text-white hover:scale-110 transition" onclick="openBluetoothModal()">
-                <i class="fa-brands fa-bluetooth-b text-xl"></i>
-            </button>
+            <div class="w-10"></div> <!-- Spacer -->
         </div>
 
         <!-- View Toggle (Player / Lyrics / Queue) -->
@@ -424,7 +417,6 @@
             <!-- 2. Lyrics View -->
             <div id="fp-lyricsView" class="absolute inset-0 px-6 overflow-y-auto pb-20 opacity-0 pointer-events-none transition-opacity duration-300 glass-panel rounded-t-3xl pt-8">
                 <div class="max-w-[500px] mx-auto flex flex-col gap-6 text-2xl font-bold" id="lyricsContainer">
-                    <!-- Lyrics generated by JS -->
                     <p class="lyric-line">Loading lyrics...</p>
                 </div>
             </div>
@@ -443,49 +435,11 @@
         </div>
     </div>
 
-    <!-- Bluetooth Modal -->
-    <div id="btModal" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-app-elevated w-full max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="btModalContent">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold flex items-center gap-2">
-                    <i class="fa-brands fa-bluetooth-b text-blue-500"></i> Connect to a device
-                </h3>
-                <button class="text-gray-400 hover:text-white" onclick="closeBluetoothModal()">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            <div class="flex flex-col gap-2" id="deviceList">
-                <button class="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group" onclick="connectDevice(this)">
-                    <div class="flex items-center gap-4">
-                        <i class="fa-solid fa-desktop text-xl text-app-muted group-hover:text-white"></i>
-                        <span class="font-medium">Web Browser (Current)</span>
-                    </div>
-                    <i class="fa-solid fa-check text-app-accent connection-check"></i>
-                </button>
-                <button class="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group" onclick="connectDevice(this)">
-                    <div class="flex items-center gap-4">
-                        <i class="fa-solid fa-headphones text-xl text-app-muted group-hover:text-white"></i>
-                        <span class="font-medium">AirPods Pro</span>
-                    </div>
-                    <i class="fa-solid fa-check text-app-accent hidden connection-check"></i>
-                </button>
-                <button class="flex items-center justify-between p-4 rounded-xl bg-white/5 hover:bg-white/10 transition group" onclick="connectDevice(this)">
-                    <div class="flex items-center gap-4">
-                        <i class="fa-solid fa-speaker text-xl text-app-muted group-hover:text-white"></i>
-                        <span class="font-medium">Living Room Echo</span>
-                    </div>
-                    <i class="fa-solid fa-check text-app-accent hidden connection-check"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main JavaScript Logic -->
+    <!-- Main JavaScript Logic (iTunes API Engine) -->
     <script>
         // --- Core State ---
-        const APP_NAME = 'streamify_web_v1';
         let audio = new Audio();
-        audio.crossOrigin = "anonymous"; // Required for Web Audio API visualizer
+        audio.crossOrigin = "anonymous"; // Necessary for Web Audio API with external media
         
         let queue = [];
         let currentQueueIndex = -1;
@@ -499,6 +453,16 @@
         let audioCtx, analyser, source, canvas, canvasCtx;
         let isAudioInitialized = false;
 
+        // Country Mapping & Configuration
+        const countryConfig = {
+            'US': { label: 'Top Hits', term: 'Pop' },
+            'IN': { label: 'Top Bollywood', term: 'Bollywood' },
+            'GB': { label: 'UK Chart', term: 'UK Pop' },
+            'KR': { label: 'K-Pop Top', term: 'K-Pop' },
+            'MX': { label: 'Exitos Latinos', term: 'Latino' },
+            'JP': { label: 'J-Pop Trending', term: 'J-Pop' }
+        };
+
         // --- DOM Elements ---
         const views = {
             homeView: document.getElementById('homeView'),
@@ -508,13 +472,11 @@
         };
         const navLinks = document.querySelectorAll('.nav-link');
         
-        // Containers
         const trendingList = document.getElementById('trendingList');
         const searchList = document.getElementById('searchList');
         const searchInput = document.getElementById('searchInput');
         const libraryList = document.getElementById('libraryList');
         
-        // Player UI
         const miniPlayer = document.getElementById('miniPlayer');
         const fullPlayer = document.getElementById('fullPlayer');
         
@@ -534,14 +496,14 @@
 
         // --- Initialization ---
         window.addEventListener('DOMContentLoaded', () => {
-            // Restore Region Select UI and setup listener
-            const savedRegion = localStorage.getItem('streamify_region') || 'global';
+            // Restore Region Select UI
+            const savedRegion = localStorage.getItem('streamify_region') || 'US';
             const regionSelect = document.getElementById('regionSelect');
             if(regionSelect) {
                 regionSelect.value = savedRegion;
                 regionSelect.addEventListener('change', (e) => {
                     localStorage.setItem('streamify_region', e.target.value);
-                    fetchTrending(); // Refresh home suggestions immediately on change
+                    fetchTrending(); 
                 });
             }
 
@@ -558,93 +520,61 @@
                     e.preventDefault();
                     const target = link.getAttribute('data-target');
                     
-                    // Update active styling
                     navLinks.forEach(l => l.classList.remove('text-white', 'font-bold'));
                     document.querySelectorAll(`[data-target="${target}"]`).forEach(l => {
                         l.classList.add('text-white', 'font-bold');
                     });
                     
-                    // Hide all views, show target
                     Object.values(views).forEach(v => v.classList.add('hidden'));
                     views[target].classList.remove('hidden');
 
-                    // If library, re-render
                     if(target === 'libraryView') renderLibrary();
                 });
             });
         }
 
-        // --- Robust API Fetching System ---
-        async function fetchWithFallback(query, limit = 15) {
-            let lastError;
-            const q = encodeURIComponent(query);
-            const l = limit;
-
-            // An aggressive list of fallback endpoints, including CORS proxies as a last resort for GitHub Pages
-            const endpoints = [
-                `https://saavn.dev/api/search/songs?query=${q}&limit=${l}`, 
-                `https://saavn.me/search/songs?query=${q}&limit=${l}`,
-                `https://jiosaavn-api-privatecvc2.vercel.app/search/songs?query=${q}&limit=${l}`,
-                `https://corsproxy.io/?${encodeURIComponent(`https://saavn.dev/api/search/songs?query=${q}&limit=${l}`)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://saavn.dev/api/search/songs?query=${q}&limit=${l}`)}`
-            ];
-
-            for (const url of endpoints) {
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    const json = await res.json();
-                    
-                    // Validate basic structure exists before accepting it
-                    if (json && (json.data || json.results)) {
-                        return json; // Success!
-                    }
-                } catch (err) {
-                    console.warn(`Fallback triggered: Failed fetching from ${url}`, err);
-                    lastError = err;
-                }
+        // --- iTunes API Fetching System ---
+        async function fetchITunes(query, limit = 25, country = 'US') {
+            try {
+                const q = encodeURIComponent(query);
+                const url = `https://itunes.apple.com/search?term=${q}&entity=song&limit=${limit}&country=${country}`;
+                
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("Failed to fetch from iTunes");
+                
+                const json = await res.json();
+                
+                // Format directly into our unified track object
+                return (json.results || [])
+                    .filter(t => t.previewUrl) // Ensure it's playable
+                    .map(t => ({
+                        id: t.trackId.toString(),
+                        title: t.trackName,
+                        artist: t.artistName,
+                        // Fetch gorgeous high-res imagery by replacing 100x100bb with 600x600bb
+                        artwork: t.artworkUrl100 ? t.artworkUrl100.replace('100x100bb', '600x600bb') : 'https://placehold.co/600x600/181818/ffffff?text=♫',
+                        streamUrl: t.previewUrl
+                    }));
+            } catch (err) {
+                console.error("iTunes Fetch Error:", err);
+                return [];
             }
-            throw lastError || new Error("All API fallback endpoints failed.");
         }
 
-        // --- API & Data Fetching (JioSaavn) ---
         async function fetchTrending() {
-            try {
-                // Show loading spinner tailored
-                trendingList.innerHTML = '<div class="col-span-full py-10 text-center opacity-70"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i><p>Loading tailored tracks...</p></div>';
-                
-                const region = localStorage.getItem('streamify_region') || 'global';
-                
-                // Map regions to highly reliable search keywords
-                const queryMap = {
-                    'global': 'Global Top 50',
-                    'india': 'Bollywood Top 50',
-                    'usa': 'Billboard Hot 100',
-                    'uk': 'UK Top 50',
-                    'skorea': 'K-Pop Top 50',
-                    'latam': 'Latino Top 50'
-                };
-                const query = queryMap[region] || 'Bollywood Top 50';
+            trendingList.innerHTML = '<div class="col-span-full py-10 text-center opacity-70"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i><p>Loading catalog from Apple...</p></div>';
+            
+            const region = localStorage.getItem('streamify_region') || 'US';
+            const config = countryConfig[region] || countryConfig['US'];
+            
+            document.getElementById('homeTitle').textContent = `Trending Now - ${config.label}`;
 
-                // Use the fallback fetcher instead of a single hardcoded URL
-                const json = await fetchWithFallback(query, 15);
-                const tracks = formatSaavnTracks(json);
-                
-                if (tracks.length === 0) {
-                    trendingList.innerHTML = '<div class="col-span-full text-center text-app-muted py-10">No playable tracks found for this preference. Try another region.</div>';
-                } else {
-                    renderTrackGrid(tracks, trendingList, 'home');
-                }
-            } catch (err) {
-                console.error(err);
-                // Friendly Retry UI instead of just red text
-                trendingList.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-10 text-center px-4">
-                        <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>
-                        <p class="text-red-400 mb-6 text-sm">Failed to load tracks. The API might be temporarily blocked by your network or browser CORS policy.</p>
-                        <button onclick="fetchTrending()" class="px-6 py-2 bg-white text-black rounded-full font-bold hover:scale-105 active:scale-95 transition shadow-lg">Retry Connection</button>
-                    </div>
-                `;
+            const tracks = await fetchITunes(config.term, 20, region);
+            
+            if (tracks.length === 0) {
+                trendingList.innerHTML = '<div class="col-span-full text-center text-app-muted py-10">Network error. Please try again.</div>';
+            } else {
+                renderTrackGrid(tracks, trendingList, 'home');
             }
         }
 
@@ -675,88 +605,15 @@
                 loading.classList.remove('hidden');
                 loading.classList.add('flex');
                 
-                try {
-                    // Use the fallback fetcher here as well
-                    const json = await fetchWithFallback(q, 20);
-                    const tracks = formatSaavnTracks(json);
-                    
-                    loading.classList.add('hidden');
-                    loading.classList.remove('flex');
-                    results.classList.remove('hidden');
-                    
-                    renderTrackList(tracks, searchList, 'search');
-                } catch (err) {
-                    console.error(err);
-                    loading.classList.add('hidden');
-                    searchList.innerHTML = `
-                        <div class="flex flex-col items-center justify-center py-8 text-center">
-                            <p class="text-red-400 mb-4 text-sm">Search failed due to a network or CORS error.</p>
-                            <button onclick="document.getElementById('searchForm').dispatchEvent(new Event('submit'))" class="px-4 py-2 bg-white text-black rounded-full font-bold text-sm hover:scale-105 active:scale-95 transition">Retry Search</button>
-                        </div>
-                    `;
-                    results.classList.remove('hidden');
-                }
+                const region = localStorage.getItem('streamify_region') || 'US';
+                const tracks = await fetchITunes(q, 25, region);
+                
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                results.classList.remove('hidden');
+                
+                renderTrackList(tracks, searchList, 'search');
             });
-        }
-
-        // Standardize track object from Saavn API
-        function formatSaavnTracks(json) {
-            if (!json) return [];
-            
-            // Handle different structure possibilities from the unofficial API mirrors
-            let dataArr = [];
-            if (json.data && Array.isArray(json.data.results)) {
-                dataArr = json.data.results;
-            } else if (json.data && Array.isArray(json.data)) {
-                dataArr = json.data;
-            } else if (json.results && Array.isArray(json.results)) {
-                dataArr = json.results;
-            } else if (Array.isArray(json)) {
-                dataArr = json;
-            }
-
-            // Decode HTML entities (like &quot;) in titles returned by API
-            const decodeHTML = (html) => {
-                const txt = document.createElement("textarea");
-                txt.innerHTML = html;
-                return txt.value;
-            };
-
-            return dataArr.map(t => {
-                // Get highest quality URL, safely checking structure
-                let streamUrl = '';
-                if (t.downloadUrl && Array.isArray(t.downloadUrl) && t.downloadUrl.length > 0) {
-                    const highestQ = t.downloadUrl.find(d => d.quality === '320kbps') || t.downloadUrl[t.downloadUrl.length - 1];
-                    streamUrl = highestQ.url || highestQ.link || '';
-                }
-
-                // Get highest quality image, safely checking structure
-                let artwork = 'https://placehold.co/500x500/181818/ffffff?text=♫';
-                if (t.image && Array.isArray(t.image) && t.image.length > 0) {
-                    const highestImg = t.image.find(i => i.quality === '500x500') || t.image[t.image.length - 1];
-                    artwork = highestImg.url || highestImg.link || artwork;
-                }
-
-                // Extract artist name robustly
-                let artistName = 'Unknown Artist';
-                if (typeof t.primaryArtists === 'string' && t.primaryArtists.length > 0) {
-                    artistName = t.primaryArtists;
-                } else if (t.artists && t.artists.primary && Array.isArray(t.artists.primary) && t.artists.primary.length > 0) {
-                    artistName = t.artists.primary.map(a => a.name || a.id).join(', ');
-                } else if (t.artists && t.artists.all && Array.isArray(t.artists.all) && t.artists.all.length > 0) {
-                    artistName = t.artists.all.map(a => a.name || a.id).join(', ');
-                } else if (typeof t.singers === 'string' && t.singers.length > 0) {
-                    artistName = t.singers;
-                }
-
-                return {
-                    id: t.id,
-                    title: decodeHTML(t.name || t.title || 'Unknown Title'),
-                    artist: decodeHTML(artistName),
-                    artwork: artwork,
-                    streamUrl: streamUrl
-                };
-            }).filter(t => t.streamUrl); // Ensure we only return tracks that can be played
         }
 
         // --- Rendering UI ---
@@ -764,7 +621,7 @@
             container.innerHTML = '';
             tracks.forEach((track, index) => {
                 const div = document.createElement('div');
-                div.className = "bg-app-elevated p-4 rounded-lg hover:bg-app-highlight transition cursor-pointer group";
+                div.className = "bg-app-elevated p-4 rounded-lg hover:bg-app-highlight transition cursor-pointer group shadow";
                 div.onclick = () => setQueueAndPlay(tracks, index);
                 
                 div.innerHTML = `
@@ -794,7 +651,7 @@
                 
                 div.innerHTML = `
                     <div class="w-12 h-12 relative shrink-0">
-                        <img src="${track.artwork}" class="w-full h-full object-cover rounded">
+                        <img src="${track.artwork}" class="w-full h-full object-cover rounded shadow">
                         <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center rounded">
                             <i class="fa-solid fa-play text-white text-xs"></i>
                         </div>
@@ -831,11 +688,9 @@
             uiSync.title.forEach(el => el.textContent = track.title);
             uiSync.artist.forEach(el => el.textContent = track.artist);
             uiSync.art.forEach(el => el.src = track.artwork);
-            
-            // Sync heart buttons
             syncHeartIcons(track.id);
 
-            // Change dynamic header color (pseudo-random based on title length for effect)
+            // Change dynamic header color (pseudo-random hue based on title)
             const hues = [0, 140, 200, 280, 320];
             const hue = hues[track.title.length % hues.length];
             document.getElementById('headerGradient').style.background = `linear-gradient(to bottom, hsl(${hue}, 40%, 20%), #121212)`;
@@ -849,17 +704,12 @@
             miniPlayer.classList.remove('hidden');
             setTimeout(() => miniPlayer.classList.remove('translate-y-[150%]'), 10);
 
-            // Load audio
+            // Load audio (iTunes previewUrl)
             audio.src = track.streamUrl;
             audio.play().catch(e => console.error("Play blocked:", e));
 
-            // Setup Media Session API (Lock screen)
             updateMediaSession(track);
-            
-            // Init Visualizer on first play interaction
             initVisualizer();
-            
-            // Generate Dummy Lyrics
             generateDummyLyrics(track);
         }
 
@@ -894,9 +744,9 @@
             const iconClass = "fa-solid fa-pause";
             uiSync.playIcon.forEach(i => {
                 i.className = iconClass;
-                i.classList.remove('ml-1'); // adjust centering
+                i.classList.remove('ml-1');
             });
-            document.getElementById('fullArt').classList.replace('scale-95', 'scale-100'); // Optional pop effect
+            document.getElementById('fullArt').classList.replace('scale-95', 'scale-100');
         });
 
         audio.addEventListener('pause', () => {
@@ -977,12 +827,10 @@
             
             localStorage.setItem('streamify_favs', JSON.stringify(favorites));
             
-            // Sync Current Track UI if it's the one playing
             if(queue[currentQueueIndex] && queue[currentQueueIndex].id === id) {
                 syncHeartIcons(id);
             }
 
-            // Sync button if clicked from list
             if(btnElement) {
                 const icon = btnElement.querySelector('i');
                 if(isFavorite(id)) icon.className = 'fa-solid fa-heart text-app-accent';
@@ -1006,7 +854,7 @@
         // --- Full Player Views (Player, Lyrics, Queue) ---
         function openFullScreenPlayer() {
             fullPlayer.classList.remove('hidden');
-            void fullPlayer.offsetWidth; // trigger reflow
+            void fullPlayer.offsetWidth; 
             fullPlayer.classList.remove('player-hidden');
             fullPlayer.classList.add('player-visible');
         }
@@ -1018,7 +866,6 @@
         }
 
         function switchFullView(viewName) {
-            // Update Tabs
             ['Player', 'Lyrics', 'Queue'].forEach(n => {
                 const el = document.getElementById(`tab${n}`);
                 if (n.toLowerCase() === viewName) {
@@ -1030,7 +877,6 @@
                 }
             });
 
-            // Update Views (Opacity & Pointer Events)
             ['playerView', 'lyricsView', 'queueView'].forEach(id => {
                 const el = document.getElementById(`fp-${id}`);
                 if (id === `${viewName}View`) {
@@ -1046,7 +892,7 @@
             const current = queue[currentQueueIndex];
             
             document.getElementById('queueNowPlaying').innerHTML = `
-                <img src="${current.artwork}" class="w-12 h-12 rounded">
+                <img src="${current.artwork}" class="w-12 h-12 rounded shadow">
                 <div>
                     <p class="text-app-accent font-bold text-sm">${current.title}</p>
                     <p class="text-app-muted text-xs">${current.artist}</p>
@@ -1061,7 +907,7 @@
             const qList = document.getElementById('queueList');
             qList.innerHTML = '';
             
-            const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21); // limit to 20
+            const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21);
             if(upNext.length === 0) {
                 qList.innerHTML = '<p class="text-app-muted text-sm">No upcoming tracks in queue.</p>';
                 return;
@@ -1074,7 +920,7 @@
                 div.onclick = () => { loadTrack(actualIndex); updateQueueUI(); };
                 div.innerHTML = `
                     <span class="text-app-muted w-4 text-xs">${idx + 1}</span>
-                    <img src="${track.artwork}" class="w-10 h-10 rounded">
+                    <img src="${track.artwork}" class="w-10 h-10 rounded shadow">
                     <div class="flex flex-col flex-1 min-w-0">
                         <span class="text-white text-sm truncate">${track.title}</span>
                         <span class="text-app-muted text-xs truncate">${track.artist}</span>
@@ -1096,7 +942,7 @@
                 source.connect(analyser);
                 analyser.connect(audioCtx.destination);
                 
-                analyser.fftSize = 64; // Small size for chunky bars
+                analyser.fftSize = 64; 
                 
                 canvas = document.getElementById('visualizer');
                 canvasCtx = canvas.getContext('2d');
@@ -1104,7 +950,7 @@
                 isAudioInitialized = true;
                 drawVisualizer();
             } catch (e) {
-                console.log("Audio Context initialized error or blocked by browser.", e);
+                console.log("Audio Context initialized error or blocked by browser CORS.", e);
             }
         }
 
@@ -1120,10 +966,8 @@
             requestAnimationFrame(drawVisualizer);
             analyser.getByteFrequencyData(dataArray);
 
-            // Resize internal canvas to match display size to prevent stretching
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
 
             const barWidth = (canvas.width / bufferLength) * 1.5;
@@ -1131,16 +975,13 @@
             let x = 0;
 
             for (let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] / 2; // scale down
+                barHeight = dataArray[i] / 2.5; 
                 
-                // Gradient for bars
                 const grad = canvasCtx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                grad.addColorStop(0, "rgba(29, 185, 84, 0.8)"); // Spotify green base
+                grad.addColorStop(0, "rgba(29, 185, 84, 0.8)"); 
                 grad.addColorStop(1, "rgba(29, 185, 84, 0.1)");
                 
                 canvasCtx.fillStyle = grad;
-                
-                // Draw rounded bottom bars starting from bottom
                 canvasCtx.beginPath();
                 canvasCtx.roundRect(x, canvas.height - barHeight, barWidth - 2, barHeight, [4, 4, 0, 0]);
                 canvasCtx.fill();
@@ -1157,8 +998,6 @@
                     artist: track.artist,
                     album: 'Streamify Web',
                     artwork: [
-                        { src: track.artwork, sizes: '96x96', type: 'image/jpeg' },
-                        { src: track.artwork, sizes: '256x256', type: 'image/jpeg' },
                         { src: track.artwork, sizes: '512x512', type: 'image/jpeg' }
                     ]
                 });
@@ -1176,7 +1015,6 @@
             const container = document.getElementById('lyricsContainer');
             container.innerHTML = '';
             
-            // Create fake timings for demo purposes (every ~4 seconds)
             const phrases = [
                 `♪ (Intro music) ♪`,
                 `Yeah, feeling the vibe of ${track.title}`,
@@ -1192,8 +1030,10 @@
                 `Fading out...`
             ];
 
+            // Map lyrics evenly across the 30s preview
+            const interval = 30 / phrases.length;
             dummyLyricsData = phrases.map((text, i) => ({
-                time: i * 4, // 4 seconds apart
+                time: i * interval, 
                 text: text
             }));
 
@@ -1208,7 +1048,7 @@
         }
 
         function syncLyricsHighlight() {
-            if(document.getElementById('fp-lyricsView').classList.contains('opacity-0')) return; // optimize
+            if(document.getElementById('fp-lyricsView').classList.contains('opacity-0')) return; 
 
             const cTime = audio.currentTime;
             let activeIndex = -1;
@@ -1222,7 +1062,6 @@
                 document.querySelectorAll('.lyric-line').forEach((el, idx) => {
                     if(idx === activeIndex) {
                         el.classList.add('active');
-                        // Auto-scroll logic (rough center)
                         const container = document.getElementById('fp-lyricsView');
                         container.scrollTo({
                             top: el.offsetTop - (container.offsetHeight / 2),
@@ -1234,30 +1073,6 @@
                 });
             }
         }
-
-        // --- Bluetooth Mock ---
-        function openBluetoothModal() {
-            const modal = document.getElementById('btModal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                document.getElementById('btModalContent').classList.replace('scale-95', 'scale-100');
-            }, 10);
-        }
-
-        function closeBluetoothModal() {
-            const modal = document.getElementById('btModal');
-            modal.classList.add('opacity-0');
-            document.getElementById('btModalContent').classList.replace('scale-100', 'scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        function connectDevice(btn) {
-            document.querySelectorAll('.connection-check').forEach(i => i.classList.add('hidden'));
-            btn.querySelector('.connection-check').classList.remove('hidden');
-            setTimeout(() => closeBluetoothModal(), 400);
-        }
-
     </script>
 </body>
 </html>
