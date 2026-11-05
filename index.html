@@ -156,8 +156,7 @@
         <header class="h-16 px-5 pt-safe flex items-center justify-between z-20 sticky top-0 bg-ios-bgLight/90 backdrop-blur-md border-b border-transparent">
             <h1 class="text-3xl font-bold tracking-tight" id="headerTitle">Listen Now</h1>
             <button id="authBtn" class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shadow-sm border border-black/10 active:opacity-50 transition">
-                <i class="fa-solid fa-user text-ios-mutedLight" id="userAvatarIcon"></i>
-                <img id="userAvatarImg" src="" class="w-full h-full object-cover hidden">
+                <i class="fa-solid fa-gear text-ios-mutedLight"></i>
             </button>
         </header>
 
@@ -169,31 +168,23 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
                 
-                <div class="w-20 h-20 rounded-full mx-auto mb-3 bg-gray-300 flex items-center justify-center text-3xl shadow-inner overflow-hidden border-2 border-white" id="modalAvatarContainer">
-                    <i class="fa-solid fa-user text-white" id="modalPlaceholder"></i>
-                    <img id="modalAvatar" src="" class="w-full h-full object-cover hidden">
+                <div class="w-16 h-16 rounded-full mx-auto mb-4 bg-red-100 flex items-center justify-center text-2xl text-red-500 shadow-sm">
+                    <i class="fa-brands fa-youtube"></i>
                 </div>
                 
-                <h3 id="modalName" class="text-xl font-bold mb-1 tracking-tight">Account Settings</h3>
-                <p id="modalEmail" class="text-sm text-ios-mutedLight mb-6">Sign in to enable cross-device features</p>
-                
-                <button id="loginBtn" class="w-full bg-white text-black border border-black/10 font-bold py-3.5 rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-2 text-[15px] mb-4">
-                    <i class="fa-brands fa-google text-red-500"></i> Continue with Google
-                </button>
-                <button id="logoutBtn" class="w-full bg-black/5 text-ios-accent font-bold py-3.5 rounded-xl transition active:scale-95 hidden text-[15px] mb-4">
-                    Sign Out
-                </button>
+                <h3 class="text-xl font-bold mb-1 tracking-tight">App Settings</h3>
+                <p class="text-sm text-ios-mutedLight mb-8">Configure your playback engine</p>
 
                 <!-- YouTube API Key Manager -->
-                <div class="mt-4 pt-6 border-t border-black/10 text-left">
-                    <label class="block text-xs font-bold text-ios-mutedLight uppercase tracking-wider mb-2">YouTube Data API v3 Key</label>
-                    <p class="text-[11px] text-ios-mutedLight mb-3 leading-tight">To stream music directly from YouTube, enter your personal API key. Keys are stored locally on your device.</p>
+                <div class="text-left bg-white p-5 rounded-2xl shadow-sm border border-black/5">
+                    <label class="block text-sm font-bold text-black mb-2">YouTube Data API v3 Key</label>
+                    <p class="text-xs text-ios-mutedLight mb-4 leading-relaxed">To stream music, paste your API key below. Make sure no extra spaces are copied.</p>
                     
-                    <div class="flex gap-2">
-                        <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="flex-1 bg-white border border-black/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-ios-accent">
-                        <button id="saveApiKeyBtn" class="bg-ios-accent text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm active:scale-95 transition-transform" onclick="saveApiKey()">Save</button>
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="apiKeyInput" placeholder="Paste key here (e.g. AIzaSy...)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-sm focus:outline-none focus:border-ios-accent focus:ring-1 focus:ring-ios-accent transition">
+                        <button id="saveApiKeyBtn" class="w-full bg-ios-accent text-white py-3.5 rounded-xl font-bold text-[15px] shadow-sm active:scale-95 transition-transform" onclick="saveApiKey()">Save Key</button>
                     </div>
-                    <div id="apiKeySuccess" class="text-green-600 text-xs mt-2 hidden font-medium"><i class="fa-solid fa-check-circle"></i> API Key saved securely!</div>
+                    <div id="apiKeySuccess" class="text-green-600 text-xs mt-3 hidden font-medium text-center"><i class="fa-solid fa-check-circle"></i> Saved! You can now close this and play music.</div>
                 </div>
             </div>
             <div class="absolute inset-0 z-[-1]" onclick="closeAccountModal()"></div>
@@ -403,22 +394,7 @@
     <!-- YouTube IFrame API Setup -->
     <script src="https://www.youtube.com/iframe_api"></script>
 
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        let auth;
-        try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            if (firebaseConfig) {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-            }
-        } catch (e) {
-            console.error("Firebase config error:", e);
-        }
-
+    <script>
         // --- State Variables ---
         let ytPlayer;
         let isPlayerReady = false;
@@ -969,52 +945,6 @@
                 accModal.classList.remove('flex');
             }, 300);
         };
-
-        if (auth) {
-            onAuthStateChanged(auth, user => {
-                const avatarImg = document.getElementById('userAvatarImg');
-                const avatarIcon = document.getElementById('userAvatarIcon');
-                const modalImg = document.getElementById('modalAvatar');
-                const modalIcon = document.getElementById('modalPlaceholder');
-                const loginBtn = document.getElementById('loginBtn');
-                const logoutBtn = document.getElementById('logoutBtn');
-
-                if (user) {
-                    avatarImg.src = user.photoURL;
-                    avatarImg.classList.remove('hidden');
-                    avatarIcon.classList.add('hidden');
-                    
-                    modalImg.src = user.photoURL;
-                    modalImg.classList.remove('hidden');
-                    modalIcon.classList.add('hidden');
-                    
-                    document.getElementById('modalName').textContent = user.displayName;
-                    document.getElementById('modalEmail').textContent = user.email;
-                    
-                    loginBtn.classList.add('hidden');
-                    logoutBtn.classList.remove('hidden');
-                } else {
-                    avatarImg.classList.add('hidden');
-                    avatarIcon.classList.remove('hidden');
-                    
-                    modalImg.classList.add('hidden');
-                    modalIcon.classList.remove('hidden');
-                    
-                    document.getElementById('modalName').textContent = "Account Settings";
-                    document.getElementById('modalEmail').textContent = "Sign in to enable cross-device features";
-                    
-                    loginBtn.classList.remove('hidden');
-                    logoutBtn.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('loginBtn').addEventListener('click', () => {
-                signInWithPopup(auth, new GoogleAuthProvider()).then(closeAccountModal);
-            });
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                signOut(auth).then(closeAccountModal);
-            });
-        }
 
         // --- Media Session API (Lock Screen) ---
         function updateMediaSession(title, artist, artUrl) {
