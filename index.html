@@ -652,36 +652,52 @@
         function handleTrackEnded() {
             if (loopState === 2) {
                 // Loop Track (Handled implicitly if audio.loop is set, but as fallback)
-                audio.currentTime = 0;
-                audio.play();
-            } else if (loopState === 1) {
-                // Loop Queue
-                playNext(null, true);
+            audio.currentTime = 0;
+            audio.play();
+        } else if (loopState === 1) {
+            // Loop Queue
+            playNext(null, true);
+        } else {
+            // Loop Off
+            if (currentQueueIndex < queue.length - 1 || isShuffle) {
+                playNext();
             } else {
-                // Loop Off
-                if (currentQueueIndex < queue.length - 1 || isShuffle) {
-                    playNext();
-                } else {
-                    isPlaying = false;
-                    updatePlayStateUI();
-                }
+                isPlaying = false;
+                updatePlayStateUI();
             }
         }
+    }
 
-        // Playback Control Functions
-        window.loadTrack = (index) => {
-            if (index < 0 || index >= queue.length) return;
-            currentQueueIndex = index;
-            const track = queue[currentQueueIndex];
+    // Playback Control Functions
+    // --- JioSaavn Helpers & Legacy Support ---
+    function normalizeSaavnTrack(t) {
+        const highResArt = (t.image && t.image.length > 0) ? (t.image.find(img => img.quality === '500x500')?.url || t.image[t.image.length-1].url) : 'https://placehold.co/512';
+        const streamUrl = (t.downloadUrl && t.downloadUrl.length > 0) ? (t.downloadUrl.find(dl => dl.quality === '320kbps')?.url || t.downloadUrl[t.downloadUrl.length-1].url) : '';
+        return {
+            id: String(t.id),
+            title: t.name ? t.name.replace(/&quot;/g, '"').replace(/&amp;/g, '&') : 'Unknown Title',
+            user: { name: t.primaryArtists || 'Unknown Artist' },
+            artworkUrl: highResArt,
+            streamUrl: streamUrl
+        };
+    }
 
-            // Use track.streamUrl if it's a custom link, otherwise Audius format
-            const streamUrl = track.streamUrl || `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
-            const artUrl = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/512x512/333/fff?text=Music';
-            const title = track.title;
-            const artist = track.user ? track.user.name : 'Unknown';
+    function getArt(t) { return t.artworkUrl || (t.artwork ? t.artwork['150x150'] : 'https://placehold.co/150'); }
+    function getHighResArt(t) { return t.artworkUrl || (t.artwork ? (t.artwork['480x480']||t.artwork['150x150']) : 'https://placehold.co/512'); }
+    function getStream(t) { return t.streamUrl || `https://discoveryprovider.audius.co/v1/tracks/${t.id}/stream?app_name=${APP_NAME}`; }
 
-            // UI Update
-            UI.title.forEach(el => el.textContent = title);
+    window.loadTrack = (index) => {
+        if (index < 0 || index >= queue.length) return;
+        currentQueueIndex = index;
+        const track = queue[currentQueueIndex];
+
+        const streamUrl = getStream(track);
+        const artUrl = getHighResArt(track);
+        const title = track.title;
+        const artist = track.user ? track.user.name : 'Unknown';
+
+        // UI Update
+        UI.title.forEach(el => el.textContent = title);
             UI.artist.forEach(el => el.textContent = artist);
             UI.art.forEach(el => el.src = artUrl);
             syncLikeButton(track.id);
@@ -856,48 +872,48 @@
         };
 
         window.playCustomLink = () => {
-            const input = document.getElementById('customLinkInput');
-            const url = input.value.trim();
-            if (!url) return;
+        const input = document.getElementById('customLinkInput');
+        const url = input.value.trim();
+        if (!url) return;
 
-            const customTrack = {
-                id: 'custom-' + Date.now(),
-                title: 'Custom Audio Stream',
-                user: { name: 'Direct Link' },
-                artwork: null,
-                streamUrl: url
-            };
-
-            // Clear queue and play immediately
-            queue = [customTrack];
-            loadTrack(0);
-            
-            // UI Feedback
-            input.value = '';
-            closeAccountModal();
-            openFullScreenPlayer();
+        const customTrack = {
+            id: 'custom-' + Date.now(),
+            title: 'Custom Audio Stream',
+            user: { name: 'Direct Link' },
+            artworkUrl: 'https://placehold.co/512x512/333/fff?text=Link',
+            streamUrl: url
         };
 
-        // --- Data Fetching (Audius API) ---
+        // Clear queue and play immediately
+        queue = [customTrack];
+        loadTrack(0);
         
-        async function fetchRegionalTrending() {
-            document.getElementById('homeLoading').classList.remove('hidden');
-            document.getElementById('homeHorizontalGrid').classList.add('hidden');
-            document.getElementById('homeList').classList.add('hidden');
-            
-            // Map regions to queries
-            const regionQueries = {
-                'India': ['bollywood', 'punjabi'],
-                'USA': ['pop', 'hip hop'],
-                'UK': ['drill', 'pop'],
-                'Japan': ['jpop', 'anime'],
-                'Global': ['trending', 'top']
-            };
-            
-            const queries = regionQueries[currentRegion] || regionQueries['Global'];
-            
-            // Update UI Titles
-            const subtitleMap = {
+        // UI Feedback
+        input.value = '';
+        closeAccountModal();
+        openFullScreenPlayer();
+    };
+
+    // --- Data Fetching (JioSaavn API) ---
+    
+    async function fetchRegionalTrending() {
+        document.getElementById('homeLoading').classList.remove('hidden');
+        document.getElementById('homeHorizontalGrid').classList.add('hidden');
+        document.getElementById('homeList').classList.add('hidden');
+        
+        // Map regions to Saavn search queries
+        const regionQueries = {
+            'India': ['Top Bollywood', 'Top Punjabi'],
+            'USA': ['Billboard Hot 100', 'Top Hip Hop'],
+            'UK': ['UK Top 40', 'UK Drill'],
+            'Japan': ['J-Pop Hits', 'Anime OST'],
+            'Global': ['Global Top 50', 'Viral Hits']
+        };
+        
+        const queries = regionQueries[currentRegion] || regionQueries['Global'];
+        
+        // Update UI Titles
+        const subtitleMap = {
                 'India': 'Trending in India',
                 'USA': 'Trending in USA',
                 'UK': 'Trending in UK',
@@ -915,38 +931,39 @@
             document.getElementById('homeRegionSubtitle').textContent = subtitleMap[currentRegion];
             document.getElementById('homeRegionTitle').textContent = titleMap[currentRegion];
 
-            try {
-                // Fetch category streams simultaneously
-                const req1 = fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${queries[0]}&app_name=${APP_NAME}&limit=10`);
-                const req2 = fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${queries[1]}&app_name=${APP_NAME}&limit=10`);
-                
-                const [res1, res2] = await Promise.all([req1, req2]);
-                const json1 = await res1.json();
-                const json2 = await res2.json();
-                
-                // Mix results
-                const tracks = [...(json1.data || []), ...(json2.data || [])].sort(() => 0.5 - Math.random());
-                
-                document.getElementById('homeLoading').classList.add('hidden');
-                
-                renderHomeHorizontal(tracks.slice(0, 6));
-                renderHomeList(tracks.slice(6));
-                
-            } catch (e) {
-                console.error("Fetch error:", e);
-                document.getElementById('homeLoading').innerHTML = '<p class="text-ios-accent">Error loading data.</p>';
-            }
-        }
-
-        function renderHomeHorizontal(tracks) {
-            const grid = document.getElementById('homeHorizontalGrid');
-            grid.innerHTML = '';
-            grid.classList.remove('hidden');
+        try {
+            // Fetch category streams simultaneously via Saavn
+            const req1 = fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(queries[0])}`);
+            const req2 = fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(queries[1])}`);
             
-            tracks.forEach((track, idx) => {
-                const art = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/480';
-                const div = document.createElement('div');
-                div.className = "flex-none w-[200px] snap-center cursor-pointer";
+            const [res1, res2] = await Promise.all([req1, req2]);
+            const json1 = await res1.json();
+            const json2 = await res2.json();
+            
+            // Mix results and normalize
+            const rawTracks = [...(json1.data?.results || []), ...(json2.data?.results || [])].sort(() => 0.5 - Math.random());
+            const tracks = rawTracks.map(normalizeSaavnTrack);
+            
+            document.getElementById('homeLoading').classList.add('hidden');
+            
+            renderHomeHorizontal(tracks.slice(0, 6));
+            renderHomeList(tracks.slice(6));
+            
+        } catch (e) {
+            console.error("Fetch error:", e);
+            document.getElementById('homeLoading').innerHTML = '<p class="text-ios-accent">Error loading data.</p>';
+        }
+    }
+
+    function renderHomeHorizontal(tracks) {
+        const grid = document.getElementById('homeHorizontalGrid');
+        grid.innerHTML = '';
+        grid.classList.remove('hidden');
+        
+        tracks.forEach((track, idx) => {
+            const art = getHighResArt(track);
+            const div = document.createElement('div');
+            div.className = "flex-none w-[200px] snap-center cursor-pointer";
                 div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
                 
                 div.innerHTML = `
@@ -961,15 +978,15 @@
         }
 
         function renderHomeList(tracks) {
-            const list = document.getElementById('homeList');
-            list.innerHTML = '';
-            list.classList.remove('hidden');
-            
-            tracks.forEach((track, idx) => {
-                const art = track.artwork ? (track.artwork['150x150']) : 'https://placehold.co/150';
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
-                div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
+        const list = document.getElementById('homeList');
+        list.innerHTML = '';
+        list.classList.remove('hidden');
+        
+        tracks.forEach((track, idx) => {
+            const art = getArt(track);
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
+            div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
                 
                 div.innerHTML = `
                     <img src="${art}" class="w-14 h-14 rounded-lg object-cover bg-gray-200 dark:bg-gray-800">
@@ -1012,50 +1029,50 @@
                     }
                     
                     debounce = setTimeout(async () => {
-                        document.getElementById('searchDefault').classList.add('hidden');
-                        document.getElementById('searchResults').classList.add('hidden');
-                        document.getElementById('searchLoading').classList.replace('hidden', 'flex');
+                    document.getElementById('searchDefault').classList.add('hidden');
+                    document.getElementById('searchResults').classList.add('hidden');
+                    document.getElementById('searchLoading').classList.replace('hidden', 'flex');
+                    
+                    try {
+                        const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}&limit=20`);
+                        const json = await res.json();
+                        const tracks = (json.data?.results || []).map(normalizeSaavnTrack);
                         
-                        try {
-                            const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&app_name=${APP_NAME}&limit=20`);
-                            const json = await res.json();
-                            const tracks = json.data;
+                        document.getElementById('searchLoading').classList.replace('flex', 'hidden');
+                        document.getElementById('searchResults').classList.remove('hidden');
+                        
+                        const list = document.getElementById('searchList');
+                        list.innerHTML = '';
+                        tracks.forEach((track, idx) => {
+                            const art = getArt(track);
+                            const div = document.createElement('div');
+                            div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
                             
-                            document.getElementById('searchLoading').classList.replace('flex', 'hidden');
-                            document.getElementById('searchResults').classList.remove('hidden');
+                            // Serialize track for favorites
+                            const safeTrack = {id: track.id, title: track.title, user: {name: track.user.name}, artworkUrl: track.artworkUrl, streamUrl: track.streamUrl};
                             
-                            const list = document.getElementById('searchList');
-                            list.innerHTML = '';
-                            tracks.forEach((track, idx) => {
-                                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
-                                const div = document.createElement('div');
-                                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
-                                
-                                // Serialize track for favorites
-                                const safeTrack = {id: track.id, title: track.title, user: {name: track.user.name}, artwork: track.artwork};
-                                
-                                div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
-                                div.innerHTML = `
-                                    <img src="${art}" class="w-14 h-14 rounded-lg object-cover">
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
-                                        <p class="text-[13px] text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
-                                    </div>
-                                    <button class="p-3 text-2xl active:scale-75 transition-transform" onclick="event.stopPropagation(); toggleFavorite('${track.id}', this, ${JSON.stringify(safeTrack).replace(/"/g, '&quot;')})">
-                                        <i class="${isFavorite(track.id) ? 'fa-solid text-ios-accent' : 'fa-regular text-ios-mutedLight dark:text-ios-mutedDark'} fa-heart"></i>
-                                    </button>
-                                `;
-                                list.appendChild(div);
-                            });
-                        } catch(err) {
-                            console.error(err);
-                        }
-                    }, 500);
-                });
+                            div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
+                            div.innerHTML = `
+                                <img src="${art}" class="w-14 h-14 rounded-lg object-cover">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
+                                    <p class="text-[13px] text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
+                                </div>
+                                <button class="p-3 text-2xl active:scale-75 transition-transform" onclick="event.stopPropagation(); toggleFavorite('${track.id}', this, ${JSON.stringify(safeTrack).replace(/"/g, '&quot;')})">
+                                    <i class="${isFavorite(track.id) ? 'fa-solid text-ios-accent' : 'fa-regular text-ios-mutedLight dark:text-ios-mutedDark'} fa-heart"></i>
+                                </button>
+                            `;
+                            list.appendChild(div);
+                        });
+                    } catch(err) {
+                        console.error(err);
+                    }
+                }, 500);
             });
-        }
+        });
+    }
 
-        // --- Favorites (Library) ---
+    // --- Favorites (Library) ---
         window.isFavorite = (id) => favorites.some(t => t.id === id);
 
         window.toggleCurrentFavorite = (e) => {
@@ -1099,21 +1116,21 @@
             list.innerHTML = '';
             
             if(favorites.length === 0) {
-                list.innerHTML = `
-                    <div class="py-20 text-center text-ios-mutedLight dark:text-ios-mutedDark">
-                        <i class="fa-solid fa-music text-5xl mb-4 opacity-50"></i>
-                        <p class="text-lg font-semibold">Your library is empty.</p>
-                        <p class="text-sm">Search and tap the heart to save songs.</p>
-                    </div>`;
-                return;
-            }
+            list.innerHTML = `
+                <div class="py-20 text-center text-ios-mutedLight dark:text-ios-mutedDark">
+                    <i class="fa-solid fa-music text-5xl mb-4 opacity-50"></i>
+                    <p class="text-lg font-semibold">Your library is empty.</p>
+                    <p class="text-sm">Search and tap the heart to save songs.</p>
+                </div>`;
+            return;
+        }
 
-            favorites.forEach((track, idx) => {
-                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
-                div.onclick = () => { queue = [...favorites]; loadTrack(idx); };
-                div.innerHTML = `
+        favorites.forEach((track, idx) => {
+            const art = getArt(track);
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
+            div.onclick = () => { queue = [...favorites]; loadTrack(idx); };
+            div.innerHTML = `
                     <img src="${art}" class="w-14 h-14 rounded-lg object-cover">
                     <div class="flex-1 min-w-0">
                         <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
@@ -1171,28 +1188,28 @@
         };
 
         window.scrollToQueue = () => {
-            document.getElementById('fullPlayerScroll').scrollBy({ top: 400, behavior: 'smooth' });
-        };
+        document.getElementById('fullPlayerScroll').scrollBy({ top: 400, behavior: 'smooth' });
+    };
 
-        function updateQueueUI() {
-            const list = document.getElementById('queueList');
-            list.innerHTML = '';
-            
-            if (currentQueueIndex === -1) return;
-            
-            const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21);
-            if (upNext.length === 0) {
-                list.innerHTML = '<p class="text-sm text-ios-mutedLight dark:text-ios-mutedDark py-4 text-center">End of queue.</p>';
-                return;
-            }
+    function updateQueueUI() {
+        const list = document.getElementById('queueList');
+        list.innerHTML = '';
+        
+        if (currentQueueIndex === -1) return;
+        
+        const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21);
+        if (upNext.length === 0) {
+            list.innerHTML = '<p class="text-sm text-ios-mutedLight dark:text-ios-mutedDark py-4 text-center">End of queue.</p>';
+            return;
+        }
 
-            upNext.forEach((track, idx) => {
-                const actualIndex = currentQueueIndex + 1 + idx;
-                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition rounded-lg px-2 -mx-2";
-                div.onclick = () => loadTrack(actualIndex);
-                div.innerHTML = `
+        upNext.forEach((track, idx) => {
+            const actualIndex = currentQueueIndex + 1 + idx;
+            const art = getArt(track);
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition rounded-lg px-2 -mx-2";
+            div.onclick = () => loadTrack(actualIndex);
+            div.innerHTML = `
                     <img src="${art}" class="w-12 h-12 rounded object-cover shadow-sm">
                     <div class="flex-1 min-w-0">
                         <h4 class="font-semibold text-sm line-clamp-1">${track.title}</h4>
