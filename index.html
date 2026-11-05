@@ -3,41 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Streamify Pro - iOS Liquid</title>
+    <title>Luxury Liquid Player</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Google Fonts for Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
                     },
                     colors: {
-                        liquid: {
-                            bg: '#000000',
-                            surface: '#121212',
-                            elevated: '#1a1a1a',
-                            accent: '#1DB954', /* Spotify Green / Liquid Pink toggleable, using Spotify Green as base */
-                            applePink: '#FF2D55',
-                            text: '#ffffff',
-                            muted: '#8e8e93'
+                        glass: {
+                            100: 'rgba(255, 255, 255, 0.1)',
+                            200: 'rgba(255, 255, 255, 0.05)',
                         }
                     },
                     animation: {
-                        'blob': 'blob 12s infinite alternate',
+                        'blob': 'blob 15s infinite alternate ease-in-out',
+                        'spin-slow': 'spin 12s linear infinite',
                     },
                     keyframes: {
                         blob: {
                             '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '50%': { transform: 'translate(40px, -60px) scale(1.2)' },
-                            '100%': { transform: 'translate(-30px, 30px) scale(0.9)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
                         }
                     }
                 }
@@ -47,7 +45,7 @@
 
     <style>
         body {
-            background-color: #000000;
+            background-color: #050505;
             color: #ffffff;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
@@ -56,848 +54,287 @@
             overflow: hidden;
         }
 
-        /* Hide Scrollbars */
-        ::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Safe area padding for modern iOS/Android */
+        .pt-safe { padding-top: max(20px, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
 
-        .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
-        .pb-safe { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
-
-        /* Liquid Glassmorphism */
-        .liquid-glass {
-            background: rgba(22, 22, 23, 0.75);
-            backdrop-filter: saturate(180%) blur(35px);
-            -webkit-backdrop-filter: saturate(180%) blur(35px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        /* Ultra Premium Glassmorphism */
+        .luxury-glass {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        .liquid-glass-modal {
-            background: rgba(28, 28, 30, 0.85);
-            backdrop-filter: saturate(200%) blur(50px);
-            -webkit-backdrop-filter: saturate(200%) blur(50px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        /* Ambient background mesh */
+        .mesh-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .blob {
+            position: absolute;
+            filter: blur(90px);
+            opacity: 0.6;
+            border-radius: 50%;
         }
 
-        /* Fluid Sliders */
+        /* Sleek Range Slider */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
-            height: 24px;
+            height: 20px;
             display: flex;
             align-items: center;
+            cursor: pointer;
         }
         input[type=range]:focus { outline: none; }
         
         .scrubber-track {
-            background: rgba(255, 255, 255, 0.2);
-            height: 5px;
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.15);
+            height: 4px;
+            border-radius: 2px;
             width: 100%;
             position: relative;
-            overflow: hidden;
             pointer-events: none;
         }
         .scrubber-fill {
-            background: #1DB954;
+            background: #ffffff;
             height: 100%;
-            width: 0%;
+            width: 30%; /* Default width */
             position: absolute;
             top: 0;
             left: 0;
-            border-radius: 3px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
-
+        
+        /* The slider thumb (invisible but clickable) */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 24px;
-            width: 24px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
             background: transparent;
-            cursor: pointer;
         }
 
-        /* Modal / Player Sliding */
-        .player-visible { transform: translateY(0%); opacity: 1; }
-        .player-hidden { transform: translateY(100%); opacity: 0; }
-        
-        .art-playing { transform: scale(1); box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
-        .art-paused { transform: scale(0.88); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-
-        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-
-        .bg-blob {
+        /* Dynamic Album Glow Fake Shadow */
+        .album-glow-wrapper {
+            position: relative;
+        }
+        .album-glow {
             position: absolute;
-            filter: blur(100px);
-            opacity: 0.35;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            filter: blur(35px) saturate(150%);
+            opacity: 0.6;
+            transform: translateY(15px) scale(0.9);
             z-index: -1;
-            border-radius: 50%;
-            pointer-events: none;
+            border-radius: 2rem;
         }
     </style>
 </head>
-<body class="flex flex-col md:flex-row h-[100dvh] w-screen overflow-hidden select-none relative font-sans">
+<body class="flex flex-col relative font-sans">
 
-    <!-- Hidden YouTube Player Container (Critical for mobile inline play) -->
-    <div style="position: absolute; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -10; overflow: hidden; top: 0; left: 0;">
-        <div id="yt-player"></div>
+    <!-- Animated Mesh Background -->
+    <div class="mesh-bg">
+        <div class="blob w-[300px] h-[300px] bg-red-900/40 top-[-10%] left-[-10%] animate-blob"></div>
+        <div class="blob w-[400px] h-[400px] bg-amber-900/30 top-[40%] right-[-20%] animate-blob" style="animation-delay: -5s;"></div>
+        <div class="blob w-[350px] h-[350px] bg-rose-950/50 bottom-[-10%] left-[10%] animate-blob" style="animation-delay: -10s;"></div>
+        <!-- Noise overlay for premium texture -->
+        <div class="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
     </div>
 
-    <!-- Ambient Liquid Background Blobs -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden bg-black pointer-events-none">
-        <div class="bg-blob w-[400px] h-[400px] bg-emerald-900 top-[-10%] left-[-10%] animate-blob"></div>
-        <div class="bg-blob w-[450px] h-[450px] bg-purple-900 bottom-[-10%] right-[-10%] animate-blob" style="animation-delay: 3s;"></div>
-    </div>
+    <!-- Header Section -->
+    <header class="w-full px-6 pt-safe pb-4 flex items-center justify-between z-10">
+        <button class="w-10 h-10 flex items-center justify-start text-white/70 hover:text-white transition active:scale-90">
+            <!-- Chevron Down SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+        <span class="text-xs font-bold tracking-[0.2em] text-white/50 uppercase">Now Playing</span>
+        <button class="w-10 h-10 flex items-center justify-end text-white/70 hover:text-white transition active:scale-90">
+            <!-- Menu/Queue SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+        </button>
+    </header>
 
-    <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex flex-col w-64 bg-liquid-surface h-full z-10 p-6 pt-safe shrink-0 border-r border-white/10">
-        <div class="text-2xl font-bold mb-8 flex items-center gap-2.5 text-liquid-accent">
-            <i class="fa-solid fa-bolt-lightning"></i> Streamify
+    <!-- Album Art Section (Takes remaining vertical space flexibly) -->
+    <div class="flex-1 w-full flex items-center justify-center px-8 z-10 min-h-[30vh]">
+        <div class="album-glow-wrapper w-full max-w-[360px] aspect-square transition-transform duration-500" id="artContainer">
+            <!-- The Glow -->
+            <div class="album-glow"></div>
+            <!-- The Actual Image -->
+            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop" 
+                 alt="Album Cover" 
+                 class="w-full h-full object-cover rounded-[2rem] border border-white/10 shadow-2xl relative z-10">
         </div>
-        
-        <nav class="flex flex-col gap-1.5 font-medium text-[15px]">
-            <a href="#" onclick="switchTab('home')" id="navHome" class="flex items-center gap-4 p-3 rounded-xl bg-white/10 text-white transition">
-                <i class="fa-solid fa-house w-5 text-center text-lg"></i> Home
-            </a>
-            <a href="#" onclick="switchTab('search')" id="navSearch" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-liquid-muted hover:text-white transition">
-                <i class="fa-solid fa-magnifying-glass w-5 text-center text-lg"></i> Search
-            </a>
-            <a href="#" onclick="switchTab('favorites')" id="navFav" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-liquid-muted hover:text-white transition">
-                <i class="fa-solid fa-heart w-5 text-center text-lg"></i> Favorites (<span id="favCount">0</span>)
-            </a>
-        </nav>
-    </aside>
+    </div>
 
-    <!-- Main App Container -->
-    <main class="flex-1 flex flex-col h-[100dvh] relative z-0 overflow-hidden">
-        
-        <!-- Header -->
-        <header class="h-16 px-6 pt-safe flex items-center justify-between z-20 sticky top-0 bg-black/60 backdrop-blur-xl border-b border-white/5">
-            <h1 id="headerTitle" class="text-2xl font-bold tracking-tight text-white">Listen Now</h1>
-            <div class="flex items-center gap-3">
-                <button onclick="openBluetoothModal()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:text-white active:scale-95 transition" title="Audio Output">
-                    <i class="fa-solid fa-volume-high text-sm"></i>
-                </button>
-                <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:text-white active:scale-95 transition" title="Settings">
-                    <i class="fa-solid fa-gear text-sm"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Scrollable Feed -->
-        <div class="flex-1 overflow-y-auto z-10 pb-44 px-4 md:px-8 pt-4" id="mainScrollArea">
+    <!-- Luxury Glass Controls Section -->
+    <div class="w-full px-4 pb-safe mt-6 z-10">
+        <div class="luxury-glass rounded-[2.5rem] w-full p-6 pt-8 pb-8 flex flex-col gap-6">
             
-            <!-- Search bar -->
-            <div class="relative mb-6">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-liquid-muted"></i>
-                <input type="text" id="searchInput" placeholder="What do you want to listen to?" class="w-full bg-liquid-surface text-white rounded-2xl py-3.5 pl-11 pr-4 font-medium focus:outline-none text-[15px] shadow-inner transition border border-white/10 focus:border-liquid-accent">
-            </div>
-
-            <!-- API Key Missing Notice -->
-            <div id="apiWarning" class="liquid-glass rounded-3xl p-6 text-center mb-8 hidden border border-amber-500/30">
-                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
-                    <i class="fa-solid fa-key"></i>
+            <!-- Title & Heart Row -->
+            <div class="flex items-center justify-between px-2">
+                <div class="flex flex-col min-w-0 pr-4">
+                    <h2 class="text-2xl font-bold tracking-tight text-white truncate">Night Lights</h2>
+                    <h3 class="text-base font-medium text-white/60 truncate mt-1">Jhol & The Weeknd</h3>
                 </div>
-                <h3 class="font-bold text-white text-lg mb-1">API Key Required</h3>
-                <p class="text-sm text-liquid-muted mb-4 font-medium">Please enter your YouTube Data API v3 Key in settings to start streaming.</p>
-                <button onclick="openSettings()" class="bg-liquid-accent text-black font-bold py-2.5 px-6 rounded-full text-sm shadow-lg active:scale-95 transition">Open Settings</button>
+                <!-- Heart Button SVG -->
+                <button class="w-10 h-10 flex items-center justify-center shrink-0 active:scale-75 transition duration-300" id="heartBtn" onclick="toggleHeart()">
+                    <svg id="heartIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
             </div>
 
-            <!-- Loader -->
-            <div id="loader" class="hidden flex-col items-center justify-center py-16">
-                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-liquid-accent mb-3"></i>
-                <p class="text-xs text-liquid-muted tracking-wider uppercase font-semibold">Loading tracks...</p>
+            <!-- Scrubber Row -->
+            <div class="flex flex-col relative mt-2">
+                <div class="relative w-full h-6 flex items-center cursor-pointer">
+                    <input type="range" min="0" max="100" value="30" class="absolute w-full h-full z-10 opacity-0" id="progressInput">
+                    <div class="scrubber-track">
+                        <div class="scrubber-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-[11px] font-semibold text-white/50 px-1 mt-1 font-mono tracking-wider">
+                    <span>1:24</span>
+                    <span>-3:12</span>
+                </div>
             </div>
 
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-bold tracking-tight text-white" id="sectionHeading">Trending Hits</h2>
-                <span class="text-xs text-liquid-muted font-medium" id="trackCountLabel"></span>
-            </div>
-            
-            <!-- Track List -->
-            <div class="flex flex-col gap-2" id="trackList">
-                <!-- Injected via JS -->
-            </div>
-            
-        </div>
-    </main>
-
-    <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden liquid-glass fixed bottom-0 left-0 w-full h-[85px] z-30 flex items-start justify-around pt-2.5 pb-safe border-t border-white/10">
-        <a href="#" onclick="switchTab('home')" id="mobNavHome" class="flex flex-col items-center gap-1 text-liquid-accent p-1 w-20">
-            <i class="fa-solid fa-house text-xl mb-0.5"></i>
-            <span class="text-[10px] font-semibold">Home</span>
-        </a>
-        <a href="#" onclick="switchTab('search')" id="mobNavSearch" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-20">
-            <i class="fa-solid fa-magnifying-glass text-xl mb-0.5"></i>
-            <span class="text-[10px] font-medium">Search</span>
-        </a>
-        <a href="#" onclick="switchTab('favorites')" id="mobNavFav" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-20">
-            <i class="fa-solid fa-heart text-xl mb-0.5"></i>
-            <span class="text-[10px] font-medium">Favorites</span>
-        </a>
-    </nav>
-
-    <!-- Floating Mini Player -->
-    <div id="miniPlayer" class="liquid-glass fixed bottom-[88px] md:bottom-6 left-3 right-3 md:left-[272px] md:right-8 rounded-2xl h-[68px] z-40 flex items-center justify-between px-3 cursor-pointer shadow-2xl transition-all duration-500 translate-y-[200%] border border-white/15" onclick="openFullPlayer()">
-        <div class="flex items-center gap-3 w-[70%] min-w-0">
-            <img id="miniArt" src="" class="w-12 h-12 rounded-xl object-cover shadow-md bg-white/10 shrink-0">
-            <div class="flex flex-col overflow-hidden w-full">
-                <span id="miniTitle" class="text-[15px] font-semibold tracking-tight text-white line-clamp-1">Not Playing</span>
-                <span id="miniArtist" class="text-[13px] text-liquid-muted line-clamp-1">--</span>
-            </div>
-        </div>
-        
-        <div class="flex items-center justify-end gap-1 shrink-0">
-            <button class="w-11 h-11 flex items-center justify-center text-2xl active:scale-75 transition relative text-white" onclick="togglePlay(event)">
-                <i class="fa-solid fa-play" id="miniPlayIcon"></i>
-                <i class="fa-solid fa-circle-notch fa-spin text-liquid-accent absolute opacity-0" id="miniLoaderIcon"></i>
-            </button>
-            <button class="w-11 h-11 flex items-center justify-center text-xl active:scale-75 transition text-white hidden sm:flex" onclick="playNext(event)">
-                <i class="fa-solid fa-forward-step"></i>
-            </button>
-        </div>
-
-        <div class="absolute bottom-0 left-3 right-3 h-[2px] bg-white/10 rounded-full overflow-hidden">
-            <div id="miniProgress" class="h-full bg-liquid-accent w-0"></div>
-        </div>
-    </div>
-
-    <!-- Full Screen "Now Playing" Modal -->
-    <div id="fullPlayer" class="fixed inset-0 z-50 flex flex-col transition-all duration-500 player-hidden bg-black text-white">
-        
-        <!-- Blurry Dynamic Background -->
-        <div class="absolute inset-0 z-0 overflow-hidden bg-black">
-            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-[90px] scale-150 opacity-50 saturate-200" alt="">
-            <div class="absolute inset-0 bg-black/40"></div>
-            <div class="bg-blob w-[500px] h-[500px] bg-emerald-800 top-0 left-0 animate-blob"></div>
-            <div class="bg-blob w-[450px] h-[450px] bg-purple-900 bottom-0 right-0 animate-blob" style="animation-delay: 4s;"></div>
-        </div>
-        
-        <!-- Header -->
-        <div class="relative z-10 pt-safe px-6 pb-2">
-            <div class="w-12 h-1.5 bg-white/30 rounded-full mx-auto mb-6 cursor-pointer" onclick="closeFullPlayer()"></div>
-            <div class="flex justify-between items-center text-sm font-semibold text-white/70">
-                <button onclick="closeFullPlayer()" class="w-10 h-10 flex items-center justify-start active:opacity-50"><i class="fa-solid fa-chevron-down text-xl"></i></button>
-                <div class="uppercase tracking-widest text-[10px] font-bold">Now Playing</div>
-                <button onclick="openQueueModal()" class="w-10 h-10 flex items-center justify-end active:opacity-50" title="Queue"><i class="fa-solid fa-list-ul text-xl"></i></button>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="flex-1 relative z-10 flex flex-col px-8 pb-10 max-w-[480px] mx-auto w-full justify-between">
-            
-            <!-- Art -->
-            <div class="flex-1 flex items-center justify-center max-h-[42vh] w-full my-auto">
-                <img id="fullArt" src="" class="w-full max-w-[340px] aspect-square rounded-[28px] object-cover transition-all duration-500 art-paused shadow-2xl border border-white/10">
-            </div>
-
-            <!-- Controls & Info Card -->
-            <div class="flex flex-col w-full liquid-glass-modal p-6 rounded-[36px] shadow-2xl">
+            <!-- Main Playback Controls -->
+            <div class="flex items-center justify-between mt-2 px-1">
+                <!-- Shuffle SVG -->
+                <button class="text-white/50 hover:text-white transition active:scale-90 p-2">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 3 21 3 21 8"></polyline>
+                        <line x1="4" y1="20" x2="21" y2="3"></line>
+                        <polyline points="21 16 21 21 16 21"></polyline>
+                        <line x1="15" y1="15" x2="21" y2="21"></line>
+                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                    </svg>
+                </button>
                 
-                <div class="flex items-center justify-between mb-5">
-                    <div class="flex flex-col min-w-0 pr-4">
-                        <h2 id="fullTitle" class="text-[20px] font-bold tracking-tight line-clamp-1 w-full text-white">Title</h2>
-                        <h3 id="fullArtist" class="text-[15px] text-white/70 line-clamp-1 w-full mt-0.5 font-medium">Artist</h3>
-                    </div>
-                    <button onclick="toggleFavoriteCurrent()" id="fullFavBtn" class="w-11 h-11 flex items-center justify-center text-2xl active:scale-75 transition text-white/80 shrink-0">
-                        <i class="fa-regular fa-heart" id="fullFavIcon"></i>
-                    </button>
-                </div>
-
-                <!-- Liquid Scrubber -->
-                <div class="flex flex-col mb-6 relative">
-                    <div class="relative w-full h-8 flex items-center group cursor-pointer">
-                        <input type="range" min="0" max="100" value="0" class="absolute w-full h-full z-10 opacity-0 cursor-pointer" id="scrubberInput">
-                        <div class="scrubber-track" id="scrubberBg">
-                            <div class="scrubber-fill" id="scrubberFill"></div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between text-[11px] font-medium text-white/50 mt-1 absolute top-6 w-full px-0.5 pointer-events-none">
-                        <span id="timeCurrent">0:00</span>
-                        <span id="timeTotal">-:--</span>
-                    </div>
-                </div>
-
-                <!-- Playback Buttons -->
-                <div class="flex items-center justify-between px-2">
-                    <!-- Loop State Button -->
-                    <button class="text-xl text-white/40 active:text-white transition relative" onclick="cycleLoopMode()" id="loopBtn" title="Loop Mode">
-                        <i class="fa-solid fa-repeat"></i>
-                        <span id="loopBadge" class="absolute -top-1 -right-2 text-[9px] font-bold bg-liquid-accent text-black rounded-full px-1 hidden">1</span>
+                <div class="flex items-center gap-6 sm:gap-8">
+                    <!-- Prev SVG -->
+                    <button class="text-white hover:text-white/80 transition active:scale-75 p-2">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                            <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+                        </svg>
                     </button>
                     
-                    <div class="flex items-center gap-6">
-                        <button class="text-2xl text-white active:scale-75 transition" onclick="playPrevious()">
-                            <i class="fa-solid fa-backward-step"></i>
-                        </button>
-                        
-                        <button class="w-18 h-18 bg-white text-black rounded-full flex items-center justify-center text-3xl active:scale-90 transition-all shadow-xl" onclick="togglePlay(event)">
-                            <i class="fa-solid fa-play ml-0.5" id="fullPlayIcon"></i>
-                        </button>
-                        
-                        <button class="text-2xl text-white active:scale-75 transition" onclick="playNext(event)">
-                            <i class="fa-solid fa-forward-step"></i>
-                        </button>
-                    </div>
-
-                    <button class="text-xl text-white/40 active:text-white transition" onclick="toggleShuffle()" id="shuffleBtn" title="Shuffle">
-                        <i class="fa-solid fa-shuffle"></i>
+                    <!-- Giant Play/Pause Button -->
+                    <button class="w-20 h-20 bg-white text-black rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,255,255,0.3)] active:scale-90 transition-all duration-300 relative group" onclick="togglePlay()">
+                        <!-- Play SVG (Default) -->
+                        <svg id="playIcon" class="ml-1.5 w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <!-- Pause SVG (Hidden initially) -->
+                        <svg id="pauseIcon" class="hidden w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    </button>
+                    
+                    <!-- Next SVG -->
+                    <button class="text-white hover:text-white/80 transition active:scale-75 p-2">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                            <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"></line>
+                        </svg>
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Up Next Queue Modal Drawer -->
-    <div id="queueModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] hidden flex-col justify-end opacity-0 transition-opacity duration-300">
-        <div class="liquid-glass-modal w-full max-h-[75vh] rounded-t-[36px] p-6 pb-safe shadow-2xl flex flex-col transform translate-y-full transition-transform duration-300" id="queueContent">
-            <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeQueueModal()"></div>
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Up Next Queue</h3>
-                <button onclick="closeQueueModal()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="flex-1 overflow-y-auto flex flex-col gap-2" id="queueListContainer">
-                <!-- Populated via JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Bluetooth / Audio Output Modal -->
-    <div id="btModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="liquid-glass-modal w-full max-w-sm rounded-[32px] p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="btContent">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-volume-high text-liquid-accent"></i> Audio Output</h3>
-                <button onclick="closeBluetoothModal()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <p class="text-xs text-liquid-muted mb-4">Select system audio output device or connect wireless headphones/speakers.</p>
-            <div class="flex flex-col gap-2" id="deviceList">
-                <button onclick="requestDeviceRouting()" class="w-full py-3 px-4 bg-white/10 hover:bg-white/15 rounded-2xl font-medium text-sm text-left flex items-center justify-between transition">
-                    <span>Default System Audio</span>
-                    <i class="fa-solid fa-check text-liquid-accent"></i>
+                <!-- Loop SVG -->
+                <button class="text-white/50 hover:text-white transition active:scale-90 p-2">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="17 1 21 5 17 9"></polyline>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                        <polyline points="7 23 3 19 7 15"></polyline>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    </svg>
                 </button>
             </div>
+
+            <!-- Bottom Row: Audio Routing (Bluetooth/AirPlay) -->
+            <div class="flex justify-center mt-2">
+                <button class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 active:scale-95 transition">
+                    <!-- Airplay/Device SVG -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-white/80">
+                        <path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path>
+                        <polygon points="12 15 17 21 7 21 12 15"></polygon>
+                    </svg>
+                    <span class="text-xs font-semibold text-white/80 tracking-wide">Bluetooth Speaker</span>
+                </button>
+            </div>
+
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[70] hidden flex-col justify-end md:items-center md:justify-center opacity-0 transition-opacity duration-300">
-        <div class="liquid-glass-modal w-full md:max-w-md rounded-t-[36px] md:rounded-[32px] p-6 pb-safe shadow-2xl transform translate-y-full md:translate-y-0 md:scale-95 transition-transform duration-300 relative" id="settingsContent">
-            
-            <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 md:hidden"></div>
-            
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">Settings</h3>
-                <button onclick="closeSettings()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-liquid-muted uppercase tracking-wider mb-2">YouTube Data API v3 Key</label>
-                    <input type="text" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-liquid-accent transition">
-                </div>
-                <button onclick="saveSettings()" class="w-full bg-liquid-accent text-black py-3.5 rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition">Save API Key</button>
-                <div id="keySuccess" class="text-emerald-400 text-xs font-bold text-center hidden">API Key Saved Successfully!</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- YouTube IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
-
+    <!-- Interactive Logic -->
     <script>
-        /* State Variables */
-        let ytPlayer;
-        let isReady = false;
+        // Progress Bar Sync
+        const progressInput = document.getElementById('progressInput');
+        const progressFill = document.getElementById('progressFill');
+
+        progressInput.addEventListener('input', (e) => {
+            progressFill.style.width = e.target.value + '%';
+        });
+
+        // Play/Pause Toggle Animation
         let isPlaying = false;
-        let queue = [];
-        let currentIndex = -1;
-        let isScrubbing = false;
-        let isShuffle = false;
-        let loopMode = 0; // 0: Off, 1: Loop All, 2: Loop Single
-        let currentTab = 'home';
-        let rAF_ID = null;
-        
-        let apiKey = localStorage.getItem('streamify_yt_key') || "";
-        let favorites = JSON.parse(localStorage.getItem('streamify_favs') || "[]");
-
-        /* UI Elements */
-        const UI = {
-            mini: {
-                container: document.getElementById('miniPlayer'),
-                art: document.getElementById('miniArt'),
-                title: document.getElementById('miniTitle'),
-                artist: document.getElementById('miniArtist'),
-                playBtn: document.getElementById('miniPlayIcon'),
-                loader: document.getElementById('miniLoaderIcon'),
-                progress: document.getElementById('miniProgress')
-            },
-            full: {
-                container: document.getElementById('fullPlayer'),
-                art: document.getElementById('fullArt'),
-                bgArt: document.getElementById('fullBgArt'),
-                title: document.getElementById('fullTitle'),
-                artist: document.getElementById('fullArtist'),
-                playBtn: document.getElementById('fullPlayIcon'),
-                favIcon: document.getElementById('fullFavIcon'),
-                scrubberIn: document.getElementById('scrubberInput'),
-                scrubberFill: document.getElementById('scrubberFill'),
-                tCur: document.getElementById('timeCurrent'),
-                tTot: document.getElementById('timeTotal')
-            }
-        };
-
-        /* YouTube Initialization */
-        window.onYouTubeIframeAPIReady = function() {
-            ytPlayer = new YT.Player('yt-player', {
-                height: '1',
-                width: '1',
-                playerVars: {
-                    'autoplay': 0,
-                    'controls': 0,
-                    'playsinline': 1,
-                    'rel': 0,
-                    'showinfo': 0
-                },
-                events: {
-                    'onReady': () => { isReady = true; ytPlayer.setVolume(100); },
-                    'onStateChange': onPlayerStateChange,
-                    'onError': (e) => { console.error("YT Error:", e.data); playNext(); }
-                }
-            });
-        };
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) {
-                isPlaying = true;
-                setLoading(false);
-                updatePlayIcons();
-                setupMediaSession();
-                if (!rAF_ID) startProgressLoop();
-            } else if (event.data === YT.PlayerState.PAUSED) {
-                isPlaying = false;
-                updatePlayIcons();
-            } else if (event.data === YT.PlayerState.BUFFERING) {
-                setLoading(true);
-            } else if (event.data === YT.PlayerState.ENDED) {
-                if (loopMode === 2) {
-                    ytPlayer.seekTo(0);
-                    ytPlayer.playVideo();
-                } else {
-                    playNext();
-                }
-            }
-        }
-
-        /* Smooth Progress Sync with requestAnimationFrame */
-        function startProgressLoop() {
-            if (isPlaying && ytPlayer && ytPlayer.getCurrentTime && !isScrubbing) {
-                const current = ytPlayer.getCurrentTime();
-                const duration = ytPlayer.getDuration();
-                
-                if (duration > 0) {
-                    const pct = (current / duration) * 100;
-                    UI.mini.progress.style.width = pct + '%';
-                    UI.full.scrubberIn.value = pct;
-                    UI.full.scrubberFill.style.width = pct + '%';
-                    UI.full.tCur.textContent = formatTime(current);
-                    UI.full.tTot.textContent = "-" + formatTime(duration - current);
-                }
-            }
-            if (isPlaying) {
-                rAF_ID = requestAnimationFrame(startProgressLoop);
-            } else {
-                cancelAnimationFrame(rAF_ID);
-                rAF_ID = null;
-            }
-        }
-
-        /* Playback Core */
-        window.loadTrack = function(index) {
-            if (!isReady || index < 0 || index >= queue.length) return;
-            currentIndex = index;
-            const track = queue[currentIndex];
-
-            UI.mini.title.textContent = track.title;
-            UI.mini.artist.textContent = track.artist;
-            UI.mini.art.src = track.art;
-            
-            UI.full.title.textContent = track.title;
-            UI.full.artist.textContent = track.artist;
-            UI.full.art.src = track.art;
-            UI.full.bgArt.src = track.art;
-
-            UI.mini.container.classList.remove('translate-y-[200%]');
-            updateFavButtonUI();
-            
-            setLoading(true);
-            ytPlayer.loadVideoById(track.id);
-        };
-
-        window.togglePlay = function(e) {
-            if (e) e.stopPropagation();
-            if (!isReady || currentIndex === -1) return;
-            isPlaying ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
-        };
-
-        window.playNext = function(e) {
-            if (e) e.stopPropagation();
-            if (queue.length === 0) return;
-            let nxt = currentIndex + 1;
-            if (isShuffle) {
-                nxt = Math.floor(Math.random() * queue.length);
-            } else if (nxt >= queue.length) {
-                if (loopMode === 1) nxt = 0;
-                else return; // Stop at end if loop is off
-            }
-            loadTrack(nxt);
-        };
-
-        window.playPrevious = function() {
-            if (queue.length === 0) return;
-            if (ytPlayer.getCurrentTime && ytPlayer.getCurrentTime() > 3) {
-                ytPlayer.seekTo(0);
-                return;
-            }
-            let prv = currentIndex - 1;
-            if (prv < 0) prv = queue.length - 1;
-            loadTrack(prv);
-        };
-
-        /* Loop & Shuffle Modes */
-        window.cycleLoopMode = function() {
-            loopMode = (loopMode + 1) % 3;
-            const btn = document.getElementById('loopBtn');
-            const badge = document.getElementById('loopBadge');
-            
-            if (loopMode === 0) {
-                btn.className = "text-xl text-white/40 active:text-white transition relative";
-                badge.classList.add('hidden');
-            } else if (loopMode === 1) {
-                btn.className = "text-xl text-liquid-accent active:text-white transition relative";
-                badge.classList.add('hidden');
-            } else if (loopMode === 2) {
-                btn.className = "text-xl text-liquid-accent active:text-white transition relative";
-                badge.classList.remove('hidden');
-            }
-        };
-
-        window.toggleShuffle = function() {
-            isShuffle = !isShuffle;
-            const btn = document.getElementById('shuffleBtn');
-            btn.className = isShuffle ? "text-xl text-liquid-accent active:text-white transition" : "text-xl text-white/40 active:text-white transition";
-        };
-
-        /* Scrubber Interaction */
-        UI.full.scrubberIn.addEventListener('input', (e) => {
-            isScrubbing = true;
-            UI.full.scrubberFill.style.width = e.target.value + '%';
-        });
-        
-        UI.full.scrubberIn.addEventListener('change', (e) => {
-            if (isReady && ytPlayer.getDuration) {
-                const duration = ytPlayer.getDuration();
-                ytPlayer.seekTo((e.target.value / 100) * duration, true);
-            }
-            isScrubbing = false;
-            if (isPlaying && !rAF_ID) startProgressLoop();
-        });
-
-        /* Favorites System */
-        window.toggleFavoriteCurrent = function() {
-            if (currentIndex < 0 || currentIndex >= queue.length) return;
-            const current = queue[currentIndex];
-            const existsIndex = favorites.findIndex(f => f.id === current.id);
-            
-            if (existsIndex > -1) {
-                favorites.splice(existsIndex, 1);
-            } else {
-                favorites.push(current);
-            }
-            localStorage.setItem('streamify_favs', JSON.stringify(favorites));
-            updateFavButtonUI();
-            document.getElementById('favCount').textContent = favorites.length;
-            if (currentTab === 'favorites') renderList(favorites);
-        };
-
-        function updateFavButtonUI() {
-            if (currentIndex < 0 || currentIndex >= queue.length) return;
-            const current = queue[currentIndex];
-            const isFav = favorites.some(f => f.id === current.id);
-            if (isFav) {
-                UI.full.favIcon.className = "fa-solid fa-heart text-liquid-accent";
-            } else {
-                UI.full.favIcon.className = "fa-regular fa-heart";
-            }
-        }
-
-        /* Media Session API (Lock Screen Controls) */
-        function setupMediaSession() {
-            if ('mediaSession' in navigator && currentIndex >= 0 && queue[currentIndex]) {
-                const track = queue[currentIndex];
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: track.title,
-                    artist: track.artist,
-                    album: 'Streamify Liquid',
-                    artwork: [{ src: track.art, sizes: '512x512', type: 'image/jpeg' }]
-                });
-
-                navigator.mediaSession.setActionHandler('play', () => ytPlayer.playVideo());
-                navigator.mediaSession.setActionHandler('pause', () => ytPlayer.pauseVideo());
-                navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
-                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
-            }
-        }
-
-        /* Bluetooth / Audio Output */
-        window.openBluetoothModal = async function() {
-            const modal = document.getElementById('btModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
-        };
-
-        window.closeBluetoothModal = function() {
-            const modal = document.getElementById('btModal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
-        };
-
-        window.requestDeviceRouting = async function() {
-            if (navigator.mediaDevices && navigator.mediaDevices.selectAudioOutput) {
-                try {
-                    const device = await navigator.mediaDevices.selectAudioOutput();
-                    alert("Audio routed to: " + (device.label || "Selected Device"));
-                    closeBluetoothModal();
-                } catch(e) {
-                    console.log("Audio routing cancelled or unsupported");
-                }
-            } else {
-                alert("Audio output selection is natively managed by your device control center.");
-                closeBluetoothModal();
-            }
-        };
-
-        /* Navigation Tabs */
-        window.switchTab = function(tab) {
-            currentTab = tab;
-            ['home', 'search', 'favorites'].forEach(t => {
-                const active = (t === tab);
-                document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('bg-white/10', active);
-                document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-white', active);
-                document.getElementById('mobNav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-liquid-accent', active);
-                document.getElementById('mobNav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-liquid-muted', !active);
-            });
-
-            if (tab === 'home') {
-                document.getElementById('headerTitle').textContent = "Listen Now";
-                document.getElementById('sectionHeading').textContent = "Trending Hits";
-                fetchMusic("Trending Bollywood Punjabi English Pop Hits 2026");
-            } else if (tab === 'search') {
-                document.getElementById('headerTitle').textContent = "Search";
-                document.getElementById('sectionHeading').textContent = "Explore";
-                document.getElementById('searchInput').focus();
-            } else if (tab === 'favorites') {
-                document.getElementById('headerTitle').textContent = "Favorites";
-                document.getElementById('sectionHeading').textContent = "Saved Tracks";
-                renderList(favorites);
-            }
-        };
-
-        /* Data Fetching */
-        async function fetchMusic(query) {
-            if (!apiKey) {
-                document.getElementById('apiWarning').classList.remove('hidden');
-                return;
-            }
-            document.getElementById('apiWarning').classList.add('hidden');
-            document.getElementById('loader').classList.replace('hidden', 'flex');
-            document.getElementById('trackList').innerHTML = '';
-
-            try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${apiKey}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                if (data.error) throw new Error(data.error.message);
-                
-                queue = data.items.map(item => {
-                    const th = item.snippet.thumbnails;
-                    return {
-                        id: typeof item.id === 'object' ? item.id.videoId : item.id,
-                        title: item.snippet.title.replace(/\[.*?\]|\(.*?\)/g, "").trim(),
-                        artist: item.snippet.channelTitle.replace(" - Topic", ""),
-                        art: th.maxres ? th.maxres.url : (th.high ? th.high.url : th.default.url)
-                    };
-                });
-                
-                renderList(queue);
-            } catch(e) {
-                document.getElementById('trackList').innerHTML = `<p class="text-red-400 text-center text-sm py-8 font-medium">${e.message}</p>`;
-            }
-            document.getElementById('loader').classList.replace('flex', 'hidden');
-        }
-
-        function renderList(listData) {
-            const container = document.getElementById('trackList');
-            container.innerHTML = '';
-            document.getElementById('trackCountLabel').textContent = listData.length + " tracks";
-
-            if (listData.length === 0) {
-                container.innerHTML = `<p class="text-liquid-muted text-center py-12 text-sm font-medium">No tracks found.</p>`;
-                return;
-            }
-
-            listData.forEach((track, idx) => {
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-3.5 p-2 rounded-2xl hover:bg-white/5 active:bg-white/10 transition cursor-pointer group";
-                div.onclick = () => {
-                    queue = listData;
-                    loadTrack(idx);
-                };
-                
-                div.innerHTML = `
-                    <div class="relative w-14 h-14 rounded-xl overflow-hidden shadow-md bg-white/10 shrink-0">
-                        <img src="${track.art}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                            <i class="fa-solid fa-play text-white text-xs"></i>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-[15px] text-white line-clamp-1">${track.title}</h4>
-                        <p class="text-[13px] text-liquid-muted line-clamp-1 mt-0.5">${track.artist}</p>
-                    </div>
-                    <button class="w-9 h-9 flex items-center justify-center text-liquid-muted hover:text-white transition">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        let searchDebounce;
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            clearTimeout(searchDebounce);
-            const q = e.target.value.trim();
-            if (!q) return;
-            document.getElementById('sectionHeading').textContent = `Results for "${q}"`;
-            searchDebounce = setTimeout(() => fetchMusic(q), 700);
-        });
-
-        /* Full Player & Queue Modals */
-        window.openFullPlayer = () => {
-            const p = document.getElementById('fullPlayer');
-            p.classList.remove('hidden');
-            void p.offsetWidth;
-            p.classList.replace('player-hidden', 'player-visible');
-        };
-        
-        window.closeFullPlayer = () => {
-            const p = document.getElementById('fullPlayer');
-            p.classList.replace('player-visible', 'player-hidden');
-            setTimeout(() => p.classList.add('hidden'), 500);
-        };
-
-        window.openQueueModal = () => {
-            const modal = document.getElementById('queueModal');
-            const content = document.getElementById('queueContent');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('translate-y-full');
-            }, 10);
-
-            const qList = document.getElementById('queueListContainer');
-            qList.innerHTML = '';
-            queue.forEach((t, i) => {
-                const item = document.createElement('div');
-                item.className = `flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition ${i === currentIndex ? 'bg-white/15 text-liquid-accent' : 'hover:bg-white/5 text-white'}`;
-                item.onclick = () => { loadTrack(i); closeQueueModal(); };
-                item.innerHTML = `
-                    <img src="${t.art}" class="w-10 h-10 rounded-lg object-cover">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold line-clamp-1">${t.title}</p>
-                        <p class="text-xs text-liquid-muted line-clamp-1">${t.artist}</p>
-                    </div>
-                `;
-                qList.appendChild(item);
-            });
-        };
-
-        window.closeQueueModal = () => {
-            const modal = document.getElementById('queueModal');
-            const content = document.getElementById('queueContent');
-            modal.classList.add('opacity-0');
-            content.classList.add('translate-y-full');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
-        };
-
-        /* Settings Modal */
-        const setModal = document.getElementById('settingsModal');
-        const setContent = document.getElementById('settingsContent');
-        
-        window.openSettings = () => {
-            document.getElementById('apiKeyInput').value = apiKey;
-            setModal.classList.remove('hidden');
-            setModal.classList.add('flex');
-            setTimeout(() => {
-                setModal.classList.remove('opacity-0');
-                setContent.classList.remove('translate-y-full', 'md:scale-95');
-            }, 10);
-        };
-
-        window.closeSettings = () => {
-            setModal.classList.add('opacity-0');
-            setContent.classList.add('translate-y-full', 'md:scale-95');
-            setTimeout(() => { setModal.classList.add('hidden'); setModal.classList.remove('flex'); }, 300);
-        };
-
-        window.saveSettings = () => {
-            const val = document.getElementById('apiKeyInput').value.trim();
-            if (val) {
-                apiKey = val;
-                localStorage.setItem('streamify_yt_key', apiKey);
-                document.getElementById('keySuccess').classList.remove('hidden');
-                setTimeout(() => document.getElementById('keySuccess').classList.add('hidden'), 3000);
-                fetchMusic("Trending Hits 2026");
-            }
-        };
-
-        /* Helpers */
-        function updatePlayIcons() {
-            const icon = isPlaying ? "fa-pause" : "fa-play";
-            UI.mini.playBtn.className = `fa-solid ${icon}`;
-            UI.full.playBtn.className = `fa-solid ${icon} ${isPlaying ? '' : 'ml-0.5'}`;
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const artContainer = document.getElementById('artContainer');
             
             if (isPlaying) {
-                UI.full.art.classList.replace('art-paused', 'art-playing');
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+                // Subtle scale up when playing
+                artContainer.style.transform = 'scale(1.02)';
             } else {
-                UI.full.art.classList.replace('art-playing', 'art-paused');
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                // Subtle scale down when paused
+                artContainer.style.transform = 'scale(0.95)';
             }
         }
 
-        function setLoading(isLoading) {
-            UI.mini.playBtn.style.opacity = isLoading ? '0' : '1';
-            UI.mini.loader.style.opacity = isLoading ? '1' : '0';
-        }
-
-        function formatTime(s) {
-            if (isNaN(s)) return "0:00";
-            const m = Math.floor(s / 60);
-            const secs = Math.floor(s % 60);
-            return `${m}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('favCount').textContent = favorites.length;
-            if (apiKey) {
-                fetchMusic("Trending Bollywood Punjabi English Pop Hits 2026");
+        // Heart Toggle Animation
+        let isHearted = false;
+        function toggleHeart() {
+            isHearted = !isHearted;
+            const icon = document.getElementById('heartIcon');
+            if (isHearted) {
+                icon.setAttribute('fill', '#ef4444'); // Red fill
+                icon.setAttribute('stroke', '#ef4444');
             } else {
-                document.getElementById('apiWarning').classList.remove('hidden');
+                icon.setAttribute('fill', 'none');
+                icon.setAttribute('stroke', 'rgba(255,255,255,0.7)');
             }
-        });
+        }
+        
+        // Init art state
+        document.getElementById('artContainer').style.transform = 'scale(0.95)';
     </script>
 </body>
 </html>
