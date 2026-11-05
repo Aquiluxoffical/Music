@@ -574,33 +574,29 @@
             });
         }
 
-        // --- API & Data Fetching (Audius) ---
+        // --- API & Data Fetching (JioSaavn) ---
         async function fetchTrending() {
             try {
                 // Show loading spinner tailored
                 trendingList.innerHTML = '<div class="col-span-full py-10 text-center opacity-70"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i><p>Loading tailored tracks...</p></div>';
                 
                 const region = localStorage.getItem('streamify_region') || 'global';
-                let url = '';
                 
-                if (region === 'global') {
-                    url = `https://discoveryprovider.audius.co/v1/tracks/trending?app_name=${APP_NAME}&limit=15`;
-                } else {
-                    // Map regions to relevant search keywords for Audius
-                    const queryMap = {
-                        'india': 'bollywood hindi punjabi desi',
-                        'usa': 'pop hip hop',
-                        'uk': 'uk drill grime british',
-                        'skorea': 'kpop korean',
-                        'latam': 'reggaeton latin spanish'
-                    };
-                    const query = queryMap[region] || 'pop';
-                    url = `https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(query)}&app_name=${APP_NAME}&limit=15`;
-                }
+                // Map regions to relevant search keywords for JioSaavn
+                const queryMap = {
+                    'global': 'Top English Hits',
+                    'india': 'Top Bollywood Hits',
+                    'usa': 'Billboard Hot 100',
+                    'uk': 'UK Top 50',
+                    'skorea': 'K-Pop Super Hits',
+                    'latam': 'Latino Top 50'
+                };
+                const query = queryMap[region] || 'Top English Hits';
+                const url = `https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}&limit=15`;
 
                 const res = await fetch(url);
                 const json = await res.json();
-                const tracks = formatAudiusTracks(json.data);
+                const tracks = formatSaavnTracks(json);
                 
                 if (tracks.length === 0) {
                     trendingList.innerHTML = '<p class="col-span-full text-center text-app-muted">No tracks found for this preference.</p>';
@@ -608,6 +604,7 @@
                     renderTrackGrid(tracks, trendingList, 'home');
                 }
             } catch (err) {
+                console.error(err);
                 trendingList.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load trending tracks.</p>';
             }
         }
@@ -640,9 +637,9 @@
                 loading.classList.add('flex');
                 
                 try {
-                    const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&app_name=${APP_NAME}&limit=20`);
+                    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}&limit=20`);
                     const json = await res.json();
-                    const tracks = formatAudiusTracks(json.data);
+                    const tracks = formatSaavnTracks(json);
                     
                     loading.classList.add('hidden');
                     loading.classList.remove('flex');
@@ -650,6 +647,7 @@
                     
                     renderTrackList(tracks, searchList, 'search');
                 } catch (err) {
+                    console.error(err);
                     loading.classList.add('hidden');
                     searchList.innerHTML = '<p class="text-red-500">Search failed.</p>';
                     results.classList.remove('hidden');
@@ -657,16 +655,55 @@
             });
         }
 
-        // Standardize track object
-        function formatAudiusTracks(data) {
-            if(!data) return [];
-            return data.map(t => ({
-                id: t.id,
-                title: t.title,
-                artist: t.user ? t.user.name : 'Unknown Artist',
-                artwork: t.artwork ? (t.artwork['480x480'] || t.artwork['150x150']) : 'https://placehold.co/480x480/181818/ffffff?text=♫',
-                streamUrl: `https://discoveryprovider.audius.co/v1/tracks/${t.id}/stream?app_name=${APP_NAME}`
-            }));
+        // Standardize track object from Saavn API
+        function formatSaavnTracks(json) {
+            if (!json || !json.data) return [];
+            
+            // Handle different structure possibilities from the unofficial API
+            let dataArr = [];
+            if (Array.isArray(json.data.results)) {
+                dataArr = json.data.results;
+            } else if (Array.isArray(json.data)) {
+                dataArr = json.data;
+            }
+
+            // Decode HTML entities (like &quot;) in titles returned by API
+            const decodeHTML = (html) => {
+                const txt = document.createElement("textarea");
+                txt.innerHTML = html;
+                return txt.value;
+            };
+
+            return dataArr.map(t => {
+                let streamUrl = '';
+                if (t.downloadUrl && Array.isArray(t.downloadUrl) && t.downloadUrl.length > 0) {
+                    // Get highest quality URL, usually the last one in the array
+                    streamUrl = t.downloadUrl[t.downloadUrl.length - 1].url;
+                }
+
+                let artwork = 'https://placehold.co/500x500/181818/ffffff?text=♫';
+                if (t.image && Array.isArray(t.image) && t.image.length > 0) {
+                    // Get highest quality image
+                    artwork = t.image[t.image.length - 1].url;
+                }
+
+                let artistName = 'Unknown Artist';
+                if (t.artists && t.artists.primary && Array.isArray(t.artists.primary) && t.artists.primary.length > 0) {
+                    artistName = t.artists.primary[0].name;
+                } else if (t.artists && t.artists.all && Array.isArray(t.artists.all) && t.artists.all.length > 0) {
+                    artistName = t.artists.all[0].name;
+                } else if (typeof t.primaryArtists === 'string') {
+                    artistName = t.primaryArtists;
+                }
+
+                return {
+                    id: t.id,
+                    title: decodeHTML(t.name || 'Unknown Title'),
+                    artist: decodeHTML(artistName),
+                    artwork: artwork,
+                    streamUrl: streamUrl
+                };
+            }).filter(t => t.streamUrl); // Ensure we only return tracks that can be played
         }
 
         // --- Rendering UI ---
