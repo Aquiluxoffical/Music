@@ -574,6 +574,34 @@
             });
         }
 
+        // --- Robust API Fetching System ---
+        const SAAVN_ENDPOINTS = [
+            'https://saavn.dev/api/search/songs', 
+            'https://saavn.me/search/songs',
+            'https://jiosaavn-api-privatecvc2.vercel.app/search/songs'
+        ];
+
+        async function fetchWithFallback(query, limit = 15) {
+            let lastError;
+            for (const baseUrl of SAAVN_ENDPOINTS) {
+                try {
+                    const url = `${baseUrl}?query=${encodeURIComponent(query)}&limit=${limit}`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    const json = await res.json();
+                    
+                    // Validate basic structure exists
+                    if (json && (json.data || json.results)) {
+                        return json;
+                    }
+                } catch (err) {
+                    console.warn(`Fallback triggered: Failed fetching from ${baseUrl}`, err);
+                    lastError = err;
+                }
+            }
+            throw lastError || new Error("All API fallback endpoints failed.");
+        }
+
         // --- API & Data Fetching (JioSaavn) ---
         async function fetchTrending() {
             try {
@@ -591,21 +619,20 @@
                     'skorea': 'K-Pop Super Hits',
                     'latam': 'Latino Top 50'
                 };
-                const query = queryMap[region] || 'Top English Hits';
-                const url = `https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}&limit=15`;
+                const query = queryMap[region] || 'Top Hindi Bollywood Hits';
 
-                const res = await fetch(url);
-                const json = await res.json();
+                // Use the fallback fetcher instead of a single hardcoded URL
+                const json = await fetchWithFallback(query, 15);
                 const tracks = formatSaavnTracks(json);
                 
                 if (tracks.length === 0) {
-                    trendingList.innerHTML = '<p class="col-span-full text-center text-app-muted">No tracks found for this preference.</p>';
+                    trendingList.innerHTML = '<p class="col-span-full text-center text-app-muted">No playable tracks found for this preference. Try another region.</p>';
                 } else {
                     renderTrackGrid(tracks, trendingList, 'home');
                 }
             } catch (err) {
                 console.error(err);
-                trendingList.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load trending tracks.</p>';
+                trendingList.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load trending tracks. Please check your internet connection or try again later.</p>';
             }
         }
 
@@ -637,8 +664,8 @@
                 loading.classList.add('flex');
                 
                 try {
-                    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(q)}&limit=20`);
-                    const json = await res.json();
+                    // Use the fallback fetcher here as well
+                    const json = await fetchWithFallback(q, 20);
                     const tracks = formatSaavnTracks(json);
                     
                     loading.classList.add('hidden');
@@ -657,14 +684,18 @@
 
         // Standardize track object from Saavn API
         function formatSaavnTracks(json) {
-            if (!json || !json.data) return [];
+            if (!json) return [];
             
-            // Handle different structure possibilities from the unofficial API
+            // Handle different structure possibilities from the unofficial API mirrors
             let dataArr = [];
-            if (Array.isArray(json.data.results)) {
+            if (json.data && Array.isArray(json.data.results)) {
                 dataArr = json.data.results;
-            } else if (Array.isArray(json.data)) {
+            } else if (json.data && Array.isArray(json.data)) {
                 dataArr = json.data;
+            } else if (json.results && Array.isArray(json.results)) {
+                dataArr = json.results;
+            } else if (Array.isArray(json)) {
+                dataArr = json;
             }
 
             // Decode HTML entities (like &quot;) in titles returned by API
@@ -675,30 +706,35 @@
             };
 
             return dataArr.map(t => {
+                // Get highest quality URL, safely checking structure
                 let streamUrl = '';
                 if (t.downloadUrl && Array.isArray(t.downloadUrl) && t.downloadUrl.length > 0) {
-                    // Get highest quality URL, usually the last one in the array
-                    streamUrl = t.downloadUrl[t.downloadUrl.length - 1].url;
+                    const highestQ = t.downloadUrl.find(d => d.quality === '320kbps') || t.downloadUrl[t.downloadUrl.length - 1];
+                    streamUrl = highestQ.url || highestQ.link || '';
                 }
 
+                // Get highest quality image, safely checking structure
                 let artwork = 'https://placehold.co/500x500/181818/ffffff?text=♫';
                 if (t.image && Array.isArray(t.image) && t.image.length > 0) {
-                    // Get highest quality image
-                    artwork = t.image[t.image.length - 1].url;
+                    const highestImg = t.image.find(i => i.quality === '500x500') || t.image[t.image.length - 1];
+                    artwork = highestImg.url || highestImg.link || artwork;
                 }
 
+                // Extract artist name robustly
                 let artistName = 'Unknown Artist';
-                if (t.artists && t.artists.primary && Array.isArray(t.artists.primary) && t.artists.primary.length > 0) {
-                    artistName = t.artists.primary[0].name;
-                } else if (t.artists && t.artists.all && Array.isArray(t.artists.all) && t.artists.all.length > 0) {
-                    artistName = t.artists.all[0].name;
-                } else if (typeof t.primaryArtists === 'string') {
+                if (typeof t.primaryArtists === 'string' && t.primaryArtists.length > 0) {
                     artistName = t.primaryArtists;
+                } else if (t.artists && t.artists.primary && Array.isArray(t.artists.primary) && t.artists.primary.length > 0) {
+                    artistName = t.artists.primary.map(a => a.name || a.id).join(', ');
+                } else if (t.artists && t.artists.all && Array.isArray(t.artists.all) && t.artists.all.length > 0) {
+                    artistName = t.artists.all.map(a => a.name || a.id).join(', ');
+                } else if (typeof t.singers === 'string' && t.singers.length > 0) {
+                    artistName = t.singers;
                 }
 
                 return {
                     id: t.id,
-                    title: decodeHTML(t.name || 'Unknown Title'),
+                    title: decodeHTML(t.name || t.title || 'Unknown Title'),
                     artist: decodeHTML(artistName),
                     artwork: artwork,
                     streamUrl: streamUrl
