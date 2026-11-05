@@ -179,19 +179,11 @@
             
             <!-- Default State -->
             <div id="defaultState" class="mt-4">
-                <h2 class="text-xl font-bold mb-4">Browse Categories</h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <div class="bg-gradient-to-br from-purple-600 to-blue-500 rounded-xl p-4 aspect-square flex flex-col justify-end shadow-lg cursor-pointer hover:scale-105 transition-transform" onclick="triggerSearch('Pop')">
-                        <span class="font-bold text-lg">Pop</span>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-500 to-emerald-700 rounded-xl p-4 aspect-square flex flex-col justify-end shadow-lg cursor-pointer hover:scale-105 transition-transform" onclick="triggerSearch('Hip-Hop')">
-                        <span class="font-bold text-lg">Hip-Hop</span>
-                    </div>
-                    <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-4 aspect-square flex flex-col justify-end shadow-lg cursor-pointer hover:scale-105 transition-transform" onclick="triggerSearch('Rock')">
-                        <span class="font-bold text-lg">Rock</span>
-                    </div>
-                    <div class="bg-gradient-to-br from-indigo-800 to-purple-900 rounded-xl p-4 aspect-square flex flex-col justify-end shadow-lg cursor-pointer hover:scale-105 transition-transform" onclick="triggerSearch('Electronic')">
-                        <span class="font-bold text-lg">Electronic</span>
+                <h2 class="text-xl font-bold mb-4">Trending Suggestions</h2>
+                <div class="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4" id="trendingList">
+                    <div class="col-span-full py-10 text-center opacity-70 text-app-muted">
+                        <i class="fa-solid fa-circle-notch fa-spin text-2xl text-app-accent mb-2"></i>
+                        <p>Loading full songs...</p>
                     </div>
                 </div>
             </div>
@@ -405,6 +397,7 @@
         let isPlaying = false;
         let isShuffle = false;
         let connectedDeviceName = null;
+        const APP_NAME = 'stream_native_app_v2'; // Required for Audius API
 
         // --- DOM Elements ---
         const searchInput = document.getElementById('searchInput');
@@ -522,6 +515,26 @@
             }
         });
 
+        // Initialize App with Automatic Suggestions (Trending)
+        window.addEventListener('DOMContentLoaded', fetchTrending);
+
+        async function fetchTrending() {
+            try {
+                // Audius Trending Tracks API
+                const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/trending?app_name=${APP_NAME}&limit=20`);
+                const json = await res.json();
+                if (json.data && json.data.length > 0) {
+                    currentTracks = json.data;
+                    renderSongs(currentTracks, document.getElementById('trendingList'));
+                } else {
+                    document.getElementById('trendingList').innerHTML = '<p class="text-center w-full col-span-full text-app-muted">Could not load trending tracks.</p>';
+                }
+            } catch (err) {
+                console.error("Trending error:", err);
+                document.getElementById('trendingList').innerHTML = '<p class="text-center w-full col-span-full text-red-400">Error loading trending tracks.</p>';
+            }
+        }
+
         function triggerSearch(query) {
             searchInput.value = query;
             clearSearchBtn.style.display = 'block';
@@ -531,13 +544,13 @@
         async function fetchMusic(query) {
             showView(loadingState);
             try {
-                // iTunes API (returns 30s previews)
-                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`);
-                const data = await res.json();
+                // Audius Search API
+                const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(query)}&app_name=${APP_NAME}&limit=25`);
+                const json = await res.json();
                 
-                if (data.results && data.results.length > 0) {
-                    currentTracks = data.results.filter(t => t.previewUrl); // Ensure playable
-                    renderSongs(currentTracks);
+                if (json.data && json.data.length > 0) {
+                    currentTracks = json.data;
+                    renderSongs(currentTracks, songsList);
                     document.getElementById('resultsTitle').textContent = `Results for "${query}"`;
                     showView(resultsState);
                 } else {
@@ -550,15 +563,22 @@
             }
         }
 
-        function renderSongs(tracks) {
-            songsList.innerHTML = '';
+        function renderSongs(tracks, containerEl = songsList) {
+            containerEl.innerHTML = '';
             tracks.forEach((track, idx) => {
-                // Use a slightly larger image for the list
-                const artList = track.artworkUrl100.replace('100x100bb', '150x150bb');
+                // Map Audius artwork and data
+                const artList = track.artwork ? (track.artwork['150x150'] || track.artwork['480x480']) : 'https://placehold.co/150x150/1e1e1e/ffffff?text=Music';
+                const title = track.title || 'Unknown Title';
+                const artist = track.user ? track.user.name : 'Unknown Artist';
                 
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition cursor-pointer group";
-                div.onclick = () => loadAndPlay(idx);
+                
+                // Keep the active track list synced to where the user clicked
+                div.onclick = () => {
+                    currentTracks = tracks;
+                    loadAndPlay(idx);
+                };
                 
                 div.innerHTML = `
                     <div class="relative w-14 h-14 shrink-0">
@@ -568,14 +588,14 @@
                         </div>
                     </div>
                     <div class="flex flex-col min-w-0 flex-1 py-1">
-                        <span class="text-white font-semibold text-sm line-clamp-1">${track.trackName}</span>
-                        <span class="text-app-muted text-xs line-clamp-1">${track.artistName}</span>
+                        <span class="text-white font-semibold text-sm line-clamp-1">${title}</span>
+                        <span class="text-app-muted text-xs line-clamp-1">${artist}</span>
                     </div>
-                    <button class="text-app-muted hover:text-white p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button class="text-app-muted hover:text-white p-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
                         <i class="fa-solid fa-ellipsis"></i>
                     </button>
                 `;
-                songsList.appendChild(div);
+                containerEl.appendChild(div);
             });
         }
 
@@ -586,26 +606,29 @@
             currentIndex = index;
             const track = currentTracks[currentIndex];
 
-            // Setup High Res Images
-            const highResArt = track.artworkUrl100.replace('100x100bb', '600x600bb');
+            // Audius Full Track Streaming URL mapping
+            const highResArt = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/600x600/1e1e1e/ffffff?text=Music';
+            const title = track.title || 'Unknown Title';
+            const artist = track.user ? track.user.name : 'Unknown Artist';
+            const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
             
             // Update Mini Player UI
-            miniArt.src = track.artworkUrl100;
-            miniTitle.textContent = track.trackName;
-            miniArtist.textContent = track.artistName;
+            miniArt.src = highResArt;
+            miniTitle.textContent = title;
+            miniArtist.textContent = artist;
             
             // Update Full Player UI
             fullArt.src = highResArt;
             fullBgArt.src = highResArt;
-            fullTitle.textContent = track.trackName;
-            fullArtist.textContent = track.artistName;
+            fullTitle.textContent = title;
+            fullArtist.textContent = artist;
             
             // Reset Progress
             miniProgressBar.style.width = '0%';
             progressBarInput.value = 0;
             updateSliderVisuals(0);
             currentTimeDisplay.textContent = '0:00';
-            durationDisplay.textContent = '-0:30'; // Previews are generally 30s
+            durationDisplay.textContent = '-:--'; // Automatically syncs via loadedmetadata event
 
             // Show Mini Player with slide up animation
             miniPlayer.classList.remove('hidden');
@@ -615,7 +638,7 @@
             }, 10);
 
             // Load and Play Audio
-            audio.src = track.previewUrl;
+            audio.src = streamUrl;
             audio.play().catch(e => console.log("Playback prevented:", e));
         }
 
