@@ -230,8 +230,13 @@
         </div>
 
         <!-- Album Art -->
-        <div class="flex-1 flex items-center justify-center px-8 min-h-0 py-4">
+        <div class="flex-1 flex items-center justify-center px-8 min-h-0 py-4 relative">
             <img id="fullArt" src="" class="w-full max-w-[340px] aspect-square rounded-2xl shadow-2xl object-cover transition-transform duration-500">
+            <!-- Ad Bypass Overlay -->
+            <div id="adBadge" class="absolute bg-black/80 text-white border border-white/20 px-5 py-3 rounded-full font-bold text-sm hidden items-center gap-3 backdrop-blur-md shadow-2xl z-10">
+                <svg class="animate-spin h-5 w-5 text-spotify-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Bypassing Ad...
+            </div>
         </div>
 
         <!-- Controls Area -->
@@ -588,6 +593,35 @@
                 if(!player || !player.getCurrentTime || isScrubbing) return;
                 
                 if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    // --- AD BYPASS & MUTE LOGIC ---
+                    const url = player.getVideoUrl() || "";
+                    const trackId = currentQueue[currentIndex]?.id || "";
+                    
+                    // Agar playing URL humare gaane ke ID se match nahi karta, toh YouTube Ad play kar raha hai
+                    const isAd = url && trackId && !url.includes(trackId);
+                    const adBadge = document.getElementById('adBadge');
+                    
+                    if (isAd) {
+                        if (!adBadge.classList.contains('flex')) {
+                            player.mute(); // Aawaz mute kar do
+                            adBadge.classList.remove('hidden');
+                            adBadge.classList.add('flex');
+                        }
+                        // Ad ko force-skip karne ki koshish (jump to end)
+                        if (player.getDuration() > 0) {
+                            player.seekTo(player.getDuration() - 0.5, true);
+                        }
+                        return; // Jab tak ad chale, progress bar roke rakho
+                    } else {
+                        // Asli gaana chalu hote hi unmute kar do
+                        if (adBadge.classList.contains('flex')) {
+                            player.unMute(); 
+                            adBadge.classList.add('hidden');
+                            adBadge.classList.remove('flex');
+                        }
+                    }
+                    // ------------------------------
+
                     const curr = player.getCurrentTime();
                     const dur = player.getDuration();
                     
