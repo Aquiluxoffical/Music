@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#ffffff">
-    <title>Streamify Premium</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <title>Apple Music Clone</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,20 +15,31 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Tailwind Config for Dark Mode -->
+    <!-- Tailwind Config for iOS Theme -->
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
                     colors: {
-                        brand: '#000000',
-                        brandDark: '#ffffff',
-                        accent: '#3b82f6', // Premium Blue accent
+                        ios: {
+                            bgLight: '#F2F2F7',
+                            bgDark: '#000000',
+                            surfaceLight: 'rgba(255, 255, 255, 0.75)',
+                            surfaceDark: 'rgba(28, 28, 30, 0.75)',
+                            accent: '#FA243C', // Apple Music Red
+                            textLight: '#000000',
+                            textDark: '#FFFFFF',
+                            mutedLight: '#8E8E93',
+                            mutedDark: '#98989D'
+                        }
+                    },
+                    boxShadow: {
+                        'apple': '0 8px 30px rgba(0,0,0,0.12)',
+                        'apple-dark': '0 8px 30px rgba(0,0,0,0.5)'
                     }
                 }
             }
@@ -34,83 +47,132 @@
     </script>
 
     <style>
-        body { 
-            -webkit-tap-highlight-color: transparent; 
-            overscroll-behavior-y: none; 
-            transition: background-color 0.3s, color 0.3s;
+        body {
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+            transition: background-color 0.3s ease;
         }
+
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Glassmorphism Adapts to Theme */
-        .glass { 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            border-top: 1px solid rgba(0, 0, 0, 0.05); 
+        .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+
+        /* iOS Glassmorphism */
+        .glass-nav {
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
         }
-        .dark .glass { 
-            background: rgba(24, 24, 24, 0.85); 
-            border-top: 1px solid rgba(255, 255, 255, 0.05); 
+        .dark .glass-nav {
+            border-top: 0.5px solid rgba(255,255,255,0.15);
         }
 
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(30px); 
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        .glass-panel {
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
         }
-        .dark .glass-panel { 
-            background: rgba(18, 18, 18, 0.95); 
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-        
-        .pt-safe { padding-top: env(safe-area-inset-top); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-        /* Custom Sliders */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 24px; display: flex; align-items: center; }
+        /* Apple Slider Styles */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            height: 28px; /* larger touch target */
+            display: flex;
+            align-items: center;
+        }
         input[type=range]:focus { outline: none; }
-        .progress-track { background: linear-gradient(to right, #3b82f6 0%, #3b82f6 0%, #e5e7eb 0%, #e5e7eb 100%); height: 4px; border-radius: 2px; width: 100%; position: relative; transition: height 0.2s; pointer-events: none;}
-        .dark .progress-track { background: linear-gradient(to right, #3b82f6 0%, #3b82f6 0%, #4b5563 0%, #4b5563 100%); }
-        .slider-container:hover .progress-track { height: 6px; }
         
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 0px; width: 0px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.3); transition: height 0.2s, width 0.2s; }
-        .slider-container:hover input[type=range]::-webkit-slider-thumb, input[type=range]:active::-webkit-slider-thumb { height: 14px; width: 14px; margin-top: -4px; }
+        .progress-track {
+            background: rgba(142, 142, 147, 0.3);
+            height: 6px;
+            border-radius: 3px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .progress-fill {
+            background: #8E8E93;
+            height: 100%;
+            width: 0%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 3px;
+        }
+        .dark .progress-fill { background: #FFFFFF; }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: transparent; /* Invisible but clickable */
+            cursor: pointer;
+        }
+
+        /* Custom active scaling for full player art */
+        .art-playing { transform: scale(1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .art-paused { transform: scale(0.85); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        
+        .dark .art-playing { box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
 
         /* Animations */
         .player-visible { transform: translateY(0%); }
         .player-hidden { transform: translateY(100%); }
-        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-        .active-nav { color: #3b82f6 !important; font-weight: 700; }
         
-        /* Visualizer Canvas */
-        #visualizer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100px; opacity: 0.3; pointer-events: none; }
+        .active-tab { color: #FA243C !important; }
+        
+        /* Visualizer */
+        #visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+            z-index: 0;
+        }
+        .dark #visualizer { opacity: 0.25; }
+
+        /* Line Clamp */
+        .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 dark:bg-[#121212] dark:text-white flex h-[100dvh] w-full overflow-hidden select-none pb-[70px] md:pb-0 relative font-sans transition-colors duration-300">
+<body class="bg-ios-bgLight dark:bg-ios-bgDark text-ios-textLight dark:text-ios-textDark flex h-[100dvh] w-full overflow-hidden select-none pb-[85px] md:pb-0 relative font-sans transition-colors duration-300">
 
     <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-[#181818] h-full z-10 p-6 pt-safe border-r border-gray-200 dark:border-white/5 shrink-0 shadow-sm transition-colors duration-300">
-        <div class="text-2xl font-bold mb-8 flex items-center gap-3">
-            <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                <i class="fa-solid fa-play ml-1"></i>
-            </div>
-            Streamify
+    <aside class="hidden md:flex flex-col w-64 bg-ios-surfaceLight dark:bg-ios-surfaceDark glass-panel h-full z-10 p-6 pt-safe border-r border-gray-200 dark:border-white/10 shrink-0 transition-colors duration-300">
+        <div class="text-2xl font-bold mb-8 flex items-center gap-2 text-ios-accent">
+            <i class="fa-brands fa-apple text-3xl"></i> Music
         </div>
-        <nav class="flex flex-col gap-2 font-semibold text-sm">
-            <a href="#" class="flex items-center gap-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition nav-link active-nav" data-target="homeView">
-                <i class="fa-solid fa-house text-lg w-6"></i> Home
+        
+        <div id="searchContainerDesktop" class="relative mb-6">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-ios-mutedLight dark:text-ios-mutedDark"></i>
+            <input type="text" id="searchInputDesktop" placeholder="Search" class="w-full bg-black/5 dark:bg-white/10 rounded-xl py-2 pl-9 pr-4 font-medium focus:outline-none text-sm placeholder-ios-mutedLight dark:placeholder-ios-mutedDark">
+        </div>
+
+        <nav class="flex flex-col gap-1 font-medium text-base">
+            <a href="#" class="flex items-center gap-3 text-ios-textLight dark:text-ios-textDark p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition nav-link active-tab" data-target="homeView">
+                <i class="fa-solid fa-house w-6 text-center text-lg"></i> Listen Now
             </a>
-            <a href="#" class="flex items-center gap-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition nav-link" data-target="searchView">
-                <i class="fa-solid fa-magnifying-glass text-lg w-6"></i> Search
+            <a href="#" class="flex items-center gap-3 text-ios-textLight dark:text-ios-textDark p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition nav-link" data-target="searchViewMobile">
+                <i class="fa-solid fa-compass w-6 text-center text-lg"></i> Browse
             </a>
-            <a href="#" class="flex items-center gap-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition nav-link" data-target="libraryView">
-                <i class="fa-solid fa-book text-lg w-6"></i> Library
+            <a href="#" class="flex items-center gap-3 text-ios-textLight dark:text-ios-textDark p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition nav-link" data-target="libraryView">
+                <i class="fa-solid fa-layer-group w-6 text-center text-lg"></i> Library
             </a>
         </nav>
-        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-white/10">
-            <a href="#" class="flex items-center gap-4 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition text-sm font-semibold nav-link" data-target="libraryView">
-                <div class="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-md flex items-center justify-center text-white shadow-md">
+        
+        <div class="mt-8 pt-4">
+            <p class="text-xs font-bold text-ios-mutedLight dark:text-ios-mutedDark uppercase tracking-wider mb-2 px-2">Playlists</p>
+            <a href="#" class="flex items-center gap-3 text-ios-textLight dark:text-ios-textDark p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition nav-link" data-target="libraryView">
+                <div class="w-6 h-6 bg-ios-accent rounded flex items-center justify-center text-white shadow-sm">
                     <i class="fa-solid fa-heart text-xs"></i>
                 </div>
                 Favorites
@@ -119,109 +181,153 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full relative z-0 md:rounded-l-2xl overflow-hidden bg-gray-50 dark:bg-[#121212] transition-colors duration-300">
+    <main class="flex-1 flex flex-col h-full relative z-0 md:rounded-l-2xl overflow-hidden bg-ios-bgLight dark:bg-ios-bgDark transition-colors duration-300">
         
-        <!-- Top Header (Search, Theme, Profile) -->
-        <header class="h-20 px-6 pt-safe flex items-center justify-between z-20 sticky top-0 bg-gray-50/90 dark:bg-[#121212]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/5 transition-colors duration-300">
-            <!-- Mobile Brand / Desktop spacer -->
-            <div class="md:hidden font-bold text-xl flex items-center gap-2">
-                <i class="fa-solid fa-play text-accent"></i> Streamify
-            </div>
-            <div class="hidden md:block flex-1"></div>
-
+        <!-- Header -->
+        <header class="h-16 px-5 pt-safe flex items-center justify-between z-20 sticky top-0 bg-ios-bgLight/80 dark:bg-ios-bgDark/80 backdrop-blur-lg border-b border-transparent transition-colors duration-300" id="mainHeader">
+            <h1 class="text-2xl font-bold tracking-tight" id="headerTitle">Listen Now</h1>
+            
             <div class="flex items-center gap-4">
-                <!-- Theme Toggle -->
-                <button id="themeToggleBtn" class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-white/20 transition">
-                    <i class="fa-solid fa-moon dark:hidden"></i>
-                    <i class="fa-solid fa-sun hidden dark:block"></i>
+                <button id="themeToggleBtn" class="text-ios-accent text-xl">
+                    <i class="fa-solid fa-circle-half-stroke"></i>
                 </button>
-                
-                <!-- Auth / Profile Button -->
-                <button id="authBtn" class="flex items-center gap-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/5 pl-2 pr-4 py-1.5 rounded-full hover:shadow-md transition">
-                    <div id="userAvatar" class="w-7 h-7 bg-accent rounded-full flex items-center justify-center text-white text-xs overflow-hidden">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <span id="userName" class="text-sm font-semibold max-w-[100px] truncate hidden sm:block">Sign In</span>
+                <button id="authBtn" class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden shadow-sm border border-black/5 dark:border-white/10">
+                    <i class="fa-solid fa-user text-ios-mutedLight dark:text-ios-mutedDark" id="userAvatarIcon"></i>
+                    <img id="userAvatarImg" src="" class="w-full h-full object-cover hidden">
                 </button>
             </div>
         </header>
 
-        <!-- Account Modal -->
-        <div id="accountModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-            <div class="bg-white dark:bg-[#181818] w-full max-w-sm rounded-2xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 relative border border-gray-200 dark:border-white/10 text-center">
-                <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 dark:hover:text-white" onclick="closeAccountModal()">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+        <!-- Account Modal Overlay -->
+        <div id="accountModal" class="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+            <div class="bg-ios-surfaceLight dark:bg-ios-surfaceDark glass-panel w-full max-w-sm rounded-3xl p-6 shadow-apple dark:shadow-apple-dark transform scale-95 transition-transform duration-300 relative border border-white/20 dark:border-white/10 text-center max-h-[90vh] overflow-y-auto hide-scrollbar">
+                <button class="absolute top-4 right-4 w-8 h-8 bg-black/5 dark:bg-white/10 rounded-full flex items-center justify-center text-ios-mutedLight dark:text-ios-mutedDark" onclick="closeAccountModal()">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
                 
-                <img id="modalAvatar" src="" class="w-20 h-20 rounded-full mx-auto mb-4 bg-gray-200 dark:bg-gray-800 object-cover shadow-lg hidden">
-                <div id="modalAvatarPlaceholder" class="w-20 h-20 rounded-full mx-auto mb-4 bg-accent flex items-center justify-center text-white text-3xl shadow-lg">
-                    <i class="fa-solid fa-user"></i>
+                <div class="w-24 h-24 rounded-full mx-auto mb-4 bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-4xl shadow-inner overflow-hidden border-2 border-white dark:border-gray-700" id="modalAvatarContainer">
+                    <i class="fa-solid fa-user text-ios-mutedLight dark:text-ios-mutedDark" id="modalPlaceholder"></i>
+                    <img id="modalAvatar" src="" class="w-full h-full object-cover hidden">
                 </div>
                 
-                <h3 id="modalName" class="text-xl font-bold text-gray-900 dark:text-white mb-1">Guest User</h3>
-                <p id="modalEmail" class="text-sm text-gray-500 dark:text-gray-400 mb-6">Sign in to save your data</p>
+                <h3 id="modalName" class="text-2xl font-bold mb-1 tracking-tight">Apple ID</h3>
+                <p id="modalEmail" class="text-sm text-ios-mutedLight dark:text-ios-mutedDark mb-6">Sign in to sync your library</p>
                 
-                <button id="loginBtn" class="w-full bg-accent hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2">
+                <button id="loginBtn" class="w-full bg-ios-accent text-white font-bold py-3.5 rounded-2xl transition active:scale-95 flex items-center justify-center gap-2 text-lg">
                     <i class="fa-brands fa-google"></i> Sign in with Google
                 </button>
-                <button id="logoutBtn" class="w-full bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-red-500 font-bold py-3 rounded-xl transition hidden">
-                    Log Out
+                <button id="logoutBtn" class="w-full bg-black/5 dark:bg-white/10 text-ios-accent font-bold py-3.5 rounded-2xl transition active:scale-95 hidden text-lg">
+                    Sign Out
                 </button>
+
+                <!-- Settings / Preferences -->
+                <div class="mt-6 pt-6 border-t border-black/10 dark:border-white/10 text-left flex flex-col gap-5">
+                    <!-- Region Preference -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-ios-mutedLight dark:text-ios-mutedDark uppercase tracking-wider mb-2">Music Region</label>
+                        <div class="relative">
+                            <select id="regionSelect" class="w-full bg-black/5 dark:bg-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none appearance-none font-medium cursor-pointer" onchange="updateRegion(this.value)">
+                                <option value="India">India (Bollywood & Punjabi)</option>
+                                <option value="USA">USA (Pop & Hip-Hop)</option>
+                                <option value="UK">UK (Drill & Pop)</option>
+                                <option value="Japan">Japan (J-Pop & Anime)</option>
+                                <option value="Global">Global (Top Trending)</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-ios-mutedLight dark:text-ios-mutedDark text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Equalizer -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-ios-mutedLight dark:text-ios-mutedDark uppercase tracking-wider mb-2">Equalizer</label>
+                        <div class="relative">
+                            <select id="eqSelect" class="w-full bg-black/5 dark:bg-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none appearance-none font-medium cursor-pointer" onchange="applyEQ(this.value)">
+                                <option value="Flat">Flat</option>
+                                <option value="BassBoost">Bass Boost</option>
+                                <option value="TrebleBoost">Treble Boost</option>
+                                <option value="Acoustic">Acoustic</option>
+                                <option value="Electronic">Electronic</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-ios-mutedLight dark:text-ios-mutedDark text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <!-- Add Custom Link -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-ios-mutedLight dark:text-ios-mutedDark uppercase tracking-wider mb-2">Stream Custom Link</label>
+                        <div class="flex gap-2">
+                            <input type="url" id="customLinkInput" placeholder="Paste direct audio URL..." class="flex-1 bg-black/5 dark:bg-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none font-medium placeholder-ios-mutedLight dark:placeholder-ios-mutedDark min-w-0">
+                            <button class="bg-ios-accent text-white px-4 py-2.5 rounded-xl font-bold text-sm transition active:scale-95 shrink-0 shadow-sm" onclick="playCustomLink()">Play</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto z-10 pb-32 px-4 md:px-8" id="mainScrollArea">
+        <!-- Scrollable Views -->
+        <div class="flex-1 overflow-y-auto z-10 pb-32 px-5 md:px-8" id="mainScrollArea">
             
-            <!-- Home View -->
-            <div id="homeView" class="view-section pt-6">
-                <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Trending on Audius</h1>
-                <div id="homeLoading" class="flex flex-col items-center justify-center py-20 opacity-70">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-accent mb-4"></i>
-                    <p class="text-gray-500 dark:text-gray-400">Loading top tracks...</p>
+            <!-- Listen Now (Home) -->
+            <div id="homeView" class="view-section pt-2 pb-10">
+                <h2 class="text-xl font-bold text-ios-mutedLight dark:text-ios-mutedDark uppercase tracking-wider mb-4 text-[13px]" id="homeRegionSubtitle">Trending in India</h2>
+                <div id="homeLoading" class="flex flex-col items-center justify-center py-20 opacity-50">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-ios-accent mb-4"></i>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 hidden" id="homeGrid"></div>
+                <!-- Horizontal Scroll for Top Picks -->
+                <div class="flex overflow-x-auto gap-4 pb-6 -mx-5 px-5 snap-x hide-scrollbar hidden" id="homeHorizontalGrid">
+                    <!-- Injected via JS -->
+                </div>
+
+                <h2 class="text-2xl font-bold tracking-tight mb-4 mt-4" id="homeRegionTitle">Top Bollywood & Punjabi Tracks</h2>
+                <div class="flex flex-col gap-3 hidden" id="homeList">
+                    <!-- Injected via JS -->
+                </div>
             </div>
 
-            <!-- Search View -->
-            <div id="searchView" class="view-section hidden pt-6">
-                <form id="searchForm" class="relative mb-8 max-w-2xl mx-auto">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg"></i>
-                    <input type="text" id="searchInput" placeholder="Search artists, songs..." 
-                        class="w-full bg-white dark:bg-[#181818] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white rounded-2xl py-4 pl-12 pr-12 font-medium focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition shadow-sm">
-                    <button type="button" id="clearSearch" class="hidden absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 p-2 hover:text-gray-900 dark:hover:text-white transition">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                </form>
-
-                <div id="searchLoading" class="hidden flex-col items-center justify-center py-20 opacity-70">
-                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-accent mb-4"></i>
+            <!-- Browse/Search (Mobile focused) -->
+            <div id="searchViewMobile" class="view-section hidden pt-2 pb-10">
+                <div class="relative mb-6 md:hidden">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-ios-mutedLight dark:text-ios-mutedDark"></i>
+                    <input type="text" id="searchInputMobile" placeholder="Artists, Songs, Lyrics" class="w-full bg-black/5 dark:bg-white/10 rounded-xl py-2.5 pl-9 pr-4 font-medium focus:outline-none text-base">
+                </div>
+                
+                <div id="searchLoading" class="hidden flex-col items-center justify-center py-20 opacity-50">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-ios-accent mb-4"></i>
                 </div>
 
                 <div id="searchResults" class="hidden">
-                    <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Top Results</h2>
-                    <div class="flex flex-col gap-2" id="searchList"></div>
+                    <h2 class="text-xl font-bold tracking-tight mb-4">Results</h2>
+                    <div class="flex flex-col gap-3" id="searchList"></div>
+                </div>
+                
+                <div id="searchDefault" class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="bg-rose-500 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer" onclick="triggerSearch('Bollywood')">
+                        <span class="text-white font-bold text-lg relative z-10">Bollywood</span>
+                        <i class="fa-solid fa-music absolute -bottom-2 -right-2 text-5xl text-black/10 transform rotate-12"></i>
+                    </div>
+                    <div class="bg-orange-500 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer" onclick="triggerSearch('Punjabi')">
+                        <span class="text-white font-bold text-lg relative z-10">Punjabi</span>
+                        <i class="fa-solid fa-fire absolute -bottom-2 -right-2 text-5xl text-black/10 transform rotate-12"></i>
+                    </div>
+                    <div class="bg-purple-500 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer" onclick="triggerSearch('Lofi India')">
+                        <span class="text-white font-bold text-lg relative z-10">Desi Lofi</span>
+                        <i class="fa-solid fa-headphones absolute -bottom-2 -right-2 text-5xl text-black/10 transform rotate-12"></i>
+                    </div>
+                    <div class="bg-blue-500 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer" onclick="triggerSearch('Arijit Singh')">
+                        <span class="text-white font-bold text-lg relative z-10">Arijit Singh</span>
+                        <i class="fa-solid fa-microphone absolute -bottom-2 -right-2 text-5xl text-black/10 transform rotate-12"></i>
+                    </div>
                 </div>
             </div>
 
             <!-- Library View -->
-            <div id="libraryView" class="view-section hidden pt-6">
-                <div class="flex items-center gap-6 mb-8 bg-white dark:bg-[#181818] p-6 rounded-2xl border border-gray-200 dark:border-white/5 shadow-sm">
-                    <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-                        <i class="fa-solid fa-heart text-4xl text-white"></i>
+            <div id="libraryView" class="view-section hidden pt-2 pb-10">
+                <div class="flex flex-col gap-3" id="libraryList">
+                    <div class="py-20 text-center text-ios-mutedLight dark:text-ios-mutedDark">
+                        <i class="fa-solid fa-music text-5xl mb-4 opacity-50"></i>
+                        <p class="text-lg font-medium">Your library is empty.</p>
+                        <p class="text-sm">Search and tap the heart to save songs.</p>
                     </div>
-                    <div>
-                        <h1 class="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Liked Songs</h1>
-                        <p class="text-gray-500 dark:text-gray-400 font-medium"><span id="likedCount">0</span> saved tracks</p>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <button class="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white shadow-lg shadow-blue-500/30 hover:scale-105 transition-transform" onclick="playLibrary()">
-                        <i class="fa-solid fa-play ml-1 text-xl"></i>
-                    </button>
-                </div>
-                <div class="flex flex-col gap-2" id="libraryList">
-                    <div class="py-10 text-center text-gray-500 dark:text-gray-400">No liked songs yet.</div>
                 </div>
             </div>
 
@@ -229,147 +335,169 @@
     </main>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden glass fixed bottom-0 left-0 w-full h-[70px] z-20 flex items-center justify-around pb-safe">
-        <a href="#" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 p-2 nav-link active-nav" data-target="homeView">
-            <i class="fa-solid fa-house text-xl"></i>
-            <span class="text-[10px] font-medium">Home</span>
+    <nav class="md:hidden glass-nav bg-ios-surfaceLight dark:bg-ios-surfaceDark fixed bottom-0 left-0 w-full h-[85px] z-30 flex items-start justify-around pt-2 pb-safe">
+        <a href="#" class="flex flex-col items-center gap-1 text-ios-mutedLight dark:text-ios-mutedDark p-1 nav-link active-tab w-16" data-target="homeView">
+            <i class="fa-solid fa-play-circle text-2xl mb-0.5"></i>
+            <span class="text-[10px] font-medium">Listen Now</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 p-2 nav-link" data-target="searchView">
-            <i class="fa-solid fa-magnifying-glass text-xl"></i>
+        <a href="#" class="flex flex-col items-center gap-1 text-ios-mutedLight dark:text-ios-mutedDark p-1 nav-link w-16" data-target="searchViewMobile">
+            <i class="fa-solid fa-magnifying-glass text-2xl mb-0.5"></i>
             <span class="text-[10px] font-medium">Search</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 p-2 nav-link" data-target="libraryView">
-            <i class="fa-solid fa-book text-xl"></i>
+        <a href="#" class="flex flex-col items-center gap-1 text-ios-mutedLight dark:text-ios-mutedDark p-1 nav-link w-16" data-target="libraryView">
+            <i class="fa-solid fa-layer-group text-2xl mb-0.5"></i>
             <span class="text-[10px] font-medium">Library</span>
         </a>
     </nav>
 
     <!-- Mini Player -->
-    <div id="miniPlayer" class="glass fixed bottom-[70px] md:bottom-4 left-2 right-2 md:left-[270px] md:right-6 rounded-xl h-[64px] z-30 flex items-center justify-between px-3 cursor-pointer hidden shadow-xl transition-transform duration-300 translate-y-[150%] md:h-[72px] border border-gray-200 dark:border-white/10">
-        <div class="flex items-center gap-3 w-2/3 min-w-0" onclick="openFullScreenPlayer()">
-            <img id="miniArt" src="" alt="Art" class="w-12 h-12 rounded-lg object-cover bg-gray-200 dark:bg-[#181818] shrink-0 shadow-md">
-            <div class="flex flex-col overflow-hidden w-full pr-2">
-                <span id="miniTitle" class="text-gray-900 dark:text-white text-sm font-bold line-clamp-1">Title</span>
-                <span id="miniArtist" class="text-gray-500 dark:text-gray-400 text-xs font-medium line-clamp-1">Artist</span>
+    <div id="miniPlayer" class="glass-nav bg-ios-surfaceLight/95 dark:bg-ios-surfaceDark/95 fixed bottom-[85px] md:bottom-6 left-2 right-2 md:left-[270px] md:right-8 rounded-2xl h-[64px] z-40 flex items-center justify-between px-3 cursor-pointer hidden shadow-apple dark:shadow-apple-dark transition-all duration-500 translate-y-[200%] border border-white/20 dark:border-white/10">
+        <div class="flex items-center gap-3 w-[65%] min-w-0" onclick="openFullScreenPlayer()">
+            <img id="miniArt" src="" class="w-11 h-11 rounded-lg object-cover bg-gray-200 dark:bg-gray-800 shrink-0 shadow-sm">
+            <div class="flex flex-col overflow-hidden w-full">
+                <span id="miniTitle" class="text-sm font-semibold tracking-tight line-clamp-1">Not Playing</span>
+                <span id="miniArtist" class="text-xs text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">--</span>
             </div>
         </div>
         
-        <div class="flex items-center justify-end gap-2 md:gap-4 shrink-0">
-            <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 transition" id="miniLikeBtn" onclick="toggleCurrentFavorite(event)">
-                <i class="fa-regular fa-heart text-xl"></i>
+        <div class="flex items-center justify-end gap-1 md:gap-3 shrink-0 pr-1">
+            <button class="w-10 h-10 flex items-center justify-center text-2xl active:opacity-50 transition relative" onclick="togglePlay(event)">
+                <i class="fa-solid fa-play" id="miniPlayIcon"></i>
+                <i class="fa-solid fa-circle-notch fa-spin text-ios-accent absolute opacity-0" id="miniLoaderIcon"></i>
             </button>
-            <button class="text-gray-900 dark:text-white w-10 h-10 flex items-center justify-center hover:scale-110 active:scale-95 transition relative" onclick="togglePlay(event)">
-                <i class="fa-solid fa-play text-2xl absolute" id="miniPlayIcon"></i>
-                <i class="fa-solid fa-circle-notch fa-spin text-2xl absolute opacity-0 text-accent" id="miniLoaderIcon"></i>
+            <button class="w-10 h-10 flex items-center justify-center text-xl active:opacity-50 transition" onclick="playNext(event)">
+                <i class="fa-solid fa-forward-step"></i>
             </button>
         </div>
 
-        <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-gray-200 dark:bg-white/10 rounded-b-xl overflow-hidden">
-            <div id="miniProgressBar" class="h-full bg-accent w-0 rounded-r-full transition-all duration-100"></div>
+        <div class="absolute bottom-0 left-4 right-4 h-[2px] bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+            <div id="miniProgressBar" class="h-full bg-ios-accent w-0 transition-all duration-100"></div>
         </div>
     </div>
 
-    <!-- Full Screen "Now Playing" -->
-    <div id="fullPlayer" class="fixed inset-0 z-50 bg-white dark:bg-[#121212] flex flex-col transition-transform duration-400 player-hidden shadow-2xl">
-        <!-- Visualizer Canvas -->
-        <canvas id="visualizer"></canvas>
+    <!-- Full Screen "Now Playing" Modal -->
+    <div id="fullPlayer" class="fixed inset-0 z-50 bg-ios-bgLight dark:bg-ios-bgDark flex flex-col transition-transform duration-500 player-hidden">
         
-        <!-- Blurred Background for Dark Mode Depth -->
-        <div class="absolute inset-0 z-[-1] overflow-hidden opacity-10 dark:opacity-30">
-            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-3xl scale-125" alt="">
+        <!-- Blurred Background Canvas/Image -->
+        <div class="absolute inset-0 z-0 overflow-hidden">
+            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-[80px] scale-150 opacity-40 dark:opacity-30 saturate-200" alt="">
+            <div class="absolute inset-0 bg-ios-bgLight/50 dark:bg-ios-bgDark/60"></div>
+            <!-- Canvas for Web Audio API Visualizer -->
+            <canvas id="visualizer"></canvas>
         </div>
 
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 pt-safe pb-2 mt-4 relative z-10">
-            <button class="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition" onclick="closeFullScreenPlayer()">
-                <i class="fa-solid fa-chevron-down text-2xl"></i>
-            </button>
-            <div class="flex flex-col items-center text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">Now Playing</div>
-            <button class="w-10 h-10 flex items-center justify-center text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition" onclick="toggleTheme()">
-                <i class="fa-solid fa-circle-half-stroke"></i>
-            </button>
+        <!-- Top Drag Indicator & Header -->
+        <div class="relative z-10 pt-safe px-6 pb-2">
+            <div class="w-10 h-1.5 bg-black/20 dark:bg-white/20 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeFullScreenPlayer()"></div>
+            <div class="flex justify-between items-center text-sm font-semibold text-ios-mutedLight dark:text-ios-mutedDark">
+                <button onclick="closeFullScreenPlayer()" class="w-10 h-10 flex items-center justify-start"><i class="fa-solid fa-chevron-down text-xl"></i></button>
+                <div class="uppercase tracking-widest text-[10px]" id="fpNowPlayingText">Now Playing</div>
+                <button class="w-10 h-10 flex items-center justify-end"><i class="fa-solid fa-ellipsis text-xl"></i></button>
+            </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex justify-center gap-8 text-sm font-bold text-gray-400 dark:text-gray-500 mb-6 z-10 relative">
-            <span class="cursor-pointer text-gray-900 dark:text-white pb-2 border-b-2 border-accent transition-colors" id="tabPlayer" onclick="switchFullView('player')">Player</span>
-            <span class="cursor-pointer pb-2 border-b-2 border-transparent hover:text-gray-900 dark:hover:text-white transition-colors" id="tabQueue" onclick="switchFullView('queue')">Queue</span>
-        </div>
-
-        <div class="flex-1 relative overflow-hidden flex flex-col z-10">
-            <!-- Player View -->
-            <div id="fp-playerView" class="absolute inset-0 flex flex-col px-8 transition-opacity duration-300">
-                <div class="relative flex-1 flex items-center justify-center max-h-[45vh] md:max-h-[55vh] w-full max-w-[420px] mx-auto group mb-4">
-                    <img id="fullArt" src="" alt="Album Art" class="w-full aspect-square rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] object-cover transition-transform duration-500 z-10 border border-gray-100 dark:border-white/5">
+        <!-- Main Content Area (Scrollable for Queue) -->
+        <div class="flex-1 relative z-10 overflow-y-auto hide-scrollbar pb-10" id="fullPlayerScroll">
+            
+            <!-- Player Section -->
+            <div class="flex flex-col px-8 min-h-[calc(100vh-180px)]">
+                
+                <!-- Album Art -->
+                <div class="flex-1 flex items-center justify-center max-h-[50vh] w-full max-w-[400px] mx-auto mt-4 mb-8">
+                    <img id="fullArt" src="" class="w-full aspect-square rounded-2xl object-cover transition-all duration-500 art-paused border border-black/5 dark:border-white/10">
                 </div>
 
-                <div class="flex flex-col mt-auto w-full max-w-[500px] mx-auto pb-10">
-                    <!-- Song Info -->
+                <!-- Controls Wrapper -->
+                <div class="flex flex-col mt-auto w-full max-w-[500px] mx-auto">
+                    
+                    <!-- Title & Like -->
                     <div class="flex items-center justify-between mb-8">
                         <div class="flex flex-col min-w-0 pr-4">
-                            <h2 id="fullTitle" class="text-3xl font-extrabold text-gray-900 dark:text-white line-clamp-1 w-full tracking-tight">Title</h2>
-                            <h3 id="fullArtist" class="text-lg font-medium text-gray-500 dark:text-gray-400 line-clamp-1 w-full mt-1">Artist</h3>
+                            <h2 id="fullTitle" class="text-2xl font-bold tracking-tight line-clamp-1 w-full">Title</h2>
+                            <h3 id="fullArtist" class="text-lg text-ios-accent line-clamp-1 w-full mt-0.5 font-medium">Artist</h3>
                         </div>
-                        <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white text-3xl transition-transform active:scale-75" id="fullLikeBtn" onclick="toggleCurrentFavorite(event)">
+                        <button class="w-10 h-10 flex items-center justify-center text-2xl transition-transform active:scale-75" id="fullLikeBtn" onclick="toggleCurrentFavorite(event)">
                             <i class="fa-regular fa-heart"></i>
                         </button>
                     </div>
 
-                    <!-- Progress -->
-                    <div class="flex flex-col mb-10">
-                        <div class="relative w-full h-6 flex items-center cursor-pointer slider-container">
+                    <!-- Scrubber -->
+                    <div class="flex flex-col mb-8 relative">
+                        <div class="relative w-full h-8 flex items-center group cursor-pointer">
                             <input type="range" min="0" max="100" value="0" class="absolute w-full h-full z-10 opacity-0 cursor-pointer" id="progressBarInput">
-                            <div class="progress-track" id="progressTrackBg"></div>
+                            <div class="progress-track" id="progressTrackBg">
+                                <div class="progress-fill" id="progressFillBar"></div>
+                            </div>
                         </div>
-                        <div class="flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400 mt-2">
+                        <div class="flex justify-between text-xs font-medium text-ios-mutedLight dark:text-ios-mutedDark mt-1 absolute top-6 w-full px-1 pointer-events-none">
                             <span id="currentTimeDisplay">0:00</span>
                             <span id="durationDisplay">-:--</span>
                         </div>
                     </div>
 
-                    <!-- Controls -->
-                    <div class="flex items-center justify-between px-2">
-                        <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white text-xl p-2 transition-colors" id="shuffleBtn" onclick="toggleShuffle()">
-                            <i class="fa-solid fa-shuffle"></i>
-                        </button>
-                        <button class="text-gray-900 dark:text-white text-4xl p-2 active:scale-90 transition-transform" onclick="playPrevious()">
-                            <i class="fa-solid fa-backward-step"></i>
+                    <!-- Playback Buttons -->
+                    <div class="flex items-center justify-between px-2 mb-8">
+                        <!-- Queue Btn -->
+                        <button class="text-xl p-2 text-ios-mutedLight dark:text-ios-mutedDark active:opacity-50" onclick="scrollToQueue()">
+                            <i class="fa-solid fa-list"></i>
                         </button>
                         
-                        <button class="w-[80px] h-[80px] bg-accent text-white rounded-full flex items-center justify-center text-3xl shadow-xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-transform relative" onclick="togglePlay(event)">
-                            <i class="fa-solid fa-play ml-1 absolute" id="fullPlayIcon"></i>
-                            <i class="fa-solid fa-circle-notch fa-spin absolute opacity-0" id="fullLoaderIcon"></i>
-                        </button>
-                        
-                        <button class="text-gray-900 dark:text-white text-4xl p-2 active:scale-90 transition-transform" onclick="playNext()">
-                            <i class="fa-solid fa-forward-step"></i>
-                        </button>
-                        <button class="text-gray-400 hover:text-gray-900 dark:hover:text-white text-xl p-2 transition-colors" id="loopBtn" onclick="toggleLoop()">
+                        <div class="flex items-center gap-8 md:gap-12">
+                            <button class="text-4xl active:opacity-50 transition-transform active:scale-90" onclick="playPrevious()">
+                                <i class="fa-solid fa-backward-fill"></i>
+                            </button>
+                            
+                            <button class="text-6xl active:opacity-50 transition-transform active:scale-95 relative flex items-center justify-center" onclick="togglePlay(event)">
+                                <i class="fa-solid fa-play" id="fullPlayIcon"></i>
+                            </button>
+                            
+                            <button class="text-4xl active:opacity-50 transition-transform active:scale-90" onclick="playNext()">
+                                <i class="fa-solid fa-forward-fill"></i>
+                            </button>
+                        </div>
+
+                        <!-- Loop Btn (3-state visual) -->
+                        <button class="text-xl p-2 text-ios-mutedLight dark:text-ios-mutedDark active:opacity-50 relative" id="loopBtn" onclick="toggleLoop()">
                             <i class="fa-solid fa-repeat"></i>
+                            <span id="loopBadge" class="absolute top-1 right-0 text-[9px] font-bold bg-ios-bgLight dark:bg-ios-bgDark rounded-full px-0.5 hidden">1</span>
                         </button>
+                    </div>
+
+                    <!-- Volume Slider (iOS Style) -->
+                    <div class="flex items-center gap-3 w-full opacity-70">
+                        <i class="fa-solid fa-volume-off text-xs"></i>
+                        <div class="relative flex-1 h-6 flex items-center">
+                            <input type="range" min="0" max="100" value="100" class="absolute w-full h-full z-10 opacity-0 cursor-pointer" id="volumeInput">
+                            <div class="progress-track" style="height: 4px;">
+                                <div class="progress-fill" id="volumeFillBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-volume-high text-xs"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Queue View -->
-            <div id="fp-queueView" class="absolute inset-0 px-6 overflow-y-auto pb-20 opacity-0 pointer-events-none transition-opacity duration-300 glass-panel rounded-t-3xl pt-8">
-                <div class="max-w-[500px] mx-auto">
-                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Now Playing</h3>
-                    <div id="queueNowPlaying" class="mb-8 bg-gray-100 dark:bg-white/5 p-4 rounded-xl flex items-center gap-4 shadow-inner border border-gray-200 dark:border-white/5"></div>
-                    <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Up Next</h3>
-                    <div id="queueList" class="flex flex-col gap-2"></div>
+            <!-- Queue Section (Scroll down to see) -->
+            <div class="px-8 mt-12 max-w-[500px] mx-auto min-h-[50vh]" id="queueSection">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold tracking-tight">Up Next</h3>
+                    <button class="w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 text-ios-accent flex items-center justify-center" id="shuffleBtn" onclick="toggleShuffle()">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </button>
+                </div>
+                <div id="queueList" class="flex flex-col gap-1 pb-10">
+                    <!-- Injected via JS -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase Auth & Core Logic -->
+    <!-- Firebase Auth & Application Logic -->
     <script type="module">
-        // Firebase Integration
+        // Firebase Setup
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // Environment Config Check
         let auth;
         try {
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
@@ -378,116 +506,91 @@
                 auth = getAuth(app);
             }
         } catch (e) {
-            console.error("Firebase Initialization Error:", e);
+            console.error("Firebase config error:", e);
         }
 
-        // Auth UI State
-        const authBtn = document.getElementById('authBtn');
-        const userName = document.getElementById('userName');
-        const userAvatar = document.getElementById('userAvatar');
-        const accountModal = document.getElementById('accountModal');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
+        // State variables
+        const APP_NAME = "apple_music_clone_ios";
+        let queue = [];
+        let currentQueueIndex = -1;
+        let isPlaying = false;
         
-        let currentUser = null;
-
-        if (auth) {
-            onAuthStateChanged(auth, (user) => {
-                currentUser = user;
-                if (user) {
-                    // Logged In UI
-                    userName.textContent = user.displayName.split(' ')[0];
-                    userAvatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
-                    
-                    document.getElementById('modalName').textContent = user.displayName;
-                    document.getElementById('modalEmail').textContent = user.email;
-                    document.getElementById('modalAvatar').src = user.photoURL;
-                    document.getElementById('modalAvatar').classList.remove('hidden');
-                    document.getElementById('modalAvatarPlaceholder').classList.add('hidden');
-                    
-                    loginBtn.classList.add('hidden');
-                    logoutBtn.classList.remove('hidden');
-                } else {
-                    // Logged Out UI
-                    userName.textContent = "Sign In";
-                    userAvatar.innerHTML = `<i class="fa-solid fa-user"></i>`;
-                    
-                    document.getElementById('modalName').textContent = "Guest User";
-                    document.getElementById('modalEmail').textContent = "Sign in to save your data";
-                    document.getElementById('modalAvatar').classList.add('hidden');
-                    document.getElementById('modalAvatarPlaceholder').classList.remove('hidden');
-                    
-                    loginBtn.classList.remove('hidden');
-                    logoutBtn.classList.add('hidden');
-                }
-            });
-
-            loginBtn.addEventListener('click', () => {
-                const provider = new GoogleAuthProvider();
-                signInWithPopup(auth, provider).then(() => closeAccountModal()).catch(e => console.error(e));
-            });
-
-            logoutBtn.addEventListener('click', () => {
-                signOut(auth).then(() => closeAccountModal());
-            });
-        } else {
-            loginBtn.textContent = "Auth config missing (Local mode)";
-            loginBtn.disabled = true;
-        }
-
-        authBtn.addEventListener('click', () => {
-            accountModal.classList.remove('hidden');
-            setTimeout(() => {
-                accountModal.classList.remove('opacity-0');
-                accountModal.children[0].classList.remove('scale-95');
-            }, 10);
-        });
-
-        window.closeAccountModal = () => {
-            accountModal.classList.add('opacity-0');
-            accountModal.children[0].classList.add('scale-95');
-            setTimeout(() => accountModal.classList.add('hidden'), 300);
-        };
-
-        // --- Theme Toggle Logic ---
-        const html = document.documentElement;
-        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        // Loop State: 0 = Off, 1 = Loop Queue, 2 = Loop Track
+        let loopState = 0; 
+        let isShuffle = false;
+        let favorites = JSON.parse(localStorage.getItem('apple_music_favs')) || [];
         
-        // Default to light, check local storage
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
-        } else {
-            html.classList.remove('dark');
-        }
-
-        window.toggleTheme = () => {
-            html.classList.toggle('dark');
-            localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
-        };
-        themeToggleBtn.addEventListener('click', toggleTheme);
-
-
-        // --- Audio Engine (Audius API + Web Audio API) ---
-        const APP_NAME = "streamify_premium_v1";
         let audio = new Audio();
-        audio.crossOrigin = "anonymous"; // Required for visualizer
-        
+        audio.crossOrigin = "anonymous";
+
+        // Web Audio API Setup
         let audioCtx, analyser, source, visualizerData;
+        let lowFilter, midFilter, highFilter; // EQ Nodes
         const canvas = document.getElementById('visualizer');
         const canvasCtx = canvas.getContext('2d');
 
+        // UI Element Cache
+        const UI = {
+            title: [document.getElementById('miniTitle'), document.getElementById('fullTitle')],
+            artist: [document.getElementById('miniArtist'), document.getElementById('fullArtist')],
+            art: [document.getElementById('miniArt'), document.getElementById('fullArt'), document.getElementById('fullBgArt')],
+            playIcon: [document.getElementById('miniPlayIcon'), document.getElementById('fullPlayIcon')],
+            loaderIcon: [document.getElementById('miniLoaderIcon')],
+            likeBtn: [document.getElementById('fullLikeBtn')],
+            miniProgressBar: document.getElementById('miniProgressBar'),
+            progressBarInput: document.getElementById('progressBarInput'),
+            progressFillBar: document.getElementById('progressFillBar'),
+            currentTimeDisplay: document.getElementById('currentTimeDisplay'),
+            durationDisplay: document.getElementById('durationDisplay'),
+            volumeInput: document.getElementById('volumeInput'),
+            volumeFillBar: document.getElementById('volumeFillBar'),
+            loopBtn: document.getElementById('loopBtn'),
+            loopBadge: document.getElementById('loopBadge'),
+            shuffleBtn: document.getElementById('shuffleBtn')
+        };
+
+        // Initialize Web Audio API on first interaction
         function initVisualizer() {
             if (audioCtx) return;
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create EQ Filters
+                lowFilter = audioCtx.createBiquadFilter();
+                lowFilter.type = 'lowshelf';
+                lowFilter.frequency.value = 320;
+                lowFilter.gain.value = 0;
+
+                midFilter = audioCtx.createBiquadFilter();
+                midFilter.type = 'peaking';
+                midFilter.frequency.value = 1000;
+                midFilter.Q.value = 1;
+                midFilter.gain.value = 0;
+
+                highFilter = audioCtx.createBiquadFilter();
+                highFilter.type = 'highshelf';
+                highFilter.frequency.value = 3200;
+                highFilter.gain.value = 0;
+                
                 analyser = audioCtx.createAnalyser();
                 source = audioCtx.createMediaElementSource(audio);
-                source.connect(analyser);
+                
+                // Connect chain: source -> low -> mid -> high -> analyser -> destination
+                source.connect(lowFilter);
+                lowFilter.connect(midFilter);
+                midFilter.connect(highFilter);
+                highFilter.connect(analyser);
                 analyser.connect(audioCtx.destination);
+                
                 analyser.fftSize = 64;
                 visualizerData = new Uint8Array(analyser.frequencyBinCount);
                 drawVisualizer();
-            } catch(e) { console.warn("Visualizer failed to init", e); }
+                
+                // Apply saved EQ preset if any
+                const savedEQ = localStorage.getItem('apple_music_eq') || 'Flat';
+                document.getElementById('eqSelect').value = savedEQ;
+                applyEQ(savedEQ);
+            } catch(e) { console.warn("Visualizer init failed", e); }
         }
 
         function drawVisualizer() {
@@ -496,61 +599,37 @@
             analyser.getByteFrequencyData(visualizerData);
             
             canvas.width = window.innerWidth;
-            canvas.height = 100;
+            canvas.height = window.innerHeight;
             canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const barWidth = (canvas.width / analyser.frequencyBinCount) * 2.5;
-            let barHeight;
-            let x = 0;
+            const isDark = document.documentElement.classList.contains('dark');
+            canvasCtx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.05)';
             
-            // Determine color based on theme
-            const isDark = html.classList.contains('dark');
-            canvasCtx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.4)' : 'rgba(59, 130, 246, 0.4)';
-
+            const barWidth = (canvas.width / analyser.frequencyBinCount) * 2;
+            let barHeight, x = 0;
+            
             for(let i = 0; i < analyser.frequencyBinCount; i++) {
-                barHeight = visualizerData[i] / 2.5;
-                canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                x += barWidth + 2;
+                barHeight = visualizerData[i] * 1.5;
+                // Draw from bottom up
+                canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
+                x += barWidth;
             }
         }
 
-        // --- Core Player State ---
-        let queue = [];
-        let currentQueueIndex = -1;
-        let isPlaying = false;
-        let isShuffle = false;
-        
-        let favorites = JSON.parse(localStorage.getItem('streamify_favs')) || [];
-
-        // UI References
-        const UI = {
-            title: [document.getElementById('miniTitle'), document.getElementById('fullTitle')],
-            artist: [document.getElementById('miniArtist'), document.getElementById('fullArtist')],
-            art: [document.getElementById('miniArt'), document.getElementById('fullArt'), document.getElementById('fullBgArt')],
-            playIcon: [document.getElementById('miniPlayIcon'), document.getElementById('fullPlayIcon')],
-            loaderIcon: [document.getElementById('miniLoaderIcon'), document.getElementById('fullLoaderIcon')],
-            likeBtn: [document.getElementById('miniLikeBtn'), document.getElementById('fullLikeBtn')],
-            progressBarInput: document.getElementById('progressBarInput'),
-            progressTrackBg: document.getElementById('progressTrackBg'),
-            miniProgressBar: document.getElementById('miniProgressBar'),
-            currentTimeDisplay: document.getElementById('currentTimeDisplay'),
-            durationDisplay: document.getElementById('durationDisplay')
-        };
-
-        // Audio Events
+        // Audio Event Listeners
         audio.addEventListener('play', () => {
             isPlaying = true;
-            setLoadingState(false);
-            updatePlayPauseUI();
+            setLoading(false);
+            updatePlayStateUI();
             if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         });
         audio.addEventListener('pause', () => {
             isPlaying = false;
-            updatePlayPauseUI();
+            updatePlayStateUI();
         });
-        audio.addEventListener('waiting', () => setLoadingState(true));
-        audio.addEventListener('playing', () => setLoadingState(false));
-        audio.addEventListener('ended', () => { if (!audio.loop) playNext(); });
+        audio.addEventListener('waiting', () => setLoading(true));
+        audio.addEventListener('playing', () => setLoading(false));
+        audio.addEventListener('ended', handleTrackEnded);
         
         audio.addEventListener('timeupdate', () => {
             if (!audio.duration) return;
@@ -559,39 +638,59 @@
             
             if (document.activeElement !== UI.progressBarInput) {
                 UI.progressBarInput.value = progress;
-                updateSliderVisual(progress);
+                UI.progressFillBar.style.width = `${progress}%`;
                 UI.currentTimeDisplay.textContent = formatTime(audio.currentTime);
-                UI.durationDisplay.textContent = formatTime(audio.duration);
+                UI.durationDisplay.textContent = `-${formatTime(audio.duration - audio.currentTime)}`; // iOS style countdown
             }
         });
+        
         audio.addEventListener('loadedmetadata', () => {
-            UI.durationDisplay.textContent = formatTime(audio.duration);
+            UI.durationDisplay.textContent = `-${formatTime(audio.duration)}`;
+            updateMediaSessionPositionState();
         });
 
-        // Controls Logic
+        function handleTrackEnded() {
+            if (loopState === 2) {
+                // Loop Track (Handled implicitly if audio.loop is set, but as fallback)
+                audio.currentTime = 0;
+                audio.play();
+            } else if (loopState === 1) {
+                // Loop Queue
+                playNext(null, true);
+            } else {
+                // Loop Off
+                if (currentQueueIndex < queue.length - 1 || isShuffle) {
+                    playNext();
+                } else {
+                    isPlaying = false;
+                    updatePlayStateUI();
+                }
+            }
+        }
+
+        // Playback Control Functions
         window.loadTrack = (index) => {
             if (index < 0 || index >= queue.length) return;
             currentQueueIndex = index;
             const track = queue[currentQueueIndex];
 
-            // Audius Stream URL
-            const streamUrl = `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
-            
-            // Get best artwork
-            const artUrl = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/480x480/cccccc/ffffff?text=Music';
+            // Use track.streamUrl if it's a custom link, otherwise Audius format
+            const streamUrl = track.streamUrl || `https://discoveryprovider.audius.co/v1/tracks/${track.id}/stream?app_name=${APP_NAME}`;
+            const artUrl = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/512x512/333/fff?text=Music';
             const title = track.title;
             const artist = track.user ? track.user.name : 'Unknown';
 
-            // Update UI
+            // UI Update
             UI.title.forEach(el => el.textContent = title);
             UI.artist.forEach(el => el.textContent = artist);
             UI.art.forEach(el => el.src = artUrl);
-            syncHeartIcons(track.id);
-            document.getElementById('miniPlayer').classList.remove('hidden', 'translate-y-[150%]');
+            syncLikeButton(track.id);
             
-            // Reset Progress Bar
+            document.getElementById('miniPlayer').classList.remove('hidden', 'translate-y-[200%]');
+            
+            // Reset Progress
             UI.progressBarInput.value = 0;
-            updateSliderVisual(0);
+            UI.progressFillBar.style.width = '0%';
             UI.miniProgressBar.style.width = '0%';
             UI.currentTimeDisplay.textContent = '0:00';
             UI.durationDisplay.textContent = '-:--';
@@ -601,13 +700,14 @@
 
             // Play
             audio.src = streamUrl;
-            setLoadingState(true);
+            audio.loop = (loopState === 2);
+            setLoading(true);
             initVisualizer();
             audio.play().catch(e => {
-                console.warn("Autoplay prevented or stream error", e);
-                setLoadingState(false);
+                console.warn("Autoplay block", e);
+                setLoading(false);
                 isPlaying = false;
-                updatePlayPauseUI();
+                updatePlayStateUI();
             });
         };
 
@@ -618,67 +718,103 @@
             isPlaying ? audio.pause() : audio.play();
         };
 
-        window.playNext = () => {
+        window.playNext = (e, forceWrap = false) => {
+            if (e) e.stopPropagation();
             if (queue.length === 0) return;
+            
             let next = currentQueueIndex + 1;
-            if (isShuffle) next = Math.floor(Math.random() * queue.length);
-            else if (next >= queue.length) next = 0;
+            if (isShuffle) {
+                next = Math.floor(Math.random() * queue.length);
+            } else if (next >= queue.length) {
+                if (loopState === 1 || forceWrap) next = 0;
+                else return; // Stop if at end and not looping queue
+            }
             loadTrack(next);
         };
 
         window.playPrevious = () => {
             if (queue.length === 0) return;
-            if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+            if (audio.currentTime > 3) { 
+                audio.currentTime = 0; 
+                return; 
+            }
             let prev = currentQueueIndex - 1;
-            if (prev < 0) prev = queue.length - 1;
+            if (prev < 0) {
+                if(loopState === 1) prev = queue.length - 1;
+                else prev = 0;
+            }
             loadTrack(prev);
+        };
+
+        window.toggleLoop = () => {
+            // States: 0 (Off) -> 1 (Queue) -> 2 (Track) -> 0
+            loopState = (loopState + 1) % 3;
+            
+            if (loopState === 0) {
+                // Off
+                UI.loopBtn.classList.replace('text-ios-accent', 'text-ios-mutedLight');
+                UI.loopBtn.classList.replace('dark:text-white', 'dark:text-ios-mutedDark');
+                UI.loopBadge.classList.add('hidden');
+                audio.loop = false;
+            } else if (loopState === 1) {
+                // Queue
+                UI.loopBtn.classList.replace('text-ios-mutedLight', 'text-ios-accent');
+                UI.loopBtn.classList.replace('dark:text-ios-mutedDark', 'dark:text-white');
+                UI.loopBadge.classList.add('hidden');
+                audio.loop = false;
+            } else {
+                // Track
+                UI.loopBadge.classList.remove('hidden');
+                audio.loop = true;
+            }
         };
 
         window.toggleShuffle = () => {
             isShuffle = !isShuffle;
-            const btn = document.getElementById('shuffleBtn');
-            if(isShuffle) {
-                btn.classList.remove('text-gray-400', 'dark:text-gray-500');
-                btn.classList.add('text-accent');
+            if (isShuffle) {
+                UI.shuffleBtn.classList.remove('bg-black/5', 'dark:bg-white/10', 'text-ios-accent');
+                UI.shuffleBtn.classList.add('bg-ios-accent', 'text-white');
             } else {
-                btn.classList.add('text-gray-400', 'dark:text-gray-500');
-                btn.classList.remove('text-accent');
+                UI.shuffleBtn.classList.add('bg-black/5', 'dark:bg-white/10', 'text-ios-accent');
+                UI.shuffleBtn.classList.remove('bg-ios-accent', 'text-white');
             }
         };
 
-        window.toggleLoop = () => {
-            audio.loop = !audio.loop;
-            const btn = document.getElementById('loopBtn');
-            if(audio.loop) {
-                btn.classList.remove('text-gray-400', 'dark:text-gray-500');
-                btn.classList.add('text-accent');
-            } else {
-                btn.classList.add('text-gray-400', 'dark:text-gray-500');
-                btn.classList.remove('text-accent');
-            }
-        };
-
-        // Slider Sync
-        UI.progressBarInput.addEventListener('input', (e) => updateSliderVisual(e.target.value));
+        // Scrubber / Volume Events
+        UI.progressBarInput.addEventListener('input', (e) => {
+            UI.progressFillBar.style.width = `${e.target.value}%`;
+        });
         UI.progressBarInput.addEventListener('change', (e) => {
-            if (audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration;
+            if (audio.duration) {
+                audio.currentTime = (e.target.value / 100) * audio.duration;
+                updateMediaSessionPositionState();
+            }
         });
 
-        function updateSliderVisual(val) {
-            const isDark = html.classList.contains('dark');
-            const bgTrack = isDark ? '#4b5563' : '#e5e7eb';
-            UI.progressTrackBg.style.background = `linear-gradient(to right, #3b82f6 ${val}%, #3b82f6 ${val}%, ${bgTrack} ${val}%, ${bgTrack} 100%)`;
+        UI.volumeInput.addEventListener('input', (e) => {
+            const vol = e.target.value / 100;
+            audio.volume = vol;
+            UI.volumeFillBar.style.width = `${e.target.value}%`;
+        });
+
+        // UI Updaters
+        function updatePlayStateUI() {
+            const icon = isPlaying ? "fa-pause" : "fa-play";
+            UI.playIcon[0].className = `fa-solid ${icon}`;
+            UI.playIcon[1].className = `fa-solid ${icon} ml-1`; // optical adjust for play
+            if(isPlaying) UI.playIcon[1].classList.remove('ml-1');
+            
+            const art = document.getElementById('fullArt');
+            if (isPlaying) {
+                art.classList.replace('art-paused', 'art-playing');
+            } else {
+                art.classList.replace('art-playing', 'art-paused');
+            }
         }
 
-        function updatePlayPauseUI() {
-            const iconClass = isPlaying ? "fa-solid fa-pause" : "fa-solid fa-play ml-1";
-            UI.playIcon.forEach(i => i.className = iconClass + " absolute");
-            document.getElementById('fullArt').classList[isPlaying ? 'add' : 'remove']('scale-[1.02]');
-        }
-
-        function setLoadingState(isLoading) {
-            UI.playIcon.forEach(i => i.style.opacity = isLoading ? '0' : '1');
-            UI.loaderIcon.forEach(i => i.style.opacity = isLoading ? '1' : '0');
+        function setLoading(isLoading) {
+            UI.playIcon[0].style.opacity = isLoading ? '0' : '1';
+            UI.loaderIcon[0].style.opacity = isLoading ? '1' : '0';
         }
 
         function formatTime(s) {
@@ -688,201 +824,335 @@
             return `${m}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-        // --- Data Fetching (Audius) ---
-        window.addEventListener('DOMContentLoaded', () => {
-            setupNavigation();
-            setupSearch();
-            fetchHomeData();
-            renderLibrary();
-        });
+        // --- Custom Features: Region, Custom Link, EQ ---
+        
+        let currentRegion = localStorage.getItem('apple_music_region') || 'India';
+        document.getElementById('regionSelect').value = currentRegion;
 
-        async function fetchHomeData() {
+        window.updateRegion = (region) => {
+            currentRegion = region;
+            localStorage.setItem('apple_music_region', region);
+            fetchRegionalTrending(); // Reload home view
+        };
+
+        window.applyEQ = (preset) => {
+            localStorage.setItem('apple_music_eq', preset);
+            if (!lowFilter || !midFilter || !highFilter) return; // Wait for audio to init
+            
+            let low = 0, mid = 0, high = 0;
+            switch(preset) {
+                case 'BassBoost': low = 8; mid = 0; high = 0; break;
+                case 'TrebleBoost': low = 0; mid = 0; high = 8; break;
+                case 'Acoustic': low = 2; mid = 4; high = 5; break;
+                case 'Electronic': low = 6; mid = -2; high = 4; break;
+                case 'Flat': default: low = 0; mid = 0; high = 0; break;
+            }
+
+            // Smooth transition
+            const currTime = audioCtx.currentTime;
+            lowFilter.gain.setTargetAtTime(low, currTime, 0.3);
+            midFilter.gain.setTargetAtTime(mid, currTime, 0.3);
+            highFilter.gain.setTargetAtTime(high, currTime, 0.3);
+        };
+
+        window.playCustomLink = () => {
+            const input = document.getElementById('customLinkInput');
+            const url = input.value.trim();
+            if (!url) return;
+
+            const customTrack = {
+                id: 'custom-' + Date.now(),
+                title: 'Custom Audio Stream',
+                user: { name: 'Direct Link' },
+                artwork: null,
+                streamUrl: url
+            };
+
+            // Clear queue and play immediately
+            queue = [customTrack];
+            loadTrack(0);
+            
+            // UI Feedback
+            input.value = '';
+            closeAccountModal();
+            openFullScreenPlayer();
+        };
+
+        // --- Data Fetching (Audius API) ---
+        
+        async function fetchRegionalTrending() {
+            document.getElementById('homeLoading').classList.remove('hidden');
+            document.getElementById('homeHorizontalGrid').classList.add('hidden');
+            document.getElementById('homeList').classList.add('hidden');
+            
+            // Map regions to queries
+            const regionQueries = {
+                'India': ['bollywood', 'punjabi'],
+                'USA': ['pop', 'hip hop'],
+                'UK': ['drill', 'pop'],
+                'Japan': ['jpop', 'anime'],
+                'Global': ['trending', 'top']
+            };
+            
+            const queries = regionQueries[currentRegion] || regionQueries['Global'];
+            
+            // Update UI Titles
+            const subtitleMap = {
+                'India': 'Trending in India',
+                'USA': 'Trending in USA',
+                'UK': 'Trending in UK',
+                'Japan': 'Trending in Japan',
+                'Global': 'Trending Worldwide'
+            };
+            const titleMap = {
+                'India': 'Top Bollywood & Punjabi Tracks',
+                'USA': 'Top Pop & Hip-Hop Tracks',
+                'UK': 'Top Drill & Pop Tracks',
+                'Japan': 'Top J-Pop & Anime Tracks',
+                'Global': 'Top Global Tracks'
+            };
+            
+            document.getElementById('homeRegionSubtitle').textContent = subtitleMap[currentRegion];
+            document.getElementById('homeRegionTitle').textContent = titleMap[currentRegion];
+
             try {
-                const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/trending?app_name=${APP_NAME}&limit=20`);
-                const json = await res.json();
-                const tracks = json.data;
+                // Fetch category streams simultaneously
+                const req1 = fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${queries[0]}&app_name=${APP_NAME}&limit=10`);
+                const req2 = fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${queries[1]}&app_name=${APP_NAME}&limit=10`);
                 
-                const grid = document.getElementById('homeGrid');
+                const [res1, res2] = await Promise.all([req1, req2]);
+                const json1 = await res1.json();
+                const json2 = await res2.json();
+                
+                // Mix results
+                const tracks = [...(json1.data || []), ...(json2.data || [])].sort(() => 0.5 - Math.random());
+                
                 document.getElementById('homeLoading').classList.add('hidden');
-                grid.classList.remove('hidden');
-                grid.innerHTML = '';
                 
-                tracks.forEach((track, index) => {
-                    const art = track.artwork ? (track.artwork['150x150'] || track.artwork['480x480']) : 'https://placehold.co/150x150/cccccc/ffffff?text=Music';
-                    const div = document.createElement('div');
-                    div.className = "bg-white dark:bg-[#181818] p-4 rounded-2xl hover:shadow-lg transition cursor-pointer group border border-gray-100 dark:border-white/5";
-                    div.onclick = () => { queue = [...tracks]; loadTrack(index); };
-                    div.innerHTML = `
-                        <div class="relative w-full aspect-square mb-4 shadow-md rounded-xl overflow-hidden bg-gray-100 dark:bg-[#222]">
-                            <img src="${art}" class="w-full h-full object-cover">
-                            <div class="absolute bottom-2 right-2 w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-lg shadow-blue-500/40">
-                                <i class="fa-solid fa-play ml-1"></i>
-                            </div>
-                        </div>
-                        <h3 class="font-bold text-gray-900 dark:text-white text-sm line-clamp-1">${track.title}</h3>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs font-medium line-clamp-1 mt-1">${track.user.name}</p>
-                    `;
-                    grid.appendChild(div);
-                });
+                renderHomeHorizontal(tracks.slice(0, 6));
+                renderHomeList(tracks.slice(6));
+                
             } catch (e) {
-                console.error("Fetch trending error", e);
-                document.getElementById('homeLoading').innerHTML = '<p class="text-red-500">Error loading tracks.</p>';
+                console.error("Fetch error:", e);
+                document.getElementById('homeLoading').innerHTML = '<p class="text-ios-accent">Error loading data.</p>';
             }
         }
 
-        function setupSearch() {
-            const form = document.getElementById('searchForm');
-            const input = document.getElementById('searchInput');
-            const clearBtn = document.getElementById('clearSearch');
+        function renderHomeHorizontal(tracks) {
+            const grid = document.getElementById('homeHorizontalGrid');
+            grid.innerHTML = '';
+            grid.classList.remove('hidden');
             
-            input.addEventListener('input', () => { clearBtn.style.display = input.value ? 'block' : 'none'; });
-            clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.style.display = 'none'; });
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const q = input.value.trim();
-                if (!q) return;
+            tracks.forEach((track, idx) => {
+                const art = track.artwork ? (track.artwork['480x480'] || track.artwork['150x150']) : 'https://placehold.co/480';
+                const div = document.createElement('div');
+                div.className = "flex-none w-[200px] snap-center cursor-pointer";
+                div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
                 
-                input.blur();
-                document.getElementById('searchResults').classList.add('hidden');
-                document.getElementById('searchLoading').classList.replace('hidden', 'flex');
-                
-                try {
-                    const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&app_name=${APP_NAME}&limit=25`);
-                    const json = await res.json();
-                    const tracks = json.data;
-                    
-                    document.getElementById('searchLoading').classList.replace('flex', 'hidden');
-                    document.getElementById('searchResults').classList.remove('hidden');
-                    
-                    const list = document.getElementById('searchList');
-                    list.innerHTML = '';
-                    tracks.forEach((track, index) => {
-                        const art = track.artwork ? (track.artwork['150x150'] || track.artwork['480x480']) : 'https://placehold.co/150x150/cccccc/ffffff?text=Music';
-                        const div = document.createElement('div');
-                        div.className = "flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-[#181818] border border-gray-100 dark:border-white/5 hover:shadow-md transition cursor-pointer group";
-                        div.onclick = () => { queue = [...tracks]; loadTrack(index); };
-                        
-                        // Safe object passing for onclick string
-                        const safeObj = {
-                            id: track.id, title: track.title, 
-                            user: {name: track.user.name}, 
-                            artwork: track.artwork 
-                        };
-
-                        div.innerHTML = `
-                            <div class="w-16 h-16 relative shrink-0">
-                                <img src="${art}" class="w-full h-full object-cover rounded-lg shadow-sm">
-                                <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center rounded-lg">
-                                    <i class="fa-solid fa-play text-white"></i>
-                                </div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-gray-900 dark:text-white text-base font-bold line-clamp-1 group-hover:text-accent transition-colors">${track.title}</h4>
-                                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-1">${track.user.name}</p>
-                            </div>
-                            <button class="p-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-900 dark:hover:text-white" onclick="event.stopPropagation(); toggleFavoriteById('${track.id}', this, ${JSON.stringify(safeObj).replace(/"/g, '&quot;')})">
-                                <i class="${isFavorite(track.id) ? 'fa-solid text-accent' : 'fa-regular'} fa-heart text-xl"></i>
-                            </button>
-                        `;
-                        list.appendChild(div);
-                    });
-                } catch(e) {
-                    console.error("Search Error", e);
-                }
+                div.innerHTML = `
+                    <div class="w-full aspect-square rounded-xl mb-2 overflow-hidden shadow-apple dark:shadow-apple-dark">
+                        <img src="${art}" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="font-semibold text-sm line-clamp-1">${track.title}</h4>
+                    <p class="text-xs text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
+                `;
+                grid.appendChild(div);
             });
         }
 
-        // --- Favorites ---
+        function renderHomeList(tracks) {
+            const list = document.getElementById('homeList');
+            list.innerHTML = '';
+            list.classList.remove('hidden');
+            
+            tracks.forEach((track, idx) => {
+                const art = track.artwork ? (track.artwork['150x150']) : 'https://placehold.co/150';
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
+                div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
+                
+                div.innerHTML = `
+                    <img src="${art}" class="w-14 h-14 rounded-lg object-cover bg-gray-200 dark:bg-gray-800">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
+                        <p class="text-[13px] text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
+                    </div>
+                    <i class="fa-solid fa-ellipsis text-ios-mutedLight dark:text-ios-mutedDark p-2"></i>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Global search function
+        window.triggerSearch = async (query) => {
+            const input = document.getElementById('searchInputMobile');
+            input.value = query;
+            input.dispatchEvent(new Event('input'));
+        };
+
+        function setupSearch() {
+            const inputs = [document.getElementById('searchInputMobile'), document.getElementById('searchInputDesktop')];
+            
+            inputs.forEach(input => {
+                if(!input) return;
+                let debounce;
+                input.addEventListener('input', (e) => {
+                    clearTimeout(debounce);
+                    const q = e.target.value.trim();
+                    
+                    // Switch to search view if typing in desktop
+                    if(e.target.id === 'searchInputDesktop' && q) {
+                        document.querySelector('[data-target="searchViewMobile"]').click();
+                    }
+
+                    if (!q) {
+                        document.getElementById('searchResults').classList.add('hidden');
+                        document.getElementById('searchDefault').classList.remove('hidden');
+                        return;
+                    }
+                    
+                    debounce = setTimeout(async () => {
+                        document.getElementById('searchDefault').classList.add('hidden');
+                        document.getElementById('searchResults').classList.add('hidden');
+                        document.getElementById('searchLoading').classList.replace('hidden', 'flex');
+                        
+                        try {
+                            const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(q)}&app_name=${APP_NAME}&limit=20`);
+                            const json = await res.json();
+                            const tracks = json.data;
+                            
+                            document.getElementById('searchLoading').classList.replace('flex', 'hidden');
+                            document.getElementById('searchResults').classList.remove('hidden');
+                            
+                            const list = document.getElementById('searchList');
+                            list.innerHTML = '';
+                            tracks.forEach((track, idx) => {
+                                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
+                                const div = document.createElement('div');
+                                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
+                                
+                                // Serialize track for favorites
+                                const safeTrack = {id: track.id, title: track.title, user: {name: track.user.name}, artwork: track.artwork};
+                                
+                                div.onclick = () => { queue = [...tracks]; loadTrack(idx); };
+                                div.innerHTML = `
+                                    <img src="${art}" class="w-14 h-14 rounded-lg object-cover">
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
+                                        <p class="text-[13px] text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
+                                    </div>
+                                    <button class="p-3 text-2xl active:scale-75 transition-transform" onclick="event.stopPropagation(); toggleFavorite('${track.id}', this, ${JSON.stringify(safeTrack).replace(/"/g, '&quot;')})">
+                                        <i class="${isFavorite(track.id) ? 'fa-solid text-ios-accent' : 'fa-regular text-ios-mutedLight dark:text-ios-mutedDark'} fa-heart"></i>
+                                    </button>
+                                `;
+                                list.appendChild(div);
+                            });
+                        } catch(err) {
+                            console.error(err);
+                        }
+                    }, 500);
+                });
+            });
+        }
+
+        // --- Favorites (Library) ---
         window.isFavorite = (id) => favorites.some(t => t.id === id);
 
         window.toggleCurrentFavorite = (e) => {
             if(e) e.stopPropagation();
             if(currentQueueIndex === -1) return;
-            toggleFavoriteById(queue[currentQueueIndex].id, null, queue[currentQueueIndex]);
+            toggleFavorite(queue[currentQueueIndex].id, null, queue[currentQueueIndex]);
         };
 
-        window.toggleFavoriteById = (id, btnElement, trackObj) => {
-            const index = favorites.findIndex(t => t.id === id);
-            if (index > -1) favorites.splice(index, 1);
-            else if(trackObj) favorites.push(trackObj);
+        window.toggleFavorite = (id, btnEl, trackObj) => {
+            const idx = favorites.findIndex(t => t.id === id);
+            if (idx > -1) favorites.splice(idx, 1);
+            else if (trackObj) favorites.push(trackObj);
             
-            localStorage.setItem('streamify_favs', JSON.stringify(favorites));
+            localStorage.setItem('apple_music_favs', JSON.stringify(favorites));
             
-            if(queue[currentQueueIndex] && queue[currentQueueIndex].id === id) syncHeartIcons(id);
+            if (queue[currentQueueIndex] && queue[currentQueueIndex].id === id) {
+                syncLikeButton(id);
+            }
             
-            if(btnElement) {
-                const icon = btnElement.querySelector('i');
-                icon.className = isFavorite(id) ? 'fa-solid fa-heart text-accent text-xl' : 'fa-regular fa-heart text-xl';
+            if (btnEl) {
+                const icon = btnEl.querySelector('i');
+                if(isFavorite(id)) {
+                    icon.className = 'fa-solid fa-heart text-ios-accent';
+                } else {
+                    icon.className = 'fa-regular fa-heart text-ios-mutedLight dark:text-ios-mutedDark';
+                }
             }
             renderLibrary();
         };
 
-        function syncHeartIcons(id) {
-            const c = isFavorite(id) ? "fa-solid fa-heart text-accent" : "fa-regular fa-heart";
-            UI.likeBtn.forEach(btn => btn.innerHTML = `<i class="${c} ${btn.id==='fullLikeBtn'?'text-3xl':'text-xl'}"></i>`);
+        function syncLikeButton(id) {
+            if(isFavorite(id)) {
+                UI.likeBtn[0].innerHTML = '<i class="fa-solid fa-heart text-ios-accent"></i>';
+            } else {
+                UI.likeBtn[0].innerHTML = '<i class="fa-regular fa-heart"></i>';
+            }
         }
 
         function renderLibrary() {
-            document.getElementById('likedCount').textContent = favorites.length;
             const list = document.getElementById('libraryList');
             list.innerHTML = '';
             
             if(favorites.length === 0) {
-                list.innerHTML = '<div class="py-10 text-center text-gray-500 dark:text-gray-400">No liked songs yet. Search and click the heart!</div>';
+                list.innerHTML = `
+                    <div class="py-20 text-center text-ios-mutedLight dark:text-ios-mutedDark">
+                        <i class="fa-solid fa-music text-5xl mb-4 opacity-50"></i>
+                        <p class="text-lg font-semibold">Your library is empty.</p>
+                        <p class="text-sm">Search and tap the heart to save songs.</p>
+                    </div>`;
                 return;
             }
 
-            favorites.forEach((track, index) => {
-                const art = track.artwork ? (track.artwork['150x150'] || track.artwork['480x480']) : 'https://placehold.co/150x150/cccccc/ffffff?text=Music';
+            favorites.forEach((track, idx) => {
+                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-[#181818] border border-gray-100 dark:border-white/5 hover:shadow-md transition cursor-pointer group";
-                div.onclick = () => { queue = [...favorites]; loadTrack(index); };
+                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:opacity-50 transition";
+                div.onclick = () => { queue = [...favorites]; loadTrack(idx); };
                 div.innerHTML = `
-                    <div class="w-14 h-14 relative shrink-0">
-                        <img src="${art}" class="w-full h-full object-cover rounded-lg shadow-sm">
-                    </div>
+                    <img src="${art}" class="w-14 h-14 rounded-lg object-cover">
                     <div class="flex-1 min-w-0">
-                        <h4 class="text-gray-900 dark:text-white text-base font-bold line-clamp-1 group-hover:text-accent transition-colors">${track.title}</h4>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-1">${track.user ? track.user.name : 'Unknown'}</p>
+                        <h4 class="font-semibold text-[15px] line-clamp-1">${track.title}</h4>
+                        <p class="text-[13px] text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
                     </div>
-                    <button class="p-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-900 dark:hover:text-white" onclick="event.stopPropagation(); toggleFavoriteById('${track.id}', this, null)">
-                        <i class="fa-solid fa-heart text-accent text-xl"></i>
+                    <button class="p-3 text-2xl active:scale-75 transition-transform" onclick="event.stopPropagation(); toggleFavorite('${track.id}', this, null)">
+                        <i class="fa-solid fa-heart text-ios-accent"></i>
                     </button>
                 `;
                 list.appendChild(div);
             });
         }
 
-        window.playLibrary = () => {
-            if(favorites.length > 0) { queue = [...favorites]; loadTrack(0); }
-        }
-
         // --- UI Interactions ---
+
         function setupNavigation() {
-            const views = { homeView: document.getElementById('homeView'), searchView: document.getElementById('searchView'), libraryView: document.getElementById('libraryView') };
+            const views = {
+                homeView: document.getElementById('homeView'),
+                searchViewMobile: document.getElementById('searchViewMobile'),
+                libraryView: document.getElementById('libraryView')
+            };
+            const headerTitle = document.getElementById('headerTitle');
+            const titles = { homeView: 'Listen Now', searchViewMobile: 'Search', libraryView: 'Library' };
+
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const target = link.getAttribute('data-target');
                     
-                    document.querySelectorAll('.nav-link').forEach(l => {
-                        l.classList.remove('active-nav');
-                        // Reset mobile colors
-                        if(l.closest('nav')) l.classList.replace('text-gray-900', 'text-gray-400') || l.classList.replace('dark:text-white', 'dark:text-gray-500');
-                    });
-                    
-                    document.querySelectorAll(`[data-target="${target}"]`).forEach(l => {
-                        l.classList.add('active-nav');
-                        // Set mobile active colors
-                        if(l.closest('nav')) {
-                            l.classList.remove('text-gray-400', 'dark:text-gray-500');
-                            l.classList.add('text-gray-900', 'dark:text-white');
-                        }
-                    });
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-tab'));
+                    document.querySelectorAll(`[data-target="${target}"]`).forEach(l => l.classList.add('active-tab'));
                     
                     Object.values(views).forEach(v => v.classList.add('hidden'));
                     views[target].classList.remove('hidden');
+                    
+                    headerTitle.textContent = titles[target];
+                    
+                    // Reset scroll
+                    document.getElementById('mainScrollArea').scrollTop = 0;
                 });
             });
         }
@@ -890,86 +1160,169 @@
         window.openFullScreenPlayer = () => {
             const fp = document.getElementById('fullPlayer');
             fp.classList.remove('hidden');
-            void fp.offsetWidth;
+            void fp.offsetWidth; // force reflow
             fp.classList.replace('player-hidden', 'player-visible');
         };
 
         window.closeFullScreenPlayer = () => {
             const fp = document.getElementById('fullPlayer');
             fp.classList.replace('player-visible', 'player-hidden');
-            setTimeout(() => fp.classList.add('hidden'), 400);
+            setTimeout(() => fp.classList.add('hidden'), 500);
         };
 
-        window.switchFullView = (viewName) => {
-            ['Player', 'Queue'].forEach(n => {
-                const el = document.getElementById(`tab${n}`);
-                if (n.toLowerCase() === viewName) {
-                    el.classList.add('text-gray-900', 'dark:text-white', 'border-accent');
-                } else {
-                    el.classList.remove('text-gray-900', 'dark:text-white', 'border-accent');
-                }
-            });
-            ['playerView', 'queueView'].forEach(id => {
-                const el = document.getElementById(`fp-${id}`);
-                if (id === `${viewName}View`) el.classList.remove('opacity-0', 'pointer-events-none');
-                else el.classList.add('opacity-0', 'pointer-events-none');
-            });
+        window.scrollToQueue = () => {
+            document.getElementById('fullPlayerScroll').scrollBy({ top: 400, behavior: 'smooth' });
         };
 
         function updateQueueUI() {
-            if(currentQueueIndex === -1) return;
-            const current = queue[currentQueueIndex];
-            const art = current.artwork ? (current.artwork['150x150'] || current.artwork['480x480']) : 'https://placehold.co/150x150';
+            const list = document.getElementById('queueList');
+            list.innerHTML = '';
             
-            document.getElementById('queueNowPlaying').innerHTML = `
-                <img src="${art}" class="w-14 h-14 rounded-lg shadow-sm object-cover">
-                <div class="min-w-0 flex-1">
-                    <p class="text-accent font-bold text-base line-clamp-1">${current.title}</p>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-1">${current.user ? current.user.name : ''}</p>
-                </div>
-                <div class="w-8 h-8 bg-blue-100 dark:bg-accent/20 rounded-full flex items-center justify-center text-accent mr-2">
-                    <i class="fa-solid fa-volume-high"></i>
-                </div>
-            `;
-
-            const qList = document.getElementById('queueList');
-            qList.innerHTML = '';
+            if (currentQueueIndex === -1) return;
+            
             const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21);
-            if(upNext.length === 0) {
-                qList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm mt-4 text-center">No upcoming tracks.</p>';
+            if (upNext.length === 0) {
+                list.innerHTML = '<p class="text-sm text-ios-mutedLight dark:text-ios-mutedDark py-4 text-center">End of queue.</p>';
                 return;
             }
 
             upNext.forEach((track, idx) => {
                 const actualIndex = currentQueueIndex + 1 + idx;
-                const trackArt = track.artwork ? (track.artwork['150x150'] || track.artwork['480x480']) : 'https://placehold.co/150x150';
+                const art = track.artwork ? track.artwork['150x150'] : 'https://placehold.co/150';
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer transition border border-transparent hover:border-gray-200 dark:hover:border-white/5";
-                div.onclick = () => { loadTrack(actualIndex); switchFullView('player'); };
+                div.className = "flex items-center gap-4 py-2 border-b border-black/5 dark:border-white/5 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition rounded-lg px-2 -mx-2";
+                div.onclick = () => loadTrack(actualIndex);
                 div.innerHTML = `
-                    <img src="${trackArt}" class="w-12 h-12 rounded-lg shadow-sm object-cover">
-                    <div class="flex flex-col flex-1 min-w-0">
-                        <span class="text-gray-900 dark:text-white font-bold text-sm line-clamp-1">${track.title}</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-xs font-medium line-clamp-1">${track.user ? track.user.name : ''}</span>
+                    <img src="${art}" class="w-12 h-12 rounded object-cover shadow-sm">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-sm line-clamp-1">${track.title}</h4>
+                        <p class="text-xs text-ios-mutedLight dark:text-ios-mutedDark line-clamp-1">${track.user.name}</p>
                     </div>
                 `;
-                qList.appendChild(div);
+                list.appendChild(div);
             });
         }
 
-        // --- Media Session API ---
+        // --- Theme & Auth Modal ---
+        const html = document.documentElement;
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+
+        // Auth Logic
+        const accModal = document.getElementById('accountModal');
+        document.getElementById('authBtn').addEventListener('click', () => {
+            accModal.classList.remove('hidden');
+            setTimeout(() => {
+                accModal.classList.remove('opacity-0');
+                accModal.children[0].classList.remove('scale-95');
+            }, 10);
+        });
+
+        window.closeAccountModal = () => {
+            accModal.classList.add('opacity-0');
+            accModal.children[0].classList.add('scale-95');
+            setTimeout(() => accModal.classList.add('hidden'), 300);
+        };
+
+        if (auth) {
+            onAuthStateChanged(auth, user => {
+                const avatarImg = document.getElementById('userAvatarImg');
+                const avatarIcon = document.getElementById('userAvatarIcon');
+                const modalImg = document.getElementById('modalAvatar');
+                const modalIcon = document.getElementById('modalPlaceholder');
+                const loginBtn = document.getElementById('loginBtn');
+                const logoutBtn = document.getElementById('logoutBtn');
+
+                if (user) {
+                    avatarImg.src = user.photoURL;
+                    avatarImg.classList.remove('hidden');
+                    avatarIcon.classList.add('hidden');
+                    
+                    modalImg.src = user.photoURL;
+                    modalImg.classList.remove('hidden');
+                    modalIcon.classList.add('hidden');
+                    
+                    document.getElementById('modalName').textContent = user.displayName;
+                    document.getElementById('modalEmail').textContent = user.email;
+                    
+                    loginBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                } else {
+                    avatarImg.classList.add('hidden');
+                    avatarIcon.classList.remove('hidden');
+                    
+                    modalImg.classList.add('hidden');
+                    modalIcon.classList.remove('hidden');
+                    
+                    document.getElementById('modalName').textContent = "Apple ID";
+                    document.getElementById('modalEmail').textContent = "Sign in to sync your library";
+                    
+                    loginBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                signInWithPopup(auth, new GoogleAuthProvider()).then(closeAccountModal);
+            });
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                signOut(auth).then(closeAccountModal);
+            });
+        }
+
+        // --- Media Session API (Lock Screen) ---
         function updateMediaSession(title, artist, artUrl) {
             if ('mediaSession' in navigator) {
+                // Try to get highest res image for lock screen (512x512)
+                const highResArt = artUrl.replace('480x480', '1000x1000').replace('150x150', '1000x1000');
+                
                 navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title, artist: artist, album: 'Streamify Premium',
-                    artwork: [{ src: artUrl, sizes: '512x512', type: 'image/jpeg' }]
+                    title: title,
+                    artist: artist,
+                    album: 'Apple Music Clone',
+                    artwork: [
+                        { src: artUrl, sizes: '96x96', type: 'image/jpeg' },
+                        { src: artUrl, sizes: '256x256', type: 'image/jpeg' },
+                        { src: highResArt, sizes: '512x512', type: 'image/jpeg' }
+                    ]
                 });
+                
                 navigator.mediaSession.setActionHandler('play', () => { audio.play(); initVisualizer(); });
                 navigator.mediaSession.setActionHandler('pause', () => audio.pause());
                 navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
-                navigator.mediaSession.setActionHandler('nexttrack', playNext);
+                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    if (details.fastSeek && 'fastSeek' in audio) {
+                        audio.fastSeek(details.seekTime);
+                    } else {
+                        audio.currentTime = details.seekTime;
+                    }
+                    updateMediaSessionPositionState();
+                });
             }
         }
+        
+        function updateMediaSessionPositionState() {
+            if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
+                if (audio.duration && isFinite(audio.duration)) {
+                    navigator.mediaSession.setPositionState({
+                        duration: audio.duration,
+                        playbackRate: audio.playbackRate,
+                        position: audio.currentTime
+                    });
+                }
+            }
+        }
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', () => {
+            setupNavigation();
+            setupSearch();
+            fetchRegionalTrending();
+            renderLibrary();
+        });
+
     </script>
 </body>
 </html>
