@@ -111,7 +111,7 @@
 </head>
 <body class="flex flex-col md:flex-row select-none">
 
-    <!-- Invisible YouTube Player (Mobile Safari bypass: 1x1, absolute, opacity 0) -->
+    <!-- Invisible YouTube Player -->
     <div id="yt-container" class="absolute w-1 h-1 opacity-0 pointer-events-none overflow-hidden z-[-1] top-0 left-0">
         <div id="ytplayer"></div>
     </div>
@@ -123,7 +123,7 @@
             Streamify
         </div>
         <nav class="flex flex-col gap-2">
-            <a href="#" class="flex items-center gap-4 text-spotify-text font-semibold p-4 rounded-xl bg-white/10 transition">
+            <a href="#" class="flex items-center gap-4 text-spotify-text font-semibold p-4 rounded-xl bg-white/10 transition" onclick="document.getElementById('searchInput').focus()">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg> Search
             </a>
             <a href="#" class="flex items-center gap-4 text-spotify-muted font-semibold p-4 rounded-xl hover:text-white transition" onclick="fetchTrending()">
@@ -139,28 +139,17 @@
     <main class="flex-1 flex flex-col h-full bg-spotify-bg relative z-0">
         
         <!-- Header -->
-        <header class="p-4 pt-safe md:p-6 sticky top-0 bg-spotify-bg/90 backdrop-blur-lg z-10 flex justify-between items-center gap-4">
-            <form id="searchForm" class="relative flex-1 max-w-md">
+        <header class="p-4 pt-safe md:p-6 sticky top-0 bg-spotify-bg/90 backdrop-blur-lg z-10 flex justify-center items-center">
+            <form id="searchForm" class="relative w-full max-w-2xl">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
-                <input type="text" id="searchInput" placeholder="What do you want to listen to?" 
+                <input type="text" id="searchInput" placeholder="Search Bollywood, Punjabi, or Global hits..." 
                     class="w-full bg-spotify-elevated text-white rounded-full py-3 pl-12 pr-4 font-medium focus:outline-none focus:ring-2 focus:ring-white/20 transition shadow-inner">
             </form>
-            <button onclick="openSettings()" class="w-10 h-10 rounded-full bg-spotify-elevated flex items-center justify-center hover:scale-105 transition">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-            </button>
         </header>
 
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto px-4 md:px-6 pb-nav-safe" id="mainScrollArea">
             
-            <!-- API Key Missing State -->
-            <div id="apiKeyWarning" class="hidden mt-6 p-6 bg-red-900/20 border border-red-500/30 rounded-2xl text-center max-w-md mx-auto">
-                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" class="text-red-400 mx-auto mb-4"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4h2.35l2-2 2 2 2-2 2 2v-4h-8.35zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
-                <h2 class="text-xl font-bold mb-2">API Key Required</h2>
-                <p class="text-sm text-spotify-muted mb-4">Please add your YouTube Data API v3 Key in settings to unlock streaming.</p>
-                <button onclick="openSettings()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition">Open Settings</button>
-            </div>
-
             <!-- Loading State -->
             <div id="loadingState" class="hidden flex-col items-center justify-center py-20 text-spotify-muted">
                 <svg class="animate-spin h-10 w-10 text-spotify-accent mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -168,7 +157,7 @@
             </div>
 
             <!-- Results View -->
-            <div id="resultsState" class="mt-4">
+            <div id="resultsState" class="mt-4 hidden">
                 <h2 class="text-2xl font-bold mb-4" id="resultsTitle">Trending Music</h2>
                 <div class="flex flex-col gap-2 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4" id="songsList">
                     <!-- Cards injected via JS -->
@@ -194,9 +183,8 @@
         </a>
     </nav>
 
-    <!-- Mini Player (Above mobile nav) -->
+    <!-- Mini Player -->
     <div id="miniPlayer" class="glass fixed bottom-[70px] md:bottom-0 left-0 w-full h-16 z-30 flex items-center justify-between px-4 cursor-pointer hidden md:w-[calc(100%-16rem)] md:left-64 slide-down transition-transform duration-300">
-        <!-- Tiny Progress Bar -->
         <div class="absolute top-0 left-0 w-full h-[2px] bg-white/10">
             <div id="miniProgress" class="h-full bg-white w-0 transition-all duration-100"></div>
         </div>
@@ -273,7 +261,7 @@
 
             <!-- Playback Controls -->
             <div class="flex items-center justify-between mb-4">
-                <!-- Shuffle SVG -->
+                <!-- Shuffle -->
                 <button class="text-white/50 hover:text-white p-2 transition" id="shuffleBtn" onclick="toggleShuffle()">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
                 </button>
@@ -285,7 +273,6 @@
                 <button class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-black shadow-lg hover:scale-105 active:scale-95 transition relative" onclick="togglePlay(event)">
                     <svg id="fullPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="fullPauseIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    <!-- Buffering Spinner -->
                     <svg id="fullBufferingIcon" class="animate-spin hidden absolute" width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
                 </button>
                 
@@ -313,22 +300,6 @@
         </div>
     </div>
 
-    <!-- Settings / API Modal -->
-    <div id="settingsModal" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur hidden flex items-center justify-center p-4">
-        <div class="bg-spotify-elevated w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
-            <button class="absolute top-4 right-4 text-white/50 hover:text-white" onclick="closeSettings()">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-            <h3 class="text-2xl font-bold mb-6">Settings</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-spotify-muted mb-2">YouTube Data API v3 Key</label>
-                <input type="text" id="apiInput" placeholder="AIzaSy..." class="w-full bg-black border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-spotify-accent">
-                <p class="text-xs text-white/40 mt-2">Required for searching and streaming full-length tracks without limits.</p>
-            </div>
-            <button onclick="saveSettings()" class="w-full bg-spotify-accent text-black font-bold py-3 rounded-full hover:scale-105 transition">Save & Apply</button>
-        </div>
-    </div>
-
     <!-- Queue Drawer -->
     <div id="queueDrawer" class="fixed inset-x-0 bottom-0 z-[60] bg-spotify-elevated rounded-t-3xl slide-down transition-transform duration-300 h-[60dvh] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
         <div class="flex items-center justify-between p-4 border-b border-white/10">
@@ -349,6 +320,7 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         // --- State Management ---
+        const API_KEY = 'AIzaSyA1NzhaIxHuCo_M-YYjK6c5Y0FhCj-2QMs'; // Hardcoded API Key
         let player;
         let isPlayerReady = false;
         let currentQueue = [];
@@ -359,13 +331,11 @@
         let isShuffle = false;
         let loopState = 0; // 0: off, 1: all, 2: one
         let syncInterval;
-        let apiKey = localStorage.getItem('ytApiKey') || '';
         let favorites = JSON.parse(localStorage.getItem('ytFavorites')) || [];
 
         // --- DOM Elements ---
         const miniPlayer = document.getElementById('miniPlayer');
         const fullPlayer = document.getElementById('fullPlayer');
-        const apiKeyWarning = document.getElementById('apiKeyWarning');
         const loadingState = document.getElementById('loadingState');
         const resultsState = document.getElementById('resultsState');
         const songsList = document.getElementById('songsList');
@@ -385,7 +355,7 @@
 
         function onPlayerReady(event) {
             isPlayerReady = true;
-            checkApiAndLoad();
+            fetchTrending(); // Immediately load music when ready
         }
         
         function onPlayerError(e) {
@@ -393,23 +363,12 @@
             playNext();
         }
 
-        function checkApiAndLoad() {
-            if (apiKey) {
-                apiKeyWarning.classList.add('hidden');
-                fetchTrending();
-            } else {
-                apiKeyWarning.classList.remove('hidden');
-                resultsState.classList.add('hidden');
-            }
-        }
-
         // --- Data Fetching ---
         async function fetchTrending() {
-            if(!apiKey) return openSettings();
             showLoading(true);
             try {
-                const q = encodeURIComponent("latest trending songs official music video");
-                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&videoCategoryId=10&maxResults=20&key=${apiKey}`);
+                const q = encodeURIComponent("latest trending bollywood indian songs official music video");
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&videoCategoryId=10&maxResults=20&key=${API_KEY}`);
                 const data = await res.json();
                 
                 if(data.error) throw new Error(data.error.message);
@@ -421,32 +380,27 @@
                     art: item.snippet.thumbnails.high.url
                 }));
                 
-                renderSongs(tracks, 'Trending Music');
+                renderSongs(tracks, 'Trending Indian Music');
             } catch (err) {
                 console.error(err);
-                if(err.message.includes('API key not valid') || err.message.includes('quota')) {
-                    showToast("API Key is invalid or quota exceeded.");
-                    localStorage.removeItem('ytApiKey');
-                    apiKey = '';
-                    checkApiAndLoad();
-                }
+                showToast("Failed to fetch trending music.");
             }
             showLoading(false);
         }
 
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!apiKey) return openSettings();
-            
             const q = document.getElementById('searchInput').value.trim();
             if(!q) return;
             document.getElementById('searchInput').blur();
             
             showLoading(true);
             try {
-                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=25&key=${apiKey}`);
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=25&key=${API_KEY}`);
                 const data = await res.json();
                 
+                if(data.error) throw new Error(data.error.message);
+
                 const tracks = data.items.map(item => ({
                     id: item.id.videoId,
                     title: decodeHTMLEntities(item.snippet.title),
@@ -457,7 +411,7 @@
                 renderSongs(tracks, `Results for "${q}"`);
             } catch (err) {
                 console.error(err);
-                showToast("Search failed. Check network or API key.");
+                showToast("Search failed.");
             }
             showLoading(false);
         });
@@ -633,7 +587,6 @@
             syncInterval = setInterval(() => {
                 if(!player || !player.getCurrentTime || isScrubbing) return;
                 
-                // Only run update if actually playing
                 if (player.getPlayerState() === YT.PlayerState.PLAYING) {
                     const curr = player.getCurrentTime();
                     const dur = player.getDuration();
@@ -648,11 +601,10 @@
                         document.getElementById('durationDisplay').textContent = formatTime(dur);
                     }
                 }
-            }, 250); // Frequent update for smooth bar
+            }, 250); 
         }
         function stopSync() { clearInterval(syncInterval); }
 
-        // Scrubbing logic
         progressBar.addEventListener('mousedown', () => { isScrubbing = true; });
         progressBar.addEventListener('touchstart', () => { isScrubbing = true; }, {passive: true});
         
@@ -678,15 +630,11 @@
             if ('setSinkId' in HTMLMediaElement.prototype && navigator.mediaDevices && navigator.mediaDevices.selectAudioOutput) {
                 try {
                     const audioDevice = await navigator.mediaDevices.selectAudioOutput();
-                    // YouTube IFrame API doesn't expose setSinkId directly, 
-                    // but the system UI popup allows the user to change their OS default routing.
                     showToast(`Routing to: ${audioDevice.label}`);
                 } catch (err) {
-                    // User cancelled or error
                     console.log(err);
                 }
             } else {
-                // Fallback for iOS Safari which handles Airplay natively via Control Center
                 showToast("Use Control Center for AirPlay / Bluetooth on iOS.");
             }
         }
@@ -765,27 +713,6 @@
             fullPlayer.classList.add('slide-down');
         }
 
-        // --- Settings / Modals ---
-        function openSettings() {
-            document.getElementById('apiInput').value = apiKey;
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.add('hidden');
-        }
-        function saveSettings() {
-            const val = document.getElementById('apiInput').value.trim();
-            if(val) {
-                apiKey = val;
-                localStorage.setItem('ytApiKey', apiKey);
-                closeSettings();
-                showToast("API Key Saved");
-                checkApiAndLoad();
-            } else {
-                showToast("Please enter a valid key");
-            }
-        }
-
         function openQueue() {
             document.getElementById('queueDrawer').classList.remove('slide-down');
             const list = document.getElementById('queueList');
@@ -828,7 +755,7 @@
             }
         }
 
-        // --- Custom Toast System (Replaces Alert) ---
+        // --- Toast System ---
         let toastTimeout;
         function showToast(message) {
             const toast = document.getElementById('toast-container');
