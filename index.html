@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- PWA & Native App Meta Tags -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#121212">
-    <meta name="description" content="A highly stable Web Music Player">
+    <meta name="description" content="A highly stable Web Music Player playing Full Songs">
     
-    <title>Streamify - iTunes Edition</title>
+    <title>Streamify - Full Audio Edition</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +18,9 @@
     
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
 
     <!-- Tailwind Configuration -->
     <script>
@@ -34,13 +36,10 @@
                             surface: '#121212',
                             elevated: '#181818',
                             highlight: '#282828',
-                            accent: '#1DB954', /* Spotify Green */
+                            accent: '#1DB954',
                             text: '#ffffff',
                             muted: '#b3b3b3'
                         }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -48,7 +47,6 @@
     </script>
 
     <style>
-        /* Base & Resets */
         body {
             background-color: #000;
             color: #fff;
@@ -56,11 +54,9 @@
             overscroll-behavior-y: none;
         }
 
-        /* Hide scrollbar */
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Glassmorphism */
         .glass {
             background: rgba(24, 24, 24, 0.85);
             backdrop-filter: blur(20px);
@@ -74,11 +70,9 @@
             -webkit-backdrop-filter: blur(30px);
         }
 
-        /* Safe Area Padding for PWA (iOS Notch) */
         .pt-safe { padding-top: env(safe-area-inset-top); }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 
-        /* Custom Range Slider */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -116,33 +110,46 @@
             margin-top: -3px;
         }
 
-        /* Player Animations */
         .player-visible { transform: translateY(0%); }
         .player-hidden { transform: translateY(100%); }
 
-        /* Lyrics Sync Simulation */
-        .lyric-line {
-            transition: all 0.3s ease;
-            opacity: 0.5;
-            transform: scale(0.95);
+        /* CSS Visualizer for Full Songs (Replaces Web Audio API due to Cross-Origin limitations) */
+        .bars-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            height: 40px;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        .lyric-line.active {
-            opacity: 1;
-            transform: scale(1);
-            color: #1DB954;
-            font-weight: bold;
+        .bars-container.playing { opacity: 0.8; }
+        .bar {
+            width: 6px;
+            background-color: #1DB954;
+            border-radius: 3px;
+            animation: bounce 1s infinite alternate ease-in-out;
+            transform-origin: bottom;
         }
-
-        /* Visualizer Canvas */
-        #visualizer {
-            filter: drop-shadow(0 0 10px rgba(29, 185, 84, 0.5));
+        .bar:nth-child(1) { animation-delay: 0.0s; height: 30%; }
+        .bar:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+        .bar:nth-child(3) { animation-delay: 0.4s; height: 100%; }
+        .bar:nth-child(4) { animation-delay: 0.1s; height: 50%; }
+        .bar:nth-child(5) { animation-delay: 0.5s; height: 80%; }
+        
+        @keyframes bounce {
+            from { transform: scaleY(0.2); }
+            to { transform: scaleY(1); }
         }
     </style>
 </head>
-<body class="flex h-[100dvh] w-full overflow-hidden select-none pb-[70px] md:pb-0">
+<body class="flex h-[100dvh] w-full overflow-hidden select-none pb-[70px] md:pb-0 relative">
 
-    <!-- Desktop Sidebar (Hidden on Mobile) -->
-    <aside class="hidden md:flex flex-col w-64 bg-app-bg h-full z-10 p-6 pt-safe">
+    <!-- Hidden YouTube Audio Engine -->
+    <div id="youtube-player" style="position: absolute; width: 0; height: 0; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;"></div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex flex-col w-64 bg-app-bg h-full z-10 p-6 pt-safe border-r border-white/5">
         <div class="text-2xl font-bold text-white mb-8 flex items-center gap-3">
             <i class="fa-brands fa-spotify text-app-accent text-3xl"></i> Streamify
         </div>
@@ -169,17 +176,14 @@
                 </div>
                 Liked Songs
             </a>
-            <p class="text-xs text-app-muted mt-8 opacity-50">Powered by iTunes Search API<br>(30s Official Previews)</p>
+            <p class="text-xs text-app-accent mt-8 font-medium"><i class="fa-solid fa-bolt mr-1"></i> Full Audio Engine Active</p>
         </div>
     </aside>
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-full bg-app-surface relative z-0 md:rounded-lg md:my-2 md:mr-2 overflow-hidden">
-        
-        <!-- Header background gradient -->
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-app-highlight to-app-surface opacity-50 z-0 transition-colors duration-1000" id="headerGradient"></div>
 
-        <!-- Scrollable Views Container -->
         <div class="flex-1 overflow-y-auto z-10 pb-32 pt-safe px-4 md:px-8" id="mainScrollArea">
             
             <!-- Home View -->
@@ -188,7 +192,6 @@
                     <h1 class="text-2xl font-bold">Good evening</h1>
                     <div class="flex gap-4 md:hidden">
                         <i class="fa-regular fa-bell text-xl"></i>
-                        <i class="fa-solid fa-clock-rotate-left text-xl"></i>
                         <i class="fa-solid fa-gear text-xl"></i>
                     </div>
                 </div>
@@ -197,7 +200,7 @@
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="trendingList">
                     <div class="col-span-full py-10 text-center opacity-70">
                         <i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i>
-                        <p>Loading catalog from Apple...</p>
+                        <p>Loading metadata...</p>
                     </div>
                 </div>
             </div>
@@ -224,7 +227,7 @@
                 </div>
             </div>
 
-            <!-- Library / Favorites View -->
+            <!-- Library View -->
             <div id="libraryView" class="view-section hidden pt-6">
                 <div class="flex items-center gap-6 mb-8">
                     <div class="w-24 h-24 bg-gradient-to-br from-indigo-600 to-blue-300 rounded-lg flex items-center justify-center shadow-lg">
@@ -245,7 +248,7 @@
                 </div>
             </div>
 
-            <!-- Account / Preferences View -->
+            <!-- Account View -->
             <div id="accountView" class="view-section hidden pt-6">
                 <div class="flex items-center gap-6 mb-8">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center shadow-lg">
@@ -262,15 +265,12 @@
                         <i class="fa-solid fa-earth-americas text-app-accent"></i> Music Region
                     </h2>
                     <p class="text-sm text-app-muted mb-4">Select your region to tailor iTunes suggestions.</p>
-                    
                     <div class="relative">
                         <select id="regionSelect" class="w-full bg-app-highlight text-white p-3 rounded-lg border border-white/10 focus:outline-none focus:border-app-accent transition-colors appearance-none cursor-pointer">
                             <option value="US">United States (Global Top)</option>
                             <option value="IN">India (Bollywood & Pop)</option>
                             <option value="GB">United Kingdom (UK Pop)</option>
                             <option value="KR">South Korea (K-Pop)</option>
-                            <option value="MX">Mexico (Latino)</option>
-                            <option value="JP">Japan (J-Pop)</option>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-app-muted"></i>
                     </div>
@@ -302,7 +302,6 @@
 
     <!-- Mini Player -->
     <div id="miniPlayer" class="glass fixed bottom-[70px] md:bottom-2 left-2 right-2 md:left-[270px] rounded-md h-[60px] z-30 flex items-center justify-between px-3 cursor-pointer hidden shadow-2xl transition-transform duration-300 translate-y-[150%] md:h-[72px] md:rounded-lg">
-        
         <div class="flex items-center gap-3 w-2/3 min-w-0" onclick="openFullScreenPlayer()">
             <img id="miniArt" src="" alt="Art" class="w-10 h-10 md:w-12 md:h-12 rounded object-cover bg-app-elevated shrink-0 shadow">
             <div class="flex flex-col overflow-hidden w-full pr-2">
@@ -315,12 +314,12 @@
             <button class="text-app-muted hover:text-white p-2" id="miniLikeBtn" onclick="toggleCurrentFavorite(event)">
                 <i class="fa-regular fa-heart text-lg md:text-xl"></i>
             </button>
-            <button class="text-app-text w-10 h-10 flex items-center justify-center hover:scale-105 active:scale-95 transition" onclick="togglePlay(event)">
-                <i class="fa-solid fa-play text-xl md:text-2xl" id="miniPlayIcon"></i>
+            <button class="text-app-text w-10 h-10 flex items-center justify-center hover:scale-105 active:scale-95 transition relative" onclick="togglePlay(event)">
+                <i class="fa-solid fa-play text-xl md:text-2xl absolute" id="miniPlayIcon"></i>
+                <i class="fa-solid fa-circle-notch fa-spin text-xl md:text-2xl absolute opacity-0" id="miniLoaderIcon"></i>
             </button>
         </div>
 
-        <!-- Mini Progress Bar -->
         <div class="absolute bottom-0 left-2 right-2 h-[2px] bg-white/10 rounded-full overflow-hidden">
             <div id="miniProgressBar" class="h-full bg-white w-0 rounded-full transition-all duration-100"></div>
         </div>
@@ -328,44 +327,35 @@
 
     <!-- Full Screen "Now Playing" Overlay -->
     <div id="fullPlayer" class="fixed inset-0 z-50 bg-app-bg flex flex-col transition-transform duration-500 player-hidden shadow-2xl">
-        
-        <!-- Dynamic Blurred Background -->
         <div class="absolute inset-0 z-[-1] overflow-hidden opacity-40">
             <img id="fullBgArt" src="" class="w-full h-full object-cover blur-3xl scale-125" alt="">
             <div class="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <!-- Header -->
         <div class="flex items-center justify-between px-6 pt-safe pb-2 mt-4">
             <button class="w-10 h-10 flex items-center justify-center text-white hover:scale-110 transition" onclick="closeFullScreenPlayer()">
                 <i class="fa-solid fa-chevron-down text-2xl"></i>
             </button>
-            <div class="flex flex-col items-center text-xs font-bold uppercase tracking-widest text-app-muted">
-                Now Playing
-            </div>
-            <div class="w-10"></div> <!-- Spacer -->
+            <div class="flex flex-col items-center text-xs font-bold uppercase tracking-widest text-app-muted">Now Playing</div>
+            <div class="w-10"></div>
         </div>
 
-        <!-- View Toggle (Player / Lyrics / Queue) -->
         <div class="flex justify-center gap-6 text-sm font-semibold text-app-muted mb-4 z-10">
             <span class="cursor-pointer text-white pb-1 border-b-2 border-app-accent" id="tabPlayer" onclick="switchFullView('player')">Player</span>
-            <span class="cursor-pointer pb-1 border-b-2 border-transparent hover:text-white" id="tabLyrics" onclick="switchFullView('lyrics')">Lyrics</span>
             <span class="cursor-pointer pb-1 border-b-2 border-transparent hover:text-white" id="tabQueue" onclick="switchFullView('queue')">Queue</span>
         </div>
 
-        <!-- Content Area -->
         <div class="flex-1 relative overflow-hidden flex flex-col">
-            
-            <!-- 1. Player View -->
+            <!-- Player View -->
             <div id="fp-playerView" class="absolute inset-0 flex flex-col px-8 transition-opacity duration-300">
-                <!-- Album Art + Visualizer Container -->
-                <div class="relative flex-1 flex items-center justify-center max-h-[50vh] w-full max-w-[400px] mx-auto group">
+                <div class="relative flex-1 flex items-center justify-center max-h-[50vh] w-full max-w-[400px] mx-auto group mb-4">
                     <img id="fullArt" src="" alt="Album Art" class="w-full aspect-square rounded-lg shadow-2xl object-cover transition-transform duration-500 z-10 relative">
-                    <!-- Web Audio API Canvas Visualizer -->
-                    <canvas id="visualizer" class="absolute bottom-0 left-0 w-full h-1/2 z-20 opacity-80 pointer-events-none rounded-b-lg"></canvas>
+                    <!-- CSS Visualizer Overlay -->
+                    <div class="absolute bottom-4 right-4 z-20 bars-container" id="cssVisualizer">
+                        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                    </div>
                 </div>
 
-                <!-- Info & Controls Container -->
                 <div class="flex flex-col mt-auto w-full max-w-[500px] mx-auto pb-10">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex flex-col min-w-0 pr-4">
@@ -377,7 +367,6 @@
                         </button>
                     </div>
 
-                    <!-- Progress -->
                     <div class="flex flex-col mb-6">
                         <div class="relative w-full h-6 flex items-center group cursor-pointer slider-container">
                             <input type="range" min="0" max="100" value="0" class="absolute w-full h-full z-10 opacity-0 cursor-pointer" id="progressBarInput">
@@ -389,24 +378,22 @@
                         </div>
                     </div>
 
-                    <!-- Controls -->
                     <div class="flex items-center justify-between">
                         <button class="text-app-muted hover:text-white text-xl p-2 transition-colors" id="shuffleBtn" onclick="toggleShuffle()">
                             <i class="fa-solid fa-shuffle"></i>
                         </button>
-                        
                         <button class="text-white text-4xl p-2 active:scale-90 transition-transform" onclick="playPrevious()">
                             <i class="fa-solid fa-backward-step"></i>
                         </button>
                         
-                        <button class="w-[72px] h-[72px] bg-app-accent rounded-full flex items-center justify-center text-black text-3xl shadow-xl hover:scale-105 active:scale-95 transition-transform" onclick="togglePlay(event)">
-                            <i class="fa-solid fa-play ml-1" id="fullPlayIcon"></i>
+                        <button class="w-[72px] h-[72px] bg-app-accent rounded-full flex items-center justify-center text-black text-3xl shadow-xl hover:scale-105 active:scale-95 transition-transform relative" onclick="togglePlay(event)">
+                            <i class="fa-solid fa-play ml-1 absolute" id="fullPlayIcon"></i>
+                            <i class="fa-solid fa-circle-notch fa-spin absolute opacity-0" id="fullLoaderIcon"></i>
                         </button>
                         
                         <button class="text-white text-4xl p-2 active:scale-90 transition-transform" onclick="playNext()">
                             <i class="fa-solid fa-forward-step"></i>
                         </button>
-                        
                         <button class="text-app-muted hover:text-white text-xl p-2 transition-colors" id="loopBtn" onclick="toggleLoop()">
                             <i class="fa-solid fa-repeat"></i>
                         </button>
@@ -414,89 +401,278 @@
                 </div>
             </div>
 
-            <!-- 2. Lyrics View -->
-            <div id="fp-lyricsView" class="absolute inset-0 px-6 overflow-y-auto pb-20 opacity-0 pointer-events-none transition-opacity duration-300 glass-panel rounded-t-3xl pt-8">
-                <div class="max-w-[500px] mx-auto flex flex-col gap-6 text-2xl font-bold" id="lyricsContainer">
-                    <p class="lyric-line">Loading lyrics...</p>
-                </div>
-            </div>
-
-            <!-- 3. Queue View -->
+            <!-- Queue View -->
             <div id="fp-queueView" class="absolute inset-0 px-6 overflow-y-auto pb-20 opacity-0 pointer-events-none transition-opacity duration-300 glass-panel rounded-t-3xl pt-6">
                 <div class="max-w-[500px] mx-auto">
                     <h3 class="text-lg font-bold mb-4">Now Playing</h3>
                     <div id="queueNowPlaying" class="mb-6 bg-white/10 p-3 rounded-lg flex items-center gap-3"></div>
-                    
                     <h3 class="text-lg font-bold mb-4">Up Next</h3>
                     <div id="queueList" class="flex flex-col gap-2"></div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Main JavaScript Logic (iTunes API Engine) -->
+    <!-- Core Logic & Audio Engine -->
     <script>
-        // --- Core State ---
-        let audio = new Audio();
-        audio.crossOrigin = "anonymous"; // Necessary for Web Audio API with external media
-        
+        // --- System State ---
+        let ytPlayer = null;
         let queue = [];
         let currentQueueIndex = -1;
         let isPlaying = false;
         let isShuffle = false;
-        
-        // Favorites State
+        let isLoop = false;
+        let syncInterval = null;
+        let isAudioEngineReady = false;
+
         let favorites = JSON.parse(localStorage.getItem('streamify_favs')) || [];
 
-        // Visualizer State
-        let audioCtx, analyser, source, canvas, canvasCtx;
-        let isAudioInitialized = false;
-
-        // Country Mapping & Configuration
-        const countryConfig = {
-            'US': { label: 'Top Hits', term: 'Pop' },
-            'IN': { label: 'Top Bollywood', term: 'Bollywood' },
-            'GB': { label: 'UK Chart', term: 'UK Pop' },
-            'KR': { label: 'K-Pop Top', term: 'K-Pop' },
-            'MX': { label: 'Exitos Latinos', term: 'Latino' },
-            'JP': { label: 'J-Pop Trending', term: 'J-Pop' }
-        };
-
-        // --- DOM Elements ---
-        const views = {
-            homeView: document.getElementById('homeView'),
-            searchView: document.getElementById('searchView'),
-            libraryView: document.getElementById('libraryView'),
-            accountView: document.getElementById('accountView')
-        };
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        const trendingList = document.getElementById('trendingList');
-        const searchList = document.getElementById('searchList');
-        const searchInput = document.getElementById('searchInput');
-        const libraryList = document.getElementById('libraryList');
-        
-        const miniPlayer = document.getElementById('miniPlayer');
-        const fullPlayer = document.getElementById('fullPlayer');
-        
+        // UI Elements
         const uiSync = {
             title: [document.getElementById('miniTitle'), document.getElementById('fullTitle')],
             artist: [document.getElementById('miniArtist'), document.getElementById('fullArtist')],
             art: [document.getElementById('miniArt'), document.getElementById('fullArt'), document.getElementById('fullBgArt')],
             playIcon: [document.getElementById('miniPlayIcon'), document.getElementById('fullPlayIcon')],
+            loaderIcon: [document.getElementById('miniLoaderIcon'), document.getElementById('fullLoaderIcon')],
             likeBtn: [document.getElementById('miniLikeBtn'), document.getElementById('fullLikeBtn')]
         };
-        
+
         const progressBarInput = document.getElementById('progressBarInput');
         const progressTrackBg = document.getElementById('progressTrackBg');
         const miniProgressBar = document.getElementById('miniProgressBar');
         const currentTimeDisplay = document.getElementById('currentTimeDisplay');
         const durationDisplay = document.getElementById('durationDisplay');
+        const cssVisualizer = document.getElementById('cssVisualizer');
 
-        // --- Initialization ---
+        // Piped API Mirrors to extract YouTube Full Audio
+        const PIPED_INSTANCES = [
+            'https://pipedapi.kavin.rocks',
+            'https://pipedapi.smnz.de',
+            'https://pipedapi.tokhmi.xyz',
+            'https://pipedapi.syncpundit.io'
+        ];
+
+        // --- YouTube API Setup ---
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '0', width: '0',
+                playerVars: { 'autoplay': 0, 'controls': 0, 'playsinline': 1, 'origin': window.location.origin },
+                events: {
+                    'onReady': () => { isAudioEngineReady = true; },
+                    'onStateChange': onPlayerStateChange,
+                    'onError': (e) => { console.warn("YT Error:", e.data); playNext(); }
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            // YT.PlayerState.PLAYING = 1, PAUSED = 2, ENDED = 0
+            if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                setLoadingState(false);
+                updatePlayPauseUI();
+                startSync();
+                cssVisualizer.classList.add('playing');
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+                updatePlayPauseUI();
+                cssVisualizer.classList.remove('playing');
+            } else if (event.data === YT.PlayerState.ENDED) {
+                isPlaying = false;
+                cssVisualizer.classList.remove('playing');
+                if (isLoop) {
+                    ytPlayer.seekTo(0);
+                    ytPlayer.playVideo();
+                } else {
+                    playNext();
+                }
+            }
+        }
+
+        // --- Piped Bridge: Fetch Full Song ID ---
+        async function getYouTubeId(title, artist) {
+            const query = encodeURIComponent(`${title} ${artist} audio`);
+            
+            // Try explicit music search first
+            for (let url of PIPED_INSTANCES) {
+                try {
+                    const res = await fetch(`${url}/search?q=${query}&filter=music_songs`, { signal: AbortSignal.timeout(4000) });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        return extractId(data.items[0].url);
+                    }
+                } catch(e) {}
+            }
+            
+            // Fallback to broad search if music_songs filter returns empty
+            for (let url of PIPED_INSTANCES) {
+                try {
+                    const res = await fetch(`${url}/search?q=${query}`, { signal: AbortSignal.timeout(4000) });
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        return extractId(data.items[0].url);
+                    }
+                } catch(e) {}
+            }
+            return null;
+        }
+
+        function extractId(url) {
+            if (url.includes('v=')) return url.split('v=')[1];
+            if (url.includes('/watch?v=')) return url.replace('/watch?v=', '');
+            return url;
+        }
+
+        // --- Playback Controls ---
+        async function loadTrack(index) {
+            if (!isAudioEngineReady) return;
+            if (index < 0 || index >= queue.length) return;
+            
+            currentQueueIndex = index;
+            const track = queue[currentQueueIndex];
+
+            // 1. Sync Text UI
+            uiSync.title.forEach(el => el.textContent = track.title);
+            uiSync.artist.forEach(el => el.textContent = track.artist);
+            uiSync.art.forEach(el => el.src = track.artwork);
+            syncHeartIcons(track.id);
+            
+            document.getElementById('miniPlayer').classList.remove('hidden', 'translate-y-[150%]');
+            
+            // 2. Reset Progress
+            progressBarInput.value = 0;
+            updateSliderVisual(0);
+            miniProgressBar.style.width = '0%';
+            currentTimeDisplay.textContent = '0:00';
+            durationDisplay.textContent = '-:--';
+            
+            // 3. Pause & Show Loading
+            if (ytPlayer.pauseVideo) ytPlayer.pauseVideo();
+            setLoadingState(true);
+            updateMediaSession(track);
+
+            // 4. Fetch YouTube ID for Full Song
+            const ytId = await getYouTubeId(track.title, track.artist);
+            
+            // 5. Play Video
+            if (ytId) {
+                ytPlayer.loadVideoById(ytId);
+                ytPlayer.playVideo();
+            } else {
+                setLoadingState(false);
+                playNext(); // Skip if completely blocked
+            }
+        }
+
+        function togglePlay(e) {
+            if (e) e.stopPropagation();
+            if (!ytPlayer || ytPlayer.getPlayerState === undefined) return;
+            
+            const state = ytPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+            } else {
+                ytPlayer.playVideo();
+            }
+        }
+
+        function playNext() {
+            if (queue.length === 0) return;
+            let next = currentQueueIndex + 1;
+            if (isShuffle) next = Math.floor(Math.random() * queue.length);
+            else if (next >= queue.length) next = 0;
+            loadTrack(next);
+            updateQueueUI();
+        }
+
+        function playPrevious() {
+            if (queue.length === 0) return;
+            if (ytPlayer && ytPlayer.getCurrentTime() > 5) {
+                ytPlayer.seekTo(0);
+                return;
+            }
+            let prev = currentQueueIndex - 1;
+            if (prev < 0) prev = queue.length - 1;
+            loadTrack(prev);
+            updateQueueUI();
+        }
+
+        // --- Sync Progress ---
+        function startSync() {
+            if (syncInterval) clearInterval(syncInterval);
+            syncInterval = setInterval(() => {
+                if (!isPlaying || !ytPlayer || !ytPlayer.getCurrentTime) return;
+                
+                const cur = ytPlayer.getCurrentTime();
+                const dur = ytPlayer.getDuration();
+                
+                if (dur > 0) {
+                    const percent = (cur / dur) * 100;
+                    
+                    miniProgressBar.style.width = `${percent}%`;
+                    
+                    if (document.activeElement !== progressBarInput) {
+                        progressBarInput.value = percent;
+                        updateSliderVisual(percent);
+                        currentTimeDisplay.textContent = formatTime(cur);
+                        durationDisplay.textContent = formatTime(dur);
+                    }
+                }
+            }, 500);
+        }
+
+        progressBarInput.addEventListener('input', (e) => updateSliderVisual(e.target.value));
+        progressBarInput.addEventListener('change', (e) => {
+            if (ytPlayer && ytPlayer.getDuration) {
+                const dur = ytPlayer.getDuration();
+                if (dur > 0) ytPlayer.seekTo((e.target.value / 100) * dur);
+            }
+        });
+
+        // --- UI Updaters ---
+        function updateSliderVisual(val) {
+            progressTrackBg.style.background = `linear-gradient(to right, #1DB954 ${val}%, #1DB954 ${val}%, #4d4d4d ${val}%, #4d4d4d 100%)`;
+        }
+
+        function updatePlayPauseUI() {
+            const iconClass = isPlaying ? "fa-solid fa-pause" : "fa-solid fa-play ml-1";
+            uiSync.playIcon.forEach(i => i.className = iconClass + " absolute");
+            document.getElementById('fullArt').classList[isPlaying ? 'add' : 'remove']('scale-105');
+        }
+
+        function setLoadingState(isLoading) {
+            uiSync.playIcon.forEach(i => i.style.opacity = isLoading ? '0' : '1');
+            uiSync.loaderIcon.forEach(i => i.style.opacity = isLoading ? '1' : '0');
+        }
+
+        function formatTime(s) {
+            if (isNaN(s)) return "0:00";
+            const m = Math.floor(s / 60);
+            const secs = Math.floor(s % 60);
+            return `${m}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            document.getElementById('shuffleBtn').classList[isShuffle ? 'replace' : 'replace'](isShuffle ? 'text-app-muted' : 'text-app-accent', isShuffle ? 'text-app-accent' : 'text-app-muted');
+        }
+
+        function toggleLoop() {
+            isLoop = !isLoop;
+            document.getElementById('loopBtn').classList[isLoop ? 'replace' : 'replace'](isLoop ? 'text-app-muted' : 'text-app-accent', isLoop ? 'text-app-accent' : 'text-app-muted');
+        }
+
+        // --- iTunes Metadata Setup ---
+        const countryConfig = {
+            'US': { label: 'Top Hits', term: 'Pop' },
+            'IN': { label: 'Top Bollywood', term: 'Bollywood' },
+            'GB': { label: 'UK Chart', term: 'UK Pop' },
+            'KR': { label: 'K-Pop Top', term: 'K-Pop' }
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
-            // Restore Region Select UI
             const savedRegion = localStorage.getItem('streamify_region') || 'US';
             const regionSelect = document.getElementById('regionSelect');
             if(regionSelect) {
@@ -506,128 +682,64 @@
                     fetchTrending(); 
                 });
             }
-
             fetchTrending();
             renderLibrary();
             setupNavigation();
             setupSearch();
         });
 
-        // --- Navigation Logic ---
-        function setupNavigation() {
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const target = link.getAttribute('data-target');
-                    
-                    navLinks.forEach(l => l.classList.remove('text-white', 'font-bold'));
-                    document.querySelectorAll(`[data-target="${target}"]`).forEach(l => {
-                        l.classList.add('text-white', 'font-bold');
-                    });
-                    
-                    Object.values(views).forEach(v => v.classList.add('hidden'));
-                    views[target].classList.remove('hidden');
-
-                    if(target === 'libraryView') renderLibrary();
-                });
-            });
-        }
-
-        // --- iTunes API Fetching System ---
         async function fetchITunes(query, limit = 25, country = 'US') {
             try {
-                const q = encodeURIComponent(query);
-                const url = `https://itunes.apple.com/search?term=${q}&entity=song&limit=${limit}&country=${country}`;
-                
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("Failed to fetch from iTunes");
-                
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=${limit}&country=${country}`);
                 const json = await res.json();
-                
-                // Format directly into our unified track object
-                return (json.results || [])
-                    .filter(t => t.previewUrl) // Ensure it's playable
-                    .map(t => ({
-                        id: t.trackId.toString(),
-                        title: t.trackName,
-                        artist: t.artistName,
-                        // Fetch gorgeous high-res imagery by replacing 100x100bb with 600x600bb
-                        artwork: t.artworkUrl100 ? t.artworkUrl100.replace('100x100bb', '600x600bb') : 'https://placehold.co/600x600/181818/ffffff?text=♫',
-                        streamUrl: t.previewUrl
-                    }));
-            } catch (err) {
-                console.error("iTunes Fetch Error:", err);
-                return [];
-            }
+                return (json.results || []).map(t => ({
+                    id: t.trackId.toString(),
+                    title: t.trackName,
+                    artist: t.artistName,
+                    artwork: t.artworkUrl100 ? t.artworkUrl100.replace('100x100bb', '600x600bb') : 'https://placehold.co/600x600/181818/ffffff?text=♫'
+                }));
+            } catch (err) { return []; }
         }
 
         async function fetchTrending() {
-            trendingList.innerHTML = '<div class="col-span-full py-10 text-center opacity-70"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i><p>Loading catalog from Apple...</p></div>';
-            
             const region = localStorage.getItem('streamify_region') || 'US';
-            const config = countryConfig[region] || countryConfig['US'];
-            
+            const config = countryConfig[region];
             document.getElementById('homeTitle').textContent = `Trending Now - ${config.label}`;
-
-            const tracks = await fetchITunes(config.term, 20, region);
             
-            if (tracks.length === 0) {
-                trendingList.innerHTML = '<div class="col-span-full text-center text-app-muted py-10">Network error. Please try again.</div>';
-            } else {
-                renderTrackGrid(tracks, trendingList, 'home');
-            }
+            const tracks = await fetchITunes(config.term, 20, region);
+            renderTrackGrid(tracks, document.getElementById('trendingList'));
         }
 
         function setupSearch() {
             const form = document.getElementById('searchForm');
-            const clearBtn = document.getElementById('clearSearch');
-            const loading = document.getElementById('searchLoading');
-            const results = document.getElementById('searchResults');
-
-            searchInput.addEventListener('input', () => {
-                clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
-            });
-
-            clearBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                clearBtn.style.display = 'none';
-                searchInput.focus();
-                results.classList.add('hidden');
-            });
-
+            const input = document.getElementById('searchInput');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const q = searchInput.value.trim();
+                const q = input.value.trim();
                 if (!q) return;
                 
-                searchInput.blur();
-                results.classList.add('hidden');
-                loading.classList.remove('hidden');
-                loading.classList.add('flex');
+                input.blur();
+                document.getElementById('searchResults').classList.add('hidden');
+                document.getElementById('searchLoading').classList.replace('hidden', 'flex');
                 
-                const region = localStorage.getItem('streamify_region') || 'US';
-                const tracks = await fetchITunes(q, 25, region);
+                const tracks = await fetchITunes(q, 25, localStorage.getItem('streamify_region') || 'US');
                 
-                loading.classList.add('hidden');
-                loading.classList.remove('flex');
-                results.classList.remove('hidden');
-                
-                renderTrackList(tracks, searchList, 'search');
+                document.getElementById('searchLoading').classList.replace('flex', 'hidden');
+                document.getElementById('searchResults').classList.remove('hidden');
+                renderTrackList(tracks, document.getElementById('searchList'));
             });
         }
 
-        // --- Rendering UI ---
-        function renderTrackGrid(tracks, container, context) {
+        function renderTrackGrid(tracks, container) {
             container.innerHTML = '';
             tracks.forEach((track, index) => {
                 const div = document.createElement('div');
                 div.className = "bg-app-elevated p-4 rounded-lg hover:bg-app-highlight transition cursor-pointer group shadow";
-                div.onclick = () => setQueueAndPlay(tracks, index);
-                
+                div.onclick = () => { queue = [...tracks]; loadTrack(index); updateQueueUI(); };
                 div.innerHTML = `
                     <div class="relative w-full aspect-square mb-4 shadow-lg rounded-md overflow-hidden">
-                        <img src="${track.artwork}" class="w-full h-full object-cover transition-transform group-hover:scale-105" loading="lazy">
-                        <div class="absolute bottom-2 right-2 w-10 h-10 bg-app-accent rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl">
+                        <img src="${track.artwork}" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 right-2 w-10 h-10 bg-app-accent rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
                             <i class="fa-solid fa-play ml-1"></i>
                         </div>
                     </div>
@@ -638,23 +750,15 @@
             });
         }
 
-        function renderTrackList(tracks, container, context) {
+        function renderTrackList(tracks, container) {
             container.innerHTML = '';
-            if(tracks.length === 0) {
-                container.innerHTML = '<p class="py-4 text-app-muted">No tracks found.</p>';
-                return;
-            }
             tracks.forEach((track, index) => {
                 const div = document.createElement('div');
                 div.className = "flex items-center gap-3 p-2 rounded-md hover:bg-white/10 transition cursor-pointer group";
-                div.onclick = () => setQueueAndPlay(tracks, index);
-                
+                div.onclick = () => { queue = [...tracks]; loadTrack(index); updateQueueUI(); };
                 div.innerHTML = `
                     <div class="w-12 h-12 relative shrink-0">
                         <img src="${track.artwork}" class="w-full h-full object-cover rounded shadow">
-                        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center rounded">
-                            <i class="fa-solid fa-play text-white text-xs"></i>
-                        </div>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h4 class="text-white text-sm font-semibold truncate group-hover:text-app-accent transition-colors">${track.title}</h4>
@@ -668,156 +772,13 @@
             });
         }
 
-        // --- Audio Playback Core ---
-        function setQueueAndPlay(trackList, startIndex) {
-            queue = [...trackList]; // Clone array
-            loadTrack(startIndex);
-            updateQueueUI();
-        }
-
-        function playLibrary() {
-            if(favorites.length > 0) setQueueAndPlay(favorites, 0);
-        }
-
-        function loadTrack(index) {
-            if (index < 0 || index >= queue.length) return;
-            currentQueueIndex = index;
-            const track = queue[currentQueueIndex];
-
-            // Update UI sync
-            uiSync.title.forEach(el => el.textContent = track.title);
-            uiSync.artist.forEach(el => el.textContent = track.artist);
-            uiSync.art.forEach(el => el.src = track.artwork);
-            syncHeartIcons(track.id);
-
-            // Change dynamic header color (pseudo-random hue based on title)
-            const hues = [0, 140, 200, 280, 320];
-            const hue = hues[track.title.length % hues.length];
-            document.getElementById('headerGradient').style.background = `linear-gradient(to bottom, hsl(${hue}, 40%, 20%), #121212)`;
-
-            // Reset progress
-            progressBarInput.value = 0;
-            updateSliderVisual(0);
-            miniProgressBar.style.width = '0%';
-            
-            // Show Mini Player
-            miniPlayer.classList.remove('hidden');
-            setTimeout(() => miniPlayer.classList.remove('translate-y-[150%]'), 10);
-
-            // Load audio (iTunes previewUrl)
-            audio.src = track.streamUrl;
-            audio.play().catch(e => console.error("Play blocked:", e));
-
-            updateMediaSession(track);
-            initVisualizer();
-            generateDummyLyrics(track);
-        }
-
-        function togglePlay(e) {
-            if (e) e.stopPropagation();
-            if (!audio.src) return;
-            isPlaying ? audio.pause() : audio.play();
-        }
-
-        function playNext(e) {
-            if (e) e.stopPropagation();
-            if (queue.length === 0) return;
-            let next = currentQueueIndex + 1;
-            if (isShuffle) next = Math.floor(Math.random() * queue.length);
-            else if (next >= queue.length) next = 0;
-            loadTrack(next);
-            updateQueueUI();
-        }
-
-        function playPrevious() {
-            if (queue.length === 0) return;
-            if (audio.currentTime > 3) { audio.currentTime = 0; return; }
-            let prev = currentQueueIndex - 1;
-            if (prev < 0) prev = queue.length - 1;
-            loadTrack(prev);
-            updateQueueUI();
-        }
-
-        // --- Audio Events ---
-        audio.addEventListener('play', () => {
-            isPlaying = true;
-            const iconClass = "fa-solid fa-pause";
-            uiSync.playIcon.forEach(i => {
-                i.className = iconClass;
-                i.classList.remove('ml-1');
-            });
-            document.getElementById('fullArt').classList.replace('scale-95', 'scale-100');
-        });
-
-        audio.addEventListener('pause', () => {
-            isPlaying = false;
-            const iconClass = "fa-solid fa-play ml-1";
-            uiSync.playIcon.forEach(i => i.className = iconClass);
-        });
-
-        audio.addEventListener('timeupdate', () => {
-            if (!audio.duration) return;
-            const percent = (audio.currentTime / audio.duration) * 100;
-            
-            miniProgressBar.style.width = `${percent}%`;
-            
-            if (document.activeElement !== progressBarInput) {
-                progressBarInput.value = percent;
-                updateSliderVisual(percent);
-                currentTimeDisplay.textContent = formatTime(audio.currentTime);
-                durationDisplay.textContent = `-${formatTime(audio.duration - audio.currentTime)}`;
-            }
-            
-            syncLyricsHighlight();
-        });
-
-        audio.addEventListener('loadedmetadata', () => {
-            durationDisplay.textContent = `-${formatTime(audio.duration)}`;
-        });
-
-        audio.addEventListener('ended', () => {
-            if (!audio.loop) playNext();
-        });
-
-        // --- Controls ---
-        progressBarInput.addEventListener('input', (e) => updateSliderVisual(e.target.value));
-        progressBarInput.addEventListener('change', (e) => {
-            if (audio.duration) audio.currentTime = (e.target.value / 100) * audio.duration;
-        });
-
-        function updateSliderVisual(val) {
-            progressTrackBg.style.background = `linear-gradient(to right, #ffffff ${val}%, #ffffff ${val}%, #4d4d4d ${val}%, #4d4d4d 100%)`;
-        }
-
-        function toggleShuffle() {
-            isShuffle = !isShuffle;
-            const btn = document.getElementById('shuffleBtn');
-            isShuffle ? btn.classList.replace('text-app-muted', 'text-app-accent') : btn.classList.replace('text-app-accent', 'text-app-muted');
-        }
-
-        function toggleLoop() {
-            audio.loop = !audio.loop;
-            const btn = document.getElementById('loopBtn');
-            audio.loop ? btn.classList.replace('text-app-muted', 'text-app-accent') : btn.classList.replace('text-app-accent', 'text-app-muted');
-        }
-
-        function formatTime(s) {
-            if (isNaN(s)) return "0:00";
-            const m = Math.floor(s / 60);
-            const secs = Math.floor(s % 60);
-            return `${m}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        // --- Favorites (LocalStorage) ---
-        function isFavorite(id) {
-            return favorites.some(t => t.id === id);
-        }
+        // --- Favorites & Syncing ---
+        function isFavorite(id) { return favorites.some(t => t.id === id); }
 
         function toggleCurrentFavorite(e) {
             if(e) e.stopPropagation();
             if(currentQueueIndex === -1) return;
-            const currentTrack = queue[currentQueueIndex];
-            toggleFavoriteById(currentTrack.id, null, currentTrack);
+            toggleFavoriteById(queue[currentQueueIndex].id, null, queue[currentQueueIndex]);
         }
 
         function toggleFavoriteById(id, btnElement, trackObj) {
@@ -826,92 +787,70 @@
             else if(trackObj) favorites.push(trackObj);
             
             localStorage.setItem('streamify_favs', JSON.stringify(favorites));
-            
-            if(queue[currentQueueIndex] && queue[currentQueueIndex].id === id) {
-                syncHeartIcons(id);
-            }
-
+            if(queue[currentQueueIndex] && queue[currentQueueIndex].id === id) syncHeartIcons(id);
             if(btnElement) {
                 const icon = btnElement.querySelector('i');
-                if(isFavorite(id)) icon.className = 'fa-solid fa-heart text-app-accent';
-                else icon.className = 'fa-regular fa-heart';
+                icon.className = isFavorite(id) ? 'fa-solid fa-heart text-app-accent' : 'fa-regular fa-heart';
             }
-
             renderLibrary();
         }
 
         function syncHeartIcons(id) {
-            const fav = isFavorite(id);
-            const c = fav ? "fa-solid fa-heart text-app-accent" : "fa-regular fa-heart";
+            const c = isFavorite(id) ? "fa-solid fa-heart text-app-accent" : "fa-regular fa-heart";
             uiSync.likeBtn.forEach(btn => btn.innerHTML = `<i class="${c} ${btn.id==='fullLikeBtn'?'text-2xl':'text-xl'}"></i>`);
         }
 
         function renderLibrary() {
             document.getElementById('likedCount').textContent = favorites.length;
-            renderTrackList(favorites, libraryList, 'library');
+            renderTrackList(favorites, document.getElementById('libraryList'));
         }
 
-        // --- Full Player Views (Player, Lyrics, Queue) ---
+        function playLibrary() {
+            if(favorites.length > 0) { queue = [...favorites]; loadTrack(0); updateQueueUI(); }
+        }
+
+        // --- Player Views (Player, Queue) ---
         function openFullScreenPlayer() {
-            fullPlayer.classList.remove('hidden');
-            void fullPlayer.offsetWidth; 
-            fullPlayer.classList.remove('player-hidden');
-            fullPlayer.classList.add('player-visible');
+            const fp = document.getElementById('fullPlayer');
+            fp.classList.remove('hidden');
+            void fp.offsetWidth; 
+            fp.classList.replace('player-hidden', 'player-visible');
         }
 
         function closeFullScreenPlayer() {
-            fullPlayer.classList.remove('player-visible');
-            fullPlayer.classList.add('player-hidden');
-            setTimeout(() => fullPlayer.classList.add('hidden'), 500);
+            const fp = document.getElementById('fullPlayer');
+            fp.classList.replace('player-visible', 'player-hidden');
+            setTimeout(() => fp.classList.add('hidden'), 500);
         }
 
         function switchFullView(viewName) {
-            ['Player', 'Lyrics', 'Queue'].forEach(n => {
+            ['Player', 'Queue'].forEach(n => {
                 const el = document.getElementById(`tab${n}`);
-                if (n.toLowerCase() === viewName) {
-                    el.classList.add('text-white', 'border-app-accent');
-                    el.classList.remove('border-transparent');
-                } else {
-                    el.classList.remove('text-white', 'border-app-accent');
-                    el.classList.add('border-transparent');
-                }
+                if (n.toLowerCase() === viewName) el.classList.add('text-white', 'border-app-accent');
+                else el.classList.remove('text-white', 'border-app-accent');
             });
-
-            ['playerView', 'lyricsView', 'queueView'].forEach(id => {
+            ['playerView', 'queueView'].forEach(id => {
                 const el = document.getElementById(`fp-${id}`);
-                if (id === `${viewName}View`) {
-                    el.classList.remove('opacity-0', 'pointer-events-none');
-                } else {
-                    el.classList.add('opacity-0', 'pointer-events-none');
-                }
+                if (id === `${viewName}View`) el.classList.remove('opacity-0', 'pointer-events-none');
+                else el.classList.add('opacity-0', 'pointer-events-none');
             });
         }
 
         function updateQueueUI() {
             if(currentQueueIndex === -1) return;
             const current = queue[currentQueueIndex];
-            
             document.getElementById('queueNowPlaying').innerHTML = `
                 <img src="${current.artwork}" class="w-12 h-12 rounded shadow">
                 <div>
                     <p class="text-app-accent font-bold text-sm">${current.title}</p>
                     <p class="text-app-muted text-xs">${current.artist}</p>
                 </div>
-                <div class="ml-auto flex gap-1 items-end h-4">
-                    <div class="w-1 bg-app-accent h-full animate-bounce"></div>
-                    <div class="w-1 bg-app-accent h-2/3 animate-bounce" style="animation-delay: 0.1s"></div>
-                    <div class="w-1 bg-app-accent h-full animate-bounce" style="animation-delay: 0.2s"></div>
-                </div>
             `;
 
             const qList = document.getElementById('queueList');
             qList.innerHTML = '';
-            
             const upNext = queue.slice(currentQueueIndex + 1, currentQueueIndex + 21);
-            if(upNext.length === 0) {
-                qList.innerHTML = '<p class="text-app-muted text-sm">No upcoming tracks in queue.</p>';
-                return;
-            }
+            if(upNext.length === 0) return qList.innerHTML = '<p class="text-app-muted text-sm">No upcoming tracks.</p>';
 
             upNext.forEach((track, idx) => {
                 const actualIndex = currentQueueIndex + 1 + idx;
@@ -919,7 +858,6 @@
                 div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/10 cursor-pointer";
                 div.onclick = () => { loadTrack(actualIndex); updateQueueUI(); };
                 div.innerHTML = `
-                    <span class="text-app-muted w-4 text-xs">${idx + 1}</span>
                     <img src="${track.artwork}" class="w-10 h-10 rounded shadow">
                     <div class="flex flex-col flex-1 min-w-0">
                         <span class="text-white text-sm truncate">${track.title}</span>
@@ -930,147 +868,32 @@
             });
         }
 
-        // --- Web Audio API Visualizer ---
-        function initVisualizer() {
-            if (isAudioInitialized) return;
-            
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                source = audioCtx.createMediaElementSource(audio);
-                
-                source.connect(analyser);
-                analyser.connect(audioCtx.destination);
-                
-                analyser.fftSize = 64; 
-                
-                canvas = document.getElementById('visualizer');
-                canvasCtx = canvas.getContext('2d');
-                
-                isAudioInitialized = true;
-                drawVisualizer();
-            } catch (e) {
-                console.log("Audio Context initialized error or blocked by browser CORS.", e);
-            }
-        }
-
-        function drawVisualizer() {
-            if (!isPlaying) {
-                requestAnimationFrame(drawVisualizer);
-                return;
-            }
-            
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            requestAnimationFrame(drawVisualizer);
-            analyser.getByteFrequencyData(dataArray);
-
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const barWidth = (canvas.width / bufferLength) * 1.5;
-            let barHeight;
-            let x = 0;
-
-            for (let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] / 2.5; 
-                
-                const grad = canvasCtx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-                grad.addColorStop(0, "rgba(29, 185, 84, 0.8)"); 
-                grad.addColorStop(1, "rgba(29, 185, 84, 0.1)");
-                
-                canvasCtx.fillStyle = grad;
-                canvasCtx.beginPath();
-                canvasCtx.roundRect(x, canvas.height - barHeight, barWidth - 2, barHeight, [4, 4, 0, 0]);
-                canvasCtx.fill();
-
-                x += barWidth;
-            }
-        }
-
-        // --- Media Session API (Lock Screen) ---
-        function updateMediaSession(track) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: track.title,
-                    artist: track.artist,
-                    album: 'Streamify Web',
-                    artwork: [
-                        { src: track.artwork, sizes: '512x512', type: 'image/jpeg' }
-                    ]
+        function setupNavigation() {
+            const views = { homeView: document.getElementById('homeView'), searchView: document.getElementById('searchView'), libraryView: document.getElementById('libraryView'), accountView: document.getElementById('accountView') };
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = link.getAttribute('data-target');
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('text-white', 'font-bold'));
+                    document.querySelectorAll(`[data-target="${target}"]`).forEach(l => l.classList.add('text-white', 'font-bold'));
+                    Object.values(views).forEach(v => v.classList.add('hidden'));
+                    views[target].classList.remove('hidden');
+                    if(target === 'libraryView') renderLibrary();
                 });
-
-                navigator.mediaSession.setActionHandler('play', () => audio.play());
-                navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-                navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
-                navigator.mediaSession.setActionHandler('nexttrack', playNext);
-            }
-        }
-
-        // --- Lyrics Simulator ---
-        let dummyLyricsData = [];
-        function generateDummyLyrics(track) {
-            const container = document.getElementById('lyricsContainer');
-            container.innerHTML = '';
-            
-            const phrases = [
-                `♪ (Intro music) ♪`,
-                `Yeah, feeling the vibe of ${track.title}`,
-                `Produced by ${track.artist}`,
-                `Let the beat drop...`,
-                `Ooooh yeah...`,
-                `Dancing in the moonlight`,
-                `Can't stop this feeling`,
-                `We go all night long`,
-                `♪ (Instrumental break) ♪`,
-                `Bring it back now`,
-                `Singing along to ${track.title}`,
-                `Fading out...`
-            ];
-
-            // Map lyrics evenly across the 30s preview
-            const interval = 30 / phrases.length;
-            dummyLyricsData = phrases.map((text, i) => ({
-                time: i * interval, 
-                text: text
-            }));
-
-            dummyLyricsData.forEach((line, i) => {
-                const p = document.createElement('p');
-                p.className = 'lyric-line cursor-pointer';
-                p.textContent = line.text;
-                p.id = `lyric-${i}`;
-                p.onclick = () => { audio.currentTime = line.time; };
-                container.appendChild(p);
             });
         }
 
-        function syncLyricsHighlight() {
-            if(document.getElementById('fp-lyricsView').classList.contains('opacity-0')) return; 
-
-            const cTime = audio.currentTime;
-            let activeIndex = -1;
-            
-            for(let i=0; i<dummyLyricsData.length; i++) {
-                if(cTime >= dummyLyricsData[i].time) activeIndex = i;
-                else break;
-            }
-
-            if(activeIndex > -1) {
-                document.querySelectorAll('.lyric-line').forEach((el, idx) => {
-                    if(idx === activeIndex) {
-                        el.classList.add('active');
-                        const container = document.getElementById('fp-lyricsView');
-                        container.scrollTo({
-                            top: el.offsetTop - (container.offsetHeight / 2),
-                            behavior: 'smooth'
-                        });
-                    } else {
-                        el.classList.remove('active');
-                    }
+        // --- Media Session (Lock Screen) ---
+        function updateMediaSession(track) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title, artist: track.artist, album: 'Streamify Web',
+                    artwork: [{ src: track.artwork, sizes: '512x512', type: 'image/jpeg' }]
                 });
+                navigator.mediaSession.setActionHandler('play', () => ytPlayer && ytPlayer.playVideo());
+                navigator.mediaSession.setActionHandler('pause', () => ytPlayer && ytPlayer.pauseVideo());
+                navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
+                navigator.mediaSession.setActionHandler('nexttrack', playNext);
             }
         }
     </script>
