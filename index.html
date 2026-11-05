@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Streamify Liquid</title>
+    <title>Streamify Pro - iOS Liquid</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,28 +17,27 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Helvetica Neue', 'sans-serif'],
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'sans-serif'],
                     },
                     colors: {
                         liquid: {
-                            bg: '#f2f2f7',
-                            glass: 'rgba(255, 255, 255, 0.65)',
-                            glassDark: 'rgba(255, 255, 255, 0.2)',
-                            accent: '#FF2D55',
-                            text: '#1c1c1e',
+                            bg: '#000000',
+                            surface: '#121212',
+                            elevated: '#1a1a1a',
+                            accent: '#1DB954', /* Spotify Green / Liquid Pink toggleable, using Spotify Green as base */
+                            applePink: '#FF2D55',
+                            text: '#ffffff',
                             muted: '#8e8e93'
                         }
                     },
                     animation: {
-                        'blob': 'blob 10s infinite alternate',
-                        'spin-slow': 'spin 8s linear infinite',
+                        'blob': 'blob 12s infinite alternate',
                     },
                     keyframes: {
                         blob: {
                             '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '50%': { transform: 'translate(40px, -60px) scale(1.2)' },
+                            '100%': { transform: 'translate(-30px, 30px) scale(0.9)' },
                         }
                     }
                 }
@@ -48,33 +47,35 @@
 
     <style>
         body {
-            background-color: #f2f2f7;
+            background-color: #000000;
+            color: #ffffff;
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
-            color: #1c1c1e;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
         }
 
-        /* Hide Scrollbar */
+        /* Hide Scrollbars */
         ::-webkit-scrollbar { display: none; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .pt-safe { padding-top: max(20px, env(safe-area-inset-top)); }
-        .pb-safe { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+        .pt-safe { padding-top: max(16px, env(safe-area-inset-top)); }
+        .pb-safe { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
 
         /* Liquid Glassmorphism */
         .liquid-glass {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: saturate(200%) blur(30px);
-            -webkit-backdrop-filter: saturate(200%) blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            background: rgba(22, 22, 23, 0.75);
+            backdrop-filter: saturate(180%) blur(35px);
+            -webkit-backdrop-filter: saturate(180%) blur(35px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .liquid-glass-dark {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: saturate(200%) blur(40px);
-            -webkit-backdrop-filter: saturate(200%) blur(40px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        .liquid-glass-modal {
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: saturate(200%) blur(50px);
+            -webkit-backdrop-filter: saturate(200%) blur(50px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         /* Fluid Sliders */
@@ -82,189 +83,195 @@
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
-            height: 30px;
+            height: 24px;
             display: flex;
             align-items: center;
         }
         input[type=range]:focus { outline: none; }
         
         .scrubber-track {
-            background: rgba(0, 0, 0, 0.1);
-            height: 6px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            height: 5px;
+            border-radius: 3px;
             width: 100%;
             position: relative;
             overflow: hidden;
             pointer-events: none;
         }
         .scrubber-fill {
-            background: #FF2D55; /* Apple Music Pink/Red */
+            background: #1DB954;
             height: 100%;
             width: 0%;
             position: absolute;
             top: 0;
             left: 0;
-            border-radius: 4px;
-            transition: width 0.1s linear;
+            border-radius: 3px;
         }
 
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 30px;
-            width: 30px;
+            height: 24px;
+            width: 24px;
             border-radius: 50%;
             background: transparent;
             cursor: pointer;
         }
 
-        /* Player Animations */
+        /* Modal / Player Sliding */
         .player-visible { transform: translateY(0%); opacity: 1; }
         .player-hidden { transform: translateY(100%); opacity: 0; }
         
-        .art-playing { transform: scale(1); box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
-        .art-paused { transform: scale(0.85); box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        .art-playing { transform: scale(1); box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
+        .art-paused { transform: scale(0.88); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
         .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* Dynamic Background blobs for full player */
         .bg-blob {
             position: absolute;
-            filter: blur(80px);
-            opacity: 0.6;
+            filter: blur(100px);
+            opacity: 0.35;
             z-index: -1;
             border-radius: 50%;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="flex h-[100dvh] w-full overflow-hidden select-none relative font-sans">
+<body class="flex flex-col md:flex-row h-[100dvh] w-screen overflow-hidden select-none relative font-sans">
 
-    <!-- 
-      CRITICAL MOBILE FIX FOR YOUTUBE PLAYBACK
-      Do not use display:none or w-0 h-0. Mobile browsers throttle hidden media.
-      Position absolute, 1x1 size, tiny opacity, and playsinline bypasses this.
-    -->
+    <!-- Hidden YouTube Player Container (Critical for mobile inline play) -->
     <div style="position: absolute; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; z-index: -10; overflow: hidden; top: 0; left: 0;">
         <div id="yt-player"></div>
     </div>
 
-    <!-- Background ambient blobs for main layout -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden bg-liquid-bg pointer-events-none">
-        <div class="bg-blob w-96 h-96 bg-pink-300 top-[-10%] left-[-10%] animate-blob"></div>
-        <div class="bg-blob w-96 h-96 bg-purple-300 bottom-[-10%] right-[-10%] animate-blob" style="animation-delay: 2s;"></div>
+    <!-- Ambient Liquid Background Blobs -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden bg-black pointer-events-none">
+        <div class="bg-blob w-[400px] h-[400px] bg-emerald-900 top-[-10%] left-[-10%] animate-blob"></div>
+        <div class="bg-blob w-[450px] h-[450px] bg-purple-900 bottom-[-10%] right-[-10%] animate-blob" style="animation-delay: 3s;"></div>
     </div>
 
     <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex flex-col w-64 liquid-glass h-full z-10 p-6 pt-safe shrink-0 border-r border-white/50">
-        <div class="text-2xl font-bold mb-8 flex items-center gap-2 text-liquid-accent">
-            <i class="fa-solid fa-droplet"></i> Liquid
+    <aside class="hidden md:flex flex-col w-64 bg-liquid-surface h-full z-10 p-6 pt-safe shrink-0 border-r border-white/10">
+        <div class="text-2xl font-bold mb-8 flex items-center gap-2.5 text-liquid-accent">
+            <i class="fa-solid fa-bolt-lightning"></i> Streamify
         </div>
         
-        <nav class="flex flex-col gap-2 font-medium text-[15px]">
-            <a href="#" class="flex items-center gap-4 p-3 rounded-2xl bg-white/40 text-liquid-accent shadow-sm backdrop-blur-md transition">
+        <nav class="flex flex-col gap-1.5 font-medium text-[15px]">
+            <a href="#" onclick="switchTab('home')" id="navHome" class="flex items-center gap-4 p-3 rounded-xl bg-white/10 text-white transition">
                 <i class="fa-solid fa-house w-5 text-center text-lg"></i> Home
             </a>
-            <a href="#" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/40 text-liquid-text transition">
+            <a href="#" onclick="switchTab('search')" id="navSearch" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-liquid-muted hover:text-white transition">
                 <i class="fa-solid fa-magnifying-glass w-5 text-center text-lg"></i> Search
             </a>
-            <a href="#" class="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/40 text-liquid-text transition">
-                <i class="fa-solid fa-layer-group w-5 text-center text-lg"></i> Library
+            <a href="#" onclick="switchTab('favorites')" id="navFav" class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 text-liquid-muted hover:text-white transition">
+                <i class="fa-solid fa-heart w-5 text-center text-lg"></i> Favorites (<span id="favCount">0</span>)
             </a>
         </nav>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full relative z-0 overflow-hidden">
+    <!-- Main App Container -->
+    <main class="flex-1 flex flex-col h-[100dvh] relative z-0 overflow-hidden">
         
         <!-- Header -->
-        <header class="h-16 px-6 pt-safe flex items-center justify-between z-20 sticky top-0 liquid-glass border-b-0">
-            <h1 class="text-2xl font-bold tracking-tight">Listen Now</h1>
-            <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white/60 shadow-sm flex items-center justify-center text-liquid-text active:scale-95 transition">
-                <i class="fa-solid fa-gear"></i>
-            </button>
+        <header class="h-16 px-6 pt-safe flex items-center justify-between z-20 sticky top-0 bg-black/60 backdrop-blur-xl border-b border-white/5">
+            <h1 id="headerTitle" class="text-2xl font-bold tracking-tight text-white">Listen Now</h1>
+            <div class="flex items-center gap-3">
+                <button onclick="openBluetoothModal()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:text-white active:scale-95 transition" title="Audio Output">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+                <button onclick="openSettings()" class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white/80 hover:text-white active:scale-95 transition" title="Settings">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+            </div>
         </header>
 
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto z-10 pb-36 px-6 pt-4" id="mainScrollArea">
+        <!-- Main Scrollable Feed -->
+        <div class="flex-1 overflow-y-auto z-10 pb-44 px-4 md:px-8 pt-4" id="mainScrollArea">
             
-            <div class="relative mb-8">
+            <!-- Search bar -->
+            <div class="relative mb-6">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-liquid-muted"></i>
-                <input type="text" id="searchInput" placeholder="Search artists, songs..." class="w-full liquid-glass rounded-2xl py-3.5 pl-11 pr-4 font-medium focus:outline-none text-[15px] shadow-sm transition border border-white/60 focus:border-liquid-accent/50">
+                <input type="text" id="searchInput" placeholder="What do you want to listen to?" class="w-full bg-liquid-surface text-white rounded-2xl py-3.5 pl-11 pr-4 font-medium focus:outline-none text-[15px] shadow-inner transition border border-white/10 focus:border-liquid-accent">
             </div>
 
-            <!-- API Warning -->
-            <div id="apiWarning" class="liquid-glass rounded-3xl p-6 text-center mb-8 hidden border border-red-200/50">
-                <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
+            <!-- API Key Missing Notice -->
+            <div id="apiWarning" class="liquid-glass rounded-3xl p-6 text-center mb-8 hidden border border-amber-500/30">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
                     <i class="fa-solid fa-key"></i>
                 </div>
-                <h3 class="font-bold text-red-800 text-lg mb-1">API Key Needed</h3>
-                <p class="text-sm text-red-600/80 mb-4 font-medium">Add a YouTube Data API v3 Key to stream music.</p>
-                <button onclick="openSettings()" class="bg-liquid-accent text-white font-bold py-2.5 px-6 rounded-full text-sm shadow-md active:scale-95 transition">Settings</button>
+                <h3 class="font-bold text-white text-lg mb-1">API Key Required</h3>
+                <p class="text-sm text-liquid-muted mb-4 font-medium">Please enter your YouTube Data API v3 Key in settings to start streaming.</p>
+                <button onclick="openSettings()" class="bg-liquid-accent text-black font-bold py-2.5 px-6 rounded-full text-sm shadow-lg active:scale-95 transition">Open Settings</button>
             </div>
 
-            <div id="loader" class="hidden flex-col items-center justify-center py-10 opacity-70">
+            <!-- Loader -->
+            <div id="loader" class="hidden flex-col items-center justify-center py-16">
                 <i class="fa-solid fa-circle-notch fa-spin text-3xl text-liquid-accent mb-3"></i>
+                <p class="text-xs text-liquid-muted tracking-wider uppercase font-semibold">Loading tracks...</p>
             </div>
 
-            <h2 class="text-xl font-bold tracking-tight mb-4" id="sectionTitle">Trending Top 50</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold tracking-tight text-white" id="sectionHeading">Trending Hits</h2>
+                <span class="text-xs text-liquid-muted font-medium" id="trackCountLabel"></span>
+            </div>
             
-            <div class="flex flex-col gap-3" id="trackList">
-                <!-- Rendered by JS -->
+            <!-- Track List -->
+            <div class="flex flex-col gap-2" id="trackList">
+                <!-- Injected via JS -->
             </div>
             
         </div>
     </main>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden liquid-glass fixed bottom-0 left-0 w-full h-[85px] z-30 flex items-start justify-around pt-2 pb-safe border-t border-white/40">
-        <a href="#" class="flex flex-col items-center gap-1 text-liquid-accent p-1 w-16">
+    <nav class="md:hidden liquid-glass fixed bottom-0 left-0 w-full h-[85px] z-30 flex items-start justify-around pt-2.5 pb-safe border-t border-white/10">
+        <a href="#" onclick="switchTab('home')" id="mobNavHome" class="flex flex-col items-center gap-1 text-liquid-accent p-1 w-20">
             <i class="fa-solid fa-house text-xl mb-0.5"></i>
             <span class="text-[10px] font-semibold">Home</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-16">
+        <a href="#" onclick="switchTab('search')" id="mobNavSearch" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-20">
             <i class="fa-solid fa-magnifying-glass text-xl mb-0.5"></i>
             <span class="text-[10px] font-medium">Search</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-16">
-            <i class="fa-solid fa-layer-group text-xl mb-0.5"></i>
-            <span class="text-[10px] font-medium">Library</span>
+        <a href="#" onclick="switchTab('favorites')" id="mobNavFav" class="flex flex-col items-center gap-1 text-liquid-muted p-1 w-20">
+            <i class="fa-solid fa-heart text-xl mb-0.5"></i>
+            <span class="text-[10px] font-medium">Favorites</span>
         </a>
     </nav>
 
     <!-- Floating Mini Player -->
-    <div id="miniPlayer" class="liquid-glass fixed bottom-[90px] md:bottom-6 left-3 right-3 md:left-[270px] md:right-8 rounded-2xl h-[68px] z-40 flex items-center justify-between px-3 cursor-pointer shadow-lg transition-all duration-500 translate-y-[200%] border border-white/60" onclick="openFullPlayer()">
+    <div id="miniPlayer" class="liquid-glass fixed bottom-[88px] md:bottom-6 left-3 right-3 md:left-[272px] md:right-8 rounded-2xl h-[68px] z-40 flex items-center justify-between px-3 cursor-pointer shadow-2xl transition-all duration-500 translate-y-[200%] border border-white/15" onclick="openFullPlayer()">
         <div class="flex items-center gap-3 w-[70%] min-w-0">
-            <img id="miniArt" src="https://placehold.co/100x100" class="w-12 h-12 rounded-xl object-cover shadow-sm bg-white/50 shrink-0">
+            <img id="miniArt" src="" class="w-12 h-12 rounded-xl object-cover shadow-md bg-white/10 shrink-0">
             <div class="flex flex-col overflow-hidden w-full">
-                <span id="miniTitle" class="text-[15px] font-semibold tracking-tight line-clamp-1">Not Playing</span>
+                <span id="miniTitle" class="text-[15px] font-semibold tracking-tight text-white line-clamp-1">Not Playing</span>
                 <span id="miniArtist" class="text-[13px] text-liquid-muted line-clamp-1">--</span>
             </div>
         </div>
         
         <div class="flex items-center justify-end gap-1 shrink-0">
-            <button class="w-11 h-11 flex items-center justify-center text-2xl active:scale-75 transition relative text-liquid-text" onclick="togglePlay(event)">
+            <button class="w-11 h-11 flex items-center justify-center text-2xl active:scale-75 transition relative text-white" onclick="togglePlay(event)">
                 <i class="fa-solid fa-play" id="miniPlayIcon"></i>
                 <i class="fa-solid fa-circle-notch fa-spin text-liquid-accent absolute opacity-0" id="miniLoaderIcon"></i>
             </button>
-            <button class="w-11 h-11 flex items-center justify-center text-xl active:scale-75 transition text-liquid-text hidden sm:flex" onclick="playNext(event)">
+            <button class="w-11 h-11 flex items-center justify-center text-xl active:scale-75 transition text-white hidden sm:flex" onclick="playNext(event)">
                 <i class="fa-solid fa-forward-step"></i>
             </button>
         </div>
 
-        <div class="absolute bottom-0 left-4 right-4 h-[3px] bg-black/5 rounded-full overflow-hidden">
+        <div class="absolute bottom-0 left-3 right-3 h-[2px] bg-white/10 rounded-full overflow-hidden">
             <div id="miniProgress" class="h-full bg-liquid-accent w-0"></div>
         </div>
     </div>
 
-    <!-- Full Screen "Now Playing" Liquid Modal -->
+    <!-- Full Screen "Now Playing" Modal -->
     <div id="fullPlayer" class="fixed inset-0 z-50 flex flex-col transition-all duration-500 player-hidden bg-black text-white">
         
-        <!-- Dynamic Blurry Background -->
-        <div class="absolute inset-0 z-0 overflow-hidden bg-gray-900">
-            <img id="fullBgArt" src="https://placehold.co/400x400" class="w-full h-full object-cover blur-[80px] scale-150 opacity-60 saturate-[1.5]" alt="">
-            <div class="absolute inset-0 bg-black/20"></div>
-            <!-- Extra floating blobs for liquid effect -->
-            <div class="bg-blob w-[500px] h-[500px] bg-white/10 top-0 left-0 animate-blob"></div>
-            <div class="bg-blob w-[400px] h-[400px] bg-white/10 bottom-0 right-0 animate-blob" style="animation-delay: 3s;"></div>
+        <!-- Blurry Dynamic Background -->
+        <div class="absolute inset-0 z-0 overflow-hidden bg-black">
+            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-[90px] scale-150 opacity-50 saturate-200" alt="">
+            <div class="absolute inset-0 bg-black/40"></div>
+            <div class="bg-blob w-[500px] h-[500px] bg-emerald-800 top-0 left-0 animate-blob"></div>
+            <div class="bg-blob w-[450px] h-[450px] bg-purple-900 bottom-0 right-0 animate-blob" style="animation-delay: 4s;"></div>
         </div>
         
         <!-- Header -->
@@ -273,66 +280,68 @@
             <div class="flex justify-between items-center text-sm font-semibold text-white/70">
                 <button onclick="closeFullPlayer()" class="w-10 h-10 flex items-center justify-start active:opacity-50"><i class="fa-solid fa-chevron-down text-xl"></i></button>
                 <div class="uppercase tracking-widest text-[10px] font-bold">Now Playing</div>
-                <button class="w-10 h-10 flex items-center justify-end active:opacity-50"><i class="fa-solid fa-ellipsis text-xl"></i></button>
+                <button onclick="openQueueModal()" class="w-10 h-10 flex items-center justify-end active:opacity-50" title="Queue"><i class="fa-solid fa-list-ul text-xl"></i></button>
             </div>
         </div>
 
         <!-- Content -->
-        <div class="flex-1 relative z-10 flex flex-col px-8 pb-12 max-w-[500px] mx-auto w-full">
+        <div class="flex-1 relative z-10 flex flex-col px-8 pb-10 max-w-[480px] mx-auto w-full justify-between">
             
             <!-- Art -->
-            <div class="flex-1 flex items-center justify-center max-h-[45vh] w-full mx-auto mt-4 mb-8">
-                <img id="fullArt" src="https://placehold.co/400x400" class="w-full aspect-square rounded-[32px] object-cover transition-all duration-[600ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] art-paused bg-white/10">
+            <div class="flex-1 flex items-center justify-center max-h-[42vh] w-full my-auto">
+                <img id="fullArt" src="" class="w-full max-w-[340px] aspect-square rounded-[28px] object-cover transition-all duration-500 art-paused shadow-2xl border border-white/10">
             </div>
 
-            <!-- Controls Area -->
-            <div class="flex flex-col mt-auto w-full liquid-glass-dark p-6 rounded-[40px] border border-white/20 shadow-2xl">
+            <!-- Controls & Info Card -->
+            <div class="flex flex-col w-full liquid-glass-modal p-6 rounded-[36px] shadow-2xl">
                 
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-5">
                     <div class="flex flex-col min-w-0 pr-4">
-                        <h2 id="fullTitle" class="text-[22px] font-bold tracking-tight line-clamp-1 w-full text-white shadow-sm">Title</h2>
-                        <h3 id="fullArtist" class="text-[16px] text-white/70 line-clamp-1 w-full mt-1 font-medium">Artist</h3>
+                        <h2 id="fullTitle" class="text-[20px] font-bold tracking-tight line-clamp-1 w-full text-white">Title</h2>
+                        <h3 id="fullArtist" class="text-[15px] text-white/70 line-clamp-1 w-full mt-0.5 font-medium">Artist</h3>
                     </div>
-                    <button class="w-10 h-10 flex items-center justify-center text-2xl active:scale-75 transition-transform text-white/80 shrink-0">
-                        <i class="fa-regular fa-heart"></i>
+                    <button onclick="toggleFavoriteCurrent()" id="fullFavBtn" class="w-11 h-11 flex items-center justify-center text-2xl active:scale-75 transition text-white/80 shrink-0">
+                        <i class="fa-regular fa-heart" id="fullFavIcon"></i>
                     </button>
                 </div>
 
                 <!-- Liquid Scrubber -->
                 <div class="flex flex-col mb-6 relative">
                     <div class="relative w-full h-8 flex items-center group cursor-pointer">
-                        <input type="range" min="0" max="100" value="0" class="absolute w-full h-full z-10 opacity-0 cursor-pointer touch-pan-x" id="scrubberInput">
-                        <div class="scrubber-track bg-white/20" id="scrubberBg">
-                            <div class="scrubber-fill bg-white" id="scrubberFill"></div>
+                        <input type="range" min="0" max="100" value="0" class="absolute w-full h-full z-10 opacity-0 cursor-pointer" id="scrubberInput">
+                        <div class="scrubber-track" id="scrubberBg">
+                            <div class="scrubber-fill" id="scrubberFill"></div>
                         </div>
                     </div>
-                    <div class="flex justify-between text-[11px] font-semibold text-white/50 mt-1 absolute top-6 w-full px-1 pointer-events-none">
+                    <div class="flex justify-between text-[11px] font-medium text-white/50 mt-1 absolute top-6 w-full px-0.5 pointer-events-none">
                         <span id="timeCurrent">0:00</span>
                         <span id="timeTotal">-:--</span>
                     </div>
                 </div>
 
                 <!-- Playback Buttons -->
-                <div class="flex items-center justify-between px-2 mb-2">
-                    <button class="text-xl text-white/40 active:text-white transition" onclick="toggleMode('loop')" id="loopBtn">
+                <div class="flex items-center justify-between px-2">
+                    <!-- Loop State Button -->
+                    <button class="text-xl text-white/40 active:text-white transition relative" onclick="cycleLoopMode()" id="loopBtn" title="Loop Mode">
                         <i class="fa-solid fa-repeat"></i>
+                        <span id="loopBadge" class="absolute -top-1 -right-2 text-[9px] font-bold bg-liquid-accent text-black rounded-full px-1 hidden">1</span>
                     </button>
                     
-                    <div class="flex items-center gap-8">
-                        <button class="text-3xl text-white active:scale-75 transition-transform" onclick="playPrevious()">
-                            <i class="fa-solid fa-backward-fill"></i>
+                    <div class="flex items-center gap-6">
+                        <button class="text-2xl text-white active:scale-75 transition" onclick="playPrevious()">
+                            <i class="fa-solid fa-backward-step"></i>
                         </button>
                         
-                        <button class="w-20 h-20 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center text-4xl text-white active:scale-90 transition-all border border-white/30 shadow-lg" onclick="togglePlay(event)">
-                            <i class="fa-solid fa-play ml-1" id="fullPlayIcon"></i>
+                        <button class="w-18 h-18 bg-white text-black rounded-full flex items-center justify-center text-3xl active:scale-90 transition-all shadow-xl" onclick="togglePlay(event)">
+                            <i class="fa-solid fa-play ml-0.5" id="fullPlayIcon"></i>
                         </button>
                         
-                        <button class="text-3xl text-white active:scale-75 transition-transform" onclick="playNext(event)">
-                            <i class="fa-solid fa-forward-fill"></i>
+                        <button class="text-2xl text-white active:scale-75 transition" onclick="playNext(event)">
+                            <i class="fa-solid fa-forward-step"></i>
                         </button>
                     </div>
 
-                    <button class="text-xl text-white/40 active:text-white transition" onclick="toggleMode('shuffle')" id="shuffleBtn">
+                    <button class="text-xl text-white/40 active:text-white transition" onclick="toggleShuffle()" id="shuffleBtn" title="Shuffle">
                         <i class="fa-solid fa-shuffle"></i>
                     </button>
                 </div>
@@ -340,25 +349,56 @@
         </div>
     </div>
 
-    <!-- Settings Modal (API Key) -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] hidden flex-col justify-end md:items-center md:justify-center opacity-0 transition-opacity duration-300">
-        <div class="liquid-glass w-full md:max-w-md rounded-t-[32px] md:rounded-[32px] p-8 shadow-2xl transform translate-y-full md:translate-y-0 md:scale-95 transition-transform duration-300 relative text-center border-t border-white/60" id="settingsContent">
-            
-            <div class="w-12 h-1.5 bg-black/20 rounded-full mx-auto mb-6 md:hidden"></div>
-            
-            <h3 class="text-2xl font-bold mb-2 tracking-tight">App Settings</h3>
-            <p class="text-sm text-liquid-muted mb-6 font-medium">Configure YouTube API Key</p>
-
-            <div class="text-left bg-white/60 p-5 rounded-2xl shadow-sm border border-white/50 backdrop-blur-md">
-                <label class="block text-sm font-bold text-liquid-text mb-2">YouTube Data API v3 Key</label>
-                <div class="flex flex-col gap-3">
-                    <input type="text" id="apiKeyInput" placeholder="Paste your key here..." class="w-full bg-white/80 border border-black/10 rounded-xl px-4 py-4 text-[15px] focus:outline-none focus:ring-2 focus:ring-liquid-accent transition shadow-inner">
-                    <button onclick="saveSettings()" class="w-full bg-liquid-accent text-white py-3.5 rounded-xl font-bold text-[15px] shadow-md active:scale-95 transition-transform">Save & Apply</button>
-                </div>
-                <div id="keySuccess" class="text-green-600 text-xs mt-3 hidden font-bold text-center">Settings Saved!</div>
+    <!-- Up Next Queue Modal Drawer -->
+    <div id="queueModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] hidden flex-col justify-end opacity-0 transition-opacity duration-300">
+        <div class="liquid-glass-modal w-full max-h-[75vh] rounded-t-[36px] p-6 pb-safe shadow-2xl flex flex-col transform translate-y-full transition-transform duration-300" id="queueContent">
+            <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeQueueModal()"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Up Next Queue</h3>
+                <button onclick="closeQueueModal()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
+            <div class="flex-1 overflow-y-auto flex flex-col gap-2" id="queueListContainer">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bluetooth / Audio Output Modal -->
+    <div id="btModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="liquid-glass-modal w-full max-w-sm rounded-[32px] p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="btContent">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold flex items-center gap-2"><i class="fa-solid fa-volume-high text-liquid-accent"></i> Audio Output</h3>
+                <button onclick="closeBluetoothModal()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <p class="text-xs text-liquid-muted mb-4">Select system audio output device or connect wireless headphones/speakers.</p>
+            <div class="flex flex-col gap-2" id="deviceList">
+                <button onclick="requestDeviceRouting()" class="w-full py-3 px-4 bg-white/10 hover:bg-white/15 rounded-2xl font-medium text-sm text-left flex items-center justify-between transition">
+                    <span>Default System Audio</span>
+                    <i class="fa-solid fa-check text-liquid-accent"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[70] hidden flex-col justify-end md:items-center md:justify-center opacity-0 transition-opacity duration-300">
+        <div class="liquid-glass-modal w-full md:max-w-md rounded-t-[36px] md:rounded-[32px] p-6 pb-safe shadow-2xl transform translate-y-full md:translate-y-0 md:scale-95 transition-transform duration-300 relative" id="settingsContent">
             
-            <button onclick="closeSettings()" class="mt-6 font-bold text-liquid-muted active:opacity-50 transition">Close</button>
+            <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-4 md:hidden"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Settings</h3>
+                <button onclick="closeSettings()" class="text-liquid-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-liquid-muted uppercase tracking-wider mb-2">YouTube Data API v3 Key</label>
+                    <input type="text" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-black/40 border border-white/10 rounded-2xl px-4 py-3.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-liquid-accent transition">
+                </div>
+                <button onclick="saveSettings()" class="w-full bg-liquid-accent text-black py-3.5 rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition">Save API Key</button>
+                <div id="keySuccess" class="text-emerald-400 text-xs font-bold text-center hidden">API Key Saved Successfully!</div>
+            </div>
         </div>
     </div>
 
@@ -366,7 +406,7 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        /* State & Variables */
+        /* State Variables */
         let ytPlayer;
         let isReady = false;
         let isPlaying = false;
@@ -374,11 +414,14 @@
         let currentIndex = -1;
         let isScrubbing = false;
         let isShuffle = false;
-        let isLoop = false;
-        let rAF_ID;
+        let loopMode = 0; // 0: Off, 1: Loop All, 2: Loop Single
+        let currentTab = 'home';
+        let rAF_ID = null;
         
-        let apiKey = localStorage.getItem('liquid_yt_key') || "";
+        let apiKey = localStorage.getItem('streamify_yt_key') || "";
+        let favorites = JSON.parse(localStorage.getItem('streamify_favs') || "[]");
 
+        /* UI Elements */
         const UI = {
             mini: {
                 container: document.getElementById('miniPlayer'),
@@ -396,6 +439,7 @@
                 title: document.getElementById('fullTitle'),
                 artist: document.getElementById('fullArtist'),
                 playBtn: document.getElementById('fullPlayIcon'),
+                favIcon: document.getElementById('fullFavIcon'),
                 scrubberIn: document.getElementById('scrubberInput'),
                 scrubberFill: document.getElementById('scrubberFill'),
                 tCur: document.getElementById('timeCurrent'),
@@ -411,16 +455,14 @@
                 playerVars: {
                     'autoplay': 0,
                     'controls': 0,
-                    'disablekb': 1,
-                    'fs': 0,
-                    'playsinline': 1, // CRITICAL FOR MOBILE
+                    'playsinline': 1,
                     'rel': 0,
                     'showinfo': 0
                 },
                 events: {
                     'onReady': () => { isReady = true; ytPlayer.setVolume(100); },
                     'onStateChange': onPlayerStateChange,
-                    'onError': (e) => { console.error("YT Error", e.data); playNext(); }
+                    'onError': (e) => { console.error("YT Error:", e.data); playNext(); }
                 }
             });
         };
@@ -430,14 +472,15 @@
                 isPlaying = true;
                 setLoading(false);
                 updatePlayIcons();
-                if (!rAF_ID) updateProgressLoop(); // Start fluid sync
+                setupMediaSession();
+                if (!rAF_ID) startProgressLoop();
             } else if (event.data === YT.PlayerState.PAUSED) {
                 isPlaying = false;
                 updatePlayIcons();
             } else if (event.data === YT.PlayerState.BUFFERING) {
                 setLoading(true);
             } else if (event.data === YT.PlayerState.ENDED) {
-                if (isLoop) {
+                if (loopMode === 2) {
                     ytPlayer.seekTo(0);
                     ytPlayer.playVideo();
                 } else {
@@ -446,40 +489,35 @@
             }
         }
 
-        /* Fluid Progress Bar Sync via requestAnimationFrame */
-        function updateProgressLoop() {
+        /* Smooth Progress Sync with requestAnimationFrame */
+        function startProgressLoop() {
             if (isPlaying && ytPlayer && ytPlayer.getCurrentTime && !isScrubbing) {
                 const current = ytPlayer.getCurrentTime();
                 const duration = ytPlayer.getDuration();
                 
                 if (duration > 0) {
                     const pct = (current / duration) * 100;
-                    
-                    // Update DOM
                     UI.mini.progress.style.width = pct + '%';
                     UI.full.scrubberIn.value = pct;
                     UI.full.scrubberFill.style.width = pct + '%';
-                    
                     UI.full.tCur.textContent = formatTime(current);
                     UI.full.tTot.textContent = "-" + formatTime(duration - current);
                 }
             }
-            
             if (isPlaying) {
-                rAF_ID = requestAnimationFrame(updateProgressLoop);
+                rAF_ID = requestAnimationFrame(startProgressLoop);
             } else {
                 cancelAnimationFrame(rAF_ID);
                 rAF_ID = null;
             }
         }
 
-        /* Playback Controls */
+        /* Playback Core */
         window.loadTrack = function(index) {
             if (!isReady || index < 0 || index >= queue.length) return;
             currentIndex = index;
             const track = queue[currentIndex];
 
-            // Update UI
             UI.mini.title.textContent = track.title;
             UI.mini.artist.textContent = track.artist;
             UI.mini.art.src = track.art;
@@ -490,55 +528,65 @@
             UI.full.bgArt.src = track.art;
 
             UI.mini.container.classList.remove('translate-y-[200%]');
-            
-            // Reset Sliders
-            UI.mini.progress.style.width = '0%';
-            UI.full.scrubberIn.value = 0;
-            UI.full.scrubberFill.style.width = '0%';
-            UI.full.tCur.textContent = "0:00";
+            updateFavButtonUI();
             
             setLoading(true);
-            
-            // Load and attempt auto-play (mobile needs user interaction context for this to work)
             ytPlayer.loadVideoById(track.id);
         };
 
         window.togglePlay = function(e) {
-            if(e) e.stopPropagation();
+            if (e) e.stopPropagation();
             if (!isReady || currentIndex === -1) return;
             isPlaying ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
         };
 
         window.playNext = function(e) {
-            if(e) e.stopPropagation();
+            if (e) e.stopPropagation();
             if (queue.length === 0) return;
             let nxt = currentIndex + 1;
-            if (isShuffle) nxt = Math.floor(Math.random() * queue.length);
-            else if (nxt >= queue.length) nxt = 0;
+            if (isShuffle) {
+                nxt = Math.floor(Math.random() * queue.length);
+            } else if (nxt >= queue.length) {
+                if (loopMode === 1) nxt = 0;
+                else return; // Stop at end if loop is off
+            }
             loadTrack(nxt);
         };
 
         window.playPrevious = function() {
             if (queue.length === 0) return;
             if (ytPlayer.getCurrentTime && ytPlayer.getCurrentTime() > 3) {
-                ytPlayer.seekTo(0); return;
+                ytPlayer.seekTo(0);
+                return;
             }
             let prv = currentIndex - 1;
             if (prv < 0) prv = queue.length - 1;
             loadTrack(prv);
         };
 
-        window.toggleMode = function(type) {
-            if (type === 'shuffle') {
-                isShuffle = !isShuffle;
-                document.getElementById('shuffleBtn').classList.toggle('text-white', isShuffle);
-                document.getElementById('shuffleBtn').classList.toggle('text-white/40', !isShuffle);
-            } else {
-                isLoop = !isLoop;
-                document.getElementById('loopBtn').classList.toggle('text-white', isLoop);
-                document.getElementById('loopBtn').classList.toggle('text-white/40', !isLoop);
+        /* Loop & Shuffle Modes */
+        window.cycleLoopMode = function() {
+            loopMode = (loopMode + 1) % 3;
+            const btn = document.getElementById('loopBtn');
+            const badge = document.getElementById('loopBadge');
+            
+            if (loopMode === 0) {
+                btn.className = "text-xl text-white/40 active:text-white transition relative";
+                badge.classList.add('hidden');
+            } else if (loopMode === 1) {
+                btn.className = "text-xl text-liquid-accent active:text-white transition relative";
+                badge.classList.add('hidden');
+            } else if (loopMode === 2) {
+                btn.className = "text-xl text-liquid-accent active:text-white transition relative";
+                badge.classList.remove('hidden');
             }
-        }
+        };
+
+        window.toggleShuffle = function() {
+            isShuffle = !isShuffle;
+            const btn = document.getElementById('shuffleBtn');
+            btn.className = isShuffle ? "text-xl text-liquid-accent active:text-white transition" : "text-xl text-white/40 active:text-white transition";
+        };
 
         /* Scrubber Interaction */
         UI.full.scrubberIn.addEventListener('input', (e) => {
@@ -552,21 +600,240 @@
                 ytPlayer.seekTo((e.target.value / 100) * duration, true);
             }
             isScrubbing = false;
-            if(isPlaying && !rAF_ID) updateProgressLoop(); // restart loop
+            if (isPlaying && !rAF_ID) startProgressLoop();
         });
 
-        /* View Modals & Transitions */
+        /* Favorites System */
+        window.toggleFavoriteCurrent = function() {
+            if (currentIndex < 0 || currentIndex >= queue.length) return;
+            const current = queue[currentIndex];
+            const existsIndex = favorites.findIndex(f => f.id === current.id);
+            
+            if (existsIndex > -1) {
+                favorites.splice(existsIndex, 1);
+            } else {
+                favorites.push(current);
+            }
+            localStorage.setItem('streamify_favs', JSON.stringify(favorites));
+            updateFavButtonUI();
+            document.getElementById('favCount').textContent = favorites.length;
+            if (currentTab === 'favorites') renderList(favorites);
+        };
+
+        function updateFavButtonUI() {
+            if (currentIndex < 0 || currentIndex >= queue.length) return;
+            const current = queue[currentIndex];
+            const isFav = favorites.some(f => f.id === current.id);
+            if (isFav) {
+                UI.full.favIcon.className = "fa-solid fa-heart text-liquid-accent";
+            } else {
+                UI.full.favIcon.className = "fa-regular fa-heart";
+            }
+        }
+
+        /* Media Session API (Lock Screen Controls) */
+        function setupMediaSession() {
+            if ('mediaSession' in navigator && currentIndex >= 0 && queue[currentIndex]) {
+                const track = queue[currentIndex];
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: track.title,
+                    artist: track.artist,
+                    album: 'Streamify Liquid',
+                    artwork: [{ src: track.art, sizes: '512x512', type: 'image/jpeg' }]
+                });
+
+                navigator.mediaSession.setActionHandler('play', () => ytPlayer.playVideo());
+                navigator.mediaSession.setActionHandler('pause', () => ytPlayer.pauseVideo());
+                navigator.mediaSession.setActionHandler('previoustrack', () => playPrevious());
+                navigator.mediaSession.setActionHandler('nexttrack', () => playNext());
+            }
+        }
+
+        /* Bluetooth / Audio Output */
+        window.openBluetoothModal = async function() {
+            const modal = document.getElementById('btModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        window.closeBluetoothModal = function() {
+            const modal = document.getElementById('btModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        };
+
+        window.requestDeviceRouting = async function() {
+            if (navigator.mediaDevices && navigator.mediaDevices.selectAudioOutput) {
+                try {
+                    const device = await navigator.mediaDevices.selectAudioOutput();
+                    alert("Audio routed to: " + (device.label || "Selected Device"));
+                    closeBluetoothModal();
+                } catch(e) {
+                    console.log("Audio routing cancelled or unsupported");
+                }
+            } else {
+                alert("Audio output selection is natively managed by your device control center.");
+                closeBluetoothModal();
+            }
+        };
+
+        /* Navigation Tabs */
+        window.switchTab = function(tab) {
+            currentTab = tab;
+            ['home', 'search', 'favorites'].forEach(t => {
+                const active = (t === tab);
+                document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('bg-white/10', active);
+                document.getElementById('nav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-white', active);
+                document.getElementById('mobNav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-liquid-accent', active);
+                document.getElementById('mobNav' + t.charAt(0).toUpperCase() + t.slice(1))?.classList.toggle('text-liquid-muted', !active);
+            });
+
+            if (tab === 'home') {
+                document.getElementById('headerTitle').textContent = "Listen Now";
+                document.getElementById('sectionHeading').textContent = "Trending Hits";
+                fetchMusic("Trending Bollywood Punjabi English Pop Hits 2026");
+            } else if (tab === 'search') {
+                document.getElementById('headerTitle').textContent = "Search";
+                document.getElementById('sectionHeading').textContent = "Explore";
+                document.getElementById('searchInput').focus();
+            } else if (tab === 'favorites') {
+                document.getElementById('headerTitle').textContent = "Favorites";
+                document.getElementById('sectionHeading').textContent = "Saved Tracks";
+                renderList(favorites);
+            }
+        };
+
+        /* Data Fetching */
+        async function fetchMusic(query) {
+            if (!apiKey) {
+                document.getElementById('apiWarning').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('apiWarning').classList.add('hidden');
+            document.getElementById('loader').classList.replace('hidden', 'flex');
+            document.getElementById('trackList').innerHTML = '';
+
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=20&q=${encodeURIComponent(query)}&key=${apiKey}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.error) throw new Error(data.error.message);
+                
+                queue = data.items.map(item => {
+                    const th = item.snippet.thumbnails;
+                    return {
+                        id: typeof item.id === 'object' ? item.id.videoId : item.id,
+                        title: item.snippet.title.replace(/\[.*?\]|\(.*?\)/g, "").trim(),
+                        artist: item.snippet.channelTitle.replace(" - Topic", ""),
+                        art: th.maxres ? th.maxres.url : (th.high ? th.high.url : th.default.url)
+                    };
+                });
+                
+                renderList(queue);
+            } catch(e) {
+                document.getElementById('trackList').innerHTML = `<p class="text-red-400 text-center text-sm py-8 font-medium">${e.message}</p>`;
+            }
+            document.getElementById('loader').classList.replace('flex', 'hidden');
+        }
+
+        function renderList(listData) {
+            const container = document.getElementById('trackList');
+            container.innerHTML = '';
+            document.getElementById('trackCountLabel').textContent = listData.length + " tracks";
+
+            if (listData.length === 0) {
+                container.innerHTML = `<p class="text-liquid-muted text-center py-12 text-sm font-medium">No tracks found.</p>`;
+                return;
+            }
+
+            listData.forEach((track, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3.5 p-2 rounded-2xl hover:bg-white/5 active:bg-white/10 transition cursor-pointer group";
+                div.onclick = () => {
+                    queue = listData;
+                    loadTrack(idx);
+                };
+                
+                div.innerHTML = `
+                    <div class="relative w-14 h-14 rounded-xl overflow-hidden shadow-md bg-white/10 shrink-0">
+                        <img src="${track.art}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-solid fa-play text-white text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-[15px] text-white line-clamp-1">${track.title}</h4>
+                        <p class="text-[13px] text-liquid-muted line-clamp-1 mt-0.5">${track.artist}</p>
+                    </div>
+                    <button class="w-9 h-9 flex items-center justify-center text-liquid-muted hover:text-white transition">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        let searchDebounce;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchDebounce);
+            const q = e.target.value.trim();
+            if (!q) return;
+            document.getElementById('sectionHeading').textContent = `Results for "${q}"`;
+            searchDebounce = setTimeout(() => fetchMusic(q), 700);
+        });
+
+        /* Full Player & Queue Modals */
         window.openFullPlayer = () => {
-            UI.full.container.classList.remove('hidden');
-            void UI.full.container.offsetWidth; // Reflow
-            UI.full.container.classList.replace('player-hidden', 'player-visible');
+            const p = document.getElementById('fullPlayer');
+            p.classList.remove('hidden');
+            void p.offsetWidth;
+            p.classList.replace('player-hidden', 'player-visible');
         };
         
         window.closeFullPlayer = () => {
-            UI.full.container.classList.replace('player-visible', 'player-hidden');
-            setTimeout(() => UI.full.container.classList.add('hidden'), 500);
+            const p = document.getElementById('fullPlayer');
+            p.classList.replace('player-visible', 'player-hidden');
+            setTimeout(() => p.classList.add('hidden'), 500);
         };
 
+        window.openQueueModal = () => {
+            const modal = document.getElementById('queueModal');
+            const content = document.getElementById('queueContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('translate-y-full');
+            }, 10);
+
+            const qList = document.getElementById('queueListContainer');
+            qList.innerHTML = '';
+            queue.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = `flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition ${i === currentIndex ? 'bg-white/15 text-liquid-accent' : 'hover:bg-white/5 text-white'}`;
+                item.onclick = () => { loadTrack(i); closeQueueModal(); };
+                item.innerHTML = `
+                    <img src="${t.art}" class="w-10 h-10 rounded-lg object-cover">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold line-clamp-1">${t.title}</p>
+                        <p class="text-xs text-liquid-muted line-clamp-1">${t.artist}</p>
+                    </div>
+                `;
+                qList.appendChild(item);
+            });
+        };
+
+        window.closeQueueModal = () => {
+            const modal = document.getElementById('queueModal');
+            const content = document.getElementById('queueContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('translate-y-full');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        };
+
+        /* Settings Modal */
         const setModal = document.getElementById('settingsModal');
         const setContent = document.getElementById('settingsContent');
         
@@ -590,92 +857,20 @@
             const val = document.getElementById('apiKeyInput').value.trim();
             if (val) {
                 apiKey = val;
-                localStorage.setItem('liquid_yt_key', apiKey);
+                localStorage.setItem('streamify_yt_key', apiKey);
                 document.getElementById('keySuccess').classList.remove('hidden');
                 setTimeout(() => document.getElementById('keySuccess').classList.add('hidden'), 3000);
-                fetchMusic("Top English Songs 2026 Hits"); // Reload default
+                fetchMusic("Trending Hits 2026");
             }
         };
 
-        /* Data Fetching & UI Helpers */
-        async function fetchMusic(query) {
-            if (!apiKey) {
-                document.getElementById('apiWarning').classList.remove('hidden');
-                return;
-            }
-            document.getElementById('apiWarning').classList.add('hidden');
-            document.getElementById('loader').classList.replace('hidden', 'flex');
-            document.getElementById('trackList').innerHTML = '';
-
-            try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=15&q=${encodeURIComponent(query)}&key=${apiKey}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                if(data.error) throw new Error(data.error.message);
-                
-                queue = data.items.map(item => {
-                    const th = item.snippet.thumbnails;
-                    return {
-                        id: typeof item.id === 'object' ? item.id.videoId : item.id,
-                        title: item.snippet.title.replace(/\[.*?\]|\(.*?\)/g, "").trim(),
-                        artist: item.snippet.channelTitle.replace(" - Topic", ""),
-                        art: th.maxres ? th.maxres.url : (th.high ? th.high.url : th.default.url)
-                    };
-                });
-                
-                renderList();
-            } catch(e) {
-                document.getElementById('trackList').innerHTML = `<p class="text-red-500 text-center font-medium">${e.message}</p>`;
-            }
-            document.getElementById('loader').classList.replace('flex', 'hidden');
-        }
-
-        function renderList() {
-            const list = document.getElementById('trackList');
-            list.innerHTML = '';
-            
-            queue.forEach((track, idx) => {
-                const div = document.createElement('div');
-                div.className = "flex items-center gap-4 p-2.5 rounded-2xl hover:bg-white/40 active:bg-white/60 transition cursor-pointer border border-transparent hover:border-white/50 group";
-                
-                // CRITICAL FIX: The click event directly initiates the load (user interaction)
-                div.onclick = () => loadTrack(idx);
-                
-                div.innerHTML = `
-                    <div class="relative w-[60px] h-[60px] rounded-xl overflow-hidden shadow-sm bg-white/50 shrink-0">
-                        <img src="${track.art}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                            <i class="fa-solid fa-play text-white text-sm"></i>
-                        </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-[16px] text-liquid-text line-clamp-1">${track.title}</h4>
-                        <p class="text-[14px] text-liquid-muted line-clamp-1 mt-0.5">${track.artist}</p>
-                    </div>
-                    <button class="w-10 h-10 flex items-center justify-center text-liquid-muted hover:text-liquid-accent transition">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </button>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        let searchDebounce;
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            clearTimeout(searchDebounce);
-            const q = e.target.value.trim();
-            if(!q) return;
-            document.getElementById('sectionTitle').textContent = `Search: ${q}`;
-            searchDebounce = setTimeout(() => fetchMusic(q), 800);
-        });
-
+        /* Helpers */
         function updatePlayIcons() {
             const icon = isPlaying ? "fa-pause" : "fa-play";
             UI.mini.playBtn.className = `fa-solid ${icon}`;
-            UI.full.playBtn.className = `fa-solid ${icon} ${isPlaying ? '' : 'ml-1'}`;
+            UI.full.playBtn.className = `fa-solid ${icon} ${isPlaying ? '' : 'ml-0.5'}`;
             
-            if(isPlaying) {
+            if (isPlaying) {
                 UI.full.art.classList.replace('art-paused', 'art-playing');
             } else {
                 UI.full.art.classList.replace('art-playing', 'art-paused');
@@ -694,11 +889,15 @@
             return `${m}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-        // Init App Data
+        // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
-            fetchMusic("Trending Pop Songs 2026 Official");
+            document.getElementById('favCount').textContent = favorites.length;
+            if (apiKey) {
+                fetchMusic("Trending Bollywood Punjabi English Pop Hits 2026");
+            } else {
+                document.getElementById('apiWarning').classList.remove('hidden');
+            }
         });
-
     </script>
 </body>
 </html>
