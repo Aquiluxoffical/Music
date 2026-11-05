@@ -157,6 +157,9 @@
             <a href="#" class="flex items-center gap-4 text-app-muted hover:text-white transition nav-link" data-target="libraryView">
                 <i class="fa-solid fa-book text-xl w-6"></i> Your Library
             </a>
+            <a href="#" class="flex items-center gap-4 text-app-muted hover:text-white transition nav-link" data-target="accountView">
+                <i class="fa-solid fa-user text-xl w-6"></i> Account
+            </a>
         </nav>
 
         <div class="mt-8 pt-6 border-t border-app-highlight">
@@ -247,6 +250,38 @@
                 </div>
             </div>
 
+            <!-- Account / Preferences View -->
+            <div id="accountView" class="view-section hidden pt-6">
+                <div class="flex items-center gap-6 mb-8">
+                    <div class="w-24 h-24 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-user text-4xl text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Your Account</h1>
+                        <p class="text-app-muted text-sm">Manage preferences</p>
+                    </div>
+                </div>
+                
+                <div class="max-w-md bg-app-elevated p-6 rounded-xl shadow-lg border border-white/5">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-earth-americas text-app-accent"></i> Music Region
+                    </h2>
+                    <p class="text-sm text-app-muted mb-4">Select your region to tailor your home screen suggestions.</p>
+                    
+                    <div class="relative">
+                        <select id="regionSelect" class="w-full bg-app-highlight text-white p-3 rounded-lg border border-white/10 focus:outline-none focus:border-app-accent transition-colors appearance-none cursor-pointer">
+                            <option value="global">Global (Trending)</option>
+                            <option value="india">India (Bollywood / Punjabi)</option>
+                            <option value="usa">USA (Pop / Hip Hop)</option>
+                            <option value="uk">UK (Drill / Grime)</option>
+                            <option value="skorea">South Korea (K-Pop)</option>
+                            <option value="latam">Latin America (Reggaeton)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-app-muted"></i>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -263,6 +298,10 @@
         <a href="#" class="flex flex-col items-center gap-1 text-app-muted hover:text-white p-2 nav-link" data-target="libraryView">
             <i class="fa-solid fa-book text-xl"></i>
             <span class="text-[10px] font-medium">Library</span>
+        </a>
+        <a href="#" class="flex flex-col items-center gap-1 text-app-muted hover:text-white p-2 nav-link" data-target="accountView">
+            <i class="fa-solid fa-user text-xl"></i>
+            <span class="text-[10px] font-medium">Account</span>
         </a>
     </nav>
 
@@ -464,7 +503,8 @@
         const views = {
             homeView: document.getElementById('homeView'),
             searchView: document.getElementById('searchView'),
-            libraryView: document.getElementById('libraryView')
+            libraryView: document.getElementById('libraryView'),
+            accountView: document.getElementById('accountView')
         };
         const navLinks = document.querySelectorAll('.nav-link');
         
@@ -494,6 +534,17 @@
 
         // --- Initialization ---
         window.addEventListener('DOMContentLoaded', () => {
+            // Restore Region Select UI and setup listener
+            const savedRegion = localStorage.getItem('streamify_region') || 'global';
+            const regionSelect = document.getElementById('regionSelect');
+            if(regionSelect) {
+                regionSelect.value = savedRegion;
+                regionSelect.addEventListener('change', (e) => {
+                    localStorage.setItem('streamify_region', e.target.value);
+                    fetchTrending(); // Refresh home suggestions immediately on change
+                });
+            }
+
             fetchTrending();
             renderLibrary();
             setupNavigation();
@@ -526,10 +577,36 @@
         // --- API & Data Fetching (Audius) ---
         async function fetchTrending() {
             try {
-                const res = await fetch(`https://discoveryprovider.audius.co/v1/tracks/trending?app_name=${APP_NAME}&limit=15`);
+                // Show loading spinner tailored
+                trendingList.innerHTML = '<div class="col-span-full py-10 text-center opacity-70"><i class="fa-solid fa-circle-notch fa-spin text-3xl text-app-accent mb-2"></i><p>Loading tailored tracks...</p></div>';
+                
+                const region = localStorage.getItem('streamify_region') || 'global';
+                let url = '';
+                
+                if (region === 'global') {
+                    url = `https://discoveryprovider.audius.co/v1/tracks/trending?app_name=${APP_NAME}&limit=15`;
+                } else {
+                    // Map regions to relevant search keywords for Audius
+                    const queryMap = {
+                        'india': 'bollywood hindi punjabi desi',
+                        'usa': 'pop hip hop',
+                        'uk': 'uk drill grime british',
+                        'skorea': 'kpop korean',
+                        'latam': 'reggaeton latin spanish'
+                    };
+                    const query = queryMap[region] || 'pop';
+                    url = `https://discoveryprovider.audius.co/v1/tracks/search?query=${encodeURIComponent(query)}&app_name=${APP_NAME}&limit=15`;
+                }
+
+                const res = await fetch(url);
                 const json = await res.json();
                 const tracks = formatAudiusTracks(json.data);
-                renderTrackGrid(tracks, trendingList, 'home');
+                
+                if (tracks.length === 0) {
+                    trendingList.innerHTML = '<p class="col-span-full text-center text-app-muted">No tracks found for this preference.</p>';
+                } else {
+                    renderTrackGrid(tracks, trendingList, 'home');
+                }
             } catch (err) {
                 trendingList.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load trending tracks.</p>';
             }
