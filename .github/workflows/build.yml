@@ -1,0 +1,23 @@
+name: Build iOS App
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Build IPA (Unsigned)
+        run: |
+          xcodebuild clean build -project "iOSWKWebViewAppTemplateCookiesWorkLikeACharm.xcodeproj" -scheme "iOSWKWebViewAppTemplateCookiesWorkLikeACharm" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO -derivedDataPath build
+          
+          mkdir -p Payload
+          mv build/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r Streamify.ipa Payload
+      
+      - name: Upload App Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Streamify-IPA
+          path: Streamify.ipa
