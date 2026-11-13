@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS Native App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    
     <title>Streamify Premium</title>
     
     <!-- Tailwind CSS -->
@@ -31,10 +37,25 @@
     </script>
 
     <style>
+        /* Strict Native App Feel - Prevent selections, highlights, and callouts */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -ms-overflow-style: none; 
+            scrollbar-width: none;
+        }
+        
+        /* Allow typing in search input */
+        input[type="text"], textarea {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
         body {
             background-color: #000000;
             color: #ffffff;
-            -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
             height: 100dvh;
             width: 100vw;
@@ -42,7 +63,6 @@
         }
 
         ::-webkit-scrollbar { display: none; }
-        * { -ms-overflow-style: none; scrollbar-width: none; }
 
         .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
         .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
@@ -105,7 +125,7 @@
 </head>
 <body class="flex flex-col md:flex-row select-none">
 
-    <!-- iOS Background Audio Carrier (Holds lock screen active audio session) -->
+    <!-- iOS Background Audio Carrier -->
     <audio id="bgAudioCarrier" loop playsinline preload="auto" class="hidden">
         <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </audio>
@@ -317,7 +337,6 @@
         let favorites = JSON.parse(localStorage.getItem('ytFavorites')) || [];
         const bgCarrier = document.getElementById('bgAudioCarrier');
 
-        // iOS Audio Carrier Unlock
         function activateAudioCarrier() {
             if (bgCarrier && bgCarrier.paused) {
                 bgCarrier.volume = 0.01;
@@ -330,7 +349,8 @@
                 height: '100%', width: '100%',
                 playerVars: { 
                     'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 
-                    'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3 
+                    'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3,
+                    'origin': window.location.origin // Prevents CORS block in WebView
                 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
             });
@@ -495,7 +515,6 @@
             }
         }
 
-        // Resume audio on visibility change if iOS freezes player
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && isPlaying && player && player.getPlayerState) {
                 if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
