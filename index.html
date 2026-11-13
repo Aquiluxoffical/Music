@@ -3,324 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- iOS Native App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
+    <title>Streamify Luxury</title>
     
-    <title>Streamify Premium</title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        spotify: {
-                            bg: '#000000',
-                            surface: '#121212',
-                            elevated: '#242424',
-                            accent: '#1DB954',
+        tailwind.config = { 
+            darkMode: 'class', 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        brand: { bg: '#050505', surface: '#0f0f0f', elevated: '#1a1a1a' } 
+                    },
+                    animation: {
+                        'pan-bg': 'panBg 30s ease-in-out infinite alternate',
+                        'float-art': 'floatArt 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        panBg: {
+                            '0%': { transform: 'scale(1.2) translate(0, 0)' },
+                            '100%': { transform: 'scale(1.4) translate(-5%, 5%)' }
+                        },
+                        floatArt: {
+                            '0%, 100%': { transform: 'translateY(0) scale(1)' },
+                            '50%': { transform: 'translateY(-15px) scale(1.02)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.5 }
                         }
                     }
-                }
-            }
+                } 
+            } 
         }
     </script>
 
     <style>
-        /* Strict Native App Feel - Prevent selections, highlights, and callouts */
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-            -ms-overflow-style: none; 
-            scrollbar-width: none;
-        }
-        
-        /* Allow typing in search input */
-        input[type="text"], textarea {
-            -webkit-user-select: auto;
-            user-select: auto;
-        }
-
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            overscroll-behavior-y: none;
-            height: 100dvh;
-            width: 100vw;
-            overflow: hidden;
-        }
-
+        * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -ms-overflow-style: none; scrollbar-width: none; }
+        input[type="text"] { -webkit-user-select: auto; user-select: auto; }
+        body { background-color: #050505; color: #ffffff; overscroll-behavior-y: none; height: 100dvh; width: 100vw; overflow: hidden; }
         ::-webkit-scrollbar { display: none; }
-
+        
         .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
         .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
         .pb-nav-safe { padding-bottom: max(6rem, calc(5rem + env(safe-area-inset-bottom))); }
-
-        .glass {
-            background: rgba(18, 18, 18, 0.65);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-            height: 24px;
-            display: flex;
-            align-items: center;
-        }
-        input[type=range]:focus { outline: none; }
-        .progress-track {
-            background: rgba(255,255,255,0.2);
-            height: 4px;
-            border-radius: 2px;
-            width: 100%;
-            position: relative;
-        }
-        .progress-fill {
-            background: #ffffff;
-            height: 100%;
-            width: 0%;
-            border-radius: 2px;
-            position: absolute;
-            top: 0; left: 0;
-            pointer-events: none;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 12px; width: 12px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            margin-top: -4px;
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-        input[type=range]:active::-webkit-slider-thumb, 
-        .group:hover input[type=range]::-webkit-slider-thumb {
-            opacity: 1;
-        }
-
-        .slide-up { transform: translateY(0%); }
-        .slide-down { transform: translateY(100%); }
         
-        #toast-container {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-        }
+        /* Ultra-premium glass */
+        .glass { background: rgba(15, 15, 15, 0.4); backdrop-filter: blur(40px) saturate(150%); -webkit-backdrop-filter: blur(40px) saturate(150%); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-btn { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* Sleek Range Slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 24px; display: flex; align-items: center; }
+        input[type=range]:focus { outline: none; }
+        .progress-track { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; width: 100%; position: relative; overflow: hidden; }
+        .progress-fill { background: #ffffff; height: 100%; width: 0%; border-radius: 2px; position: absolute; top: 0; left: 0; pointer-events: none; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 0px; width: 0px; } /* Hidden thumb for ultra-minimal look */
+        
+        /* Smooth state transitions */
+        .slide-up { transform: translateY(0%); opacity: 1; }
+        .slide-down { transform: translateY(100%); opacity: 0; }
+        
+        /* Mask for lyrics fade */
+        .lyrics-mask { mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); }
     </style>
 </head>
 <body class="flex flex-col md:flex-row select-none">
 
-    <!-- iOS Background Audio Carrier -->
-    <audio id="bgAudioCarrier" loop playsinline preload="auto" class="hidden">
+    <!-- Audio Carrier -->
+    <audio id="bgAudioCarrier" loop playsinline preload="auto">
         <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </audio>
 
-    <!-- Hidden YouTube Player Container -->
-    <div style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none; overflow: hidden; z-index: -9999;">
+    <!-- Hidden YT Player -->
+    <div style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none; z-index: -9999;">
         <div id="ytplayer"></div>
     </div>
 
-    <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex flex-col w-64 bg-spotify-surface h-full z-10 p-4 border-r border-white/10">
-        <div class="text-2xl font-bold text-white mb-8 px-4 mt-2 flex items-center gap-2">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" class="text-white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-            Streamify
-        </div>
-        <nav class="flex flex-col gap-2">
-            <a href="#" class="flex items-center gap-4 text-white font-semibold p-4 rounded-xl bg-white/10 transition" onclick="document.getElementById('searchInput').focus()">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg> Search
-            </a>
-            <a href="#" class="flex items-center gap-4 text-white/60 font-semibold p-4 rounded-xl hover:text-white transition" onclick="fetchTrending()">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3l10 9h-3v9H5v-9H2z"/></svg> Home
-            </a>
-            <a href="#" class="flex items-center gap-4 text-white/60 font-semibold p-4 rounded-xl hover:text-white transition" onclick="showFavorites()">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Favorites
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full bg-spotify-bg relative z-0">
-        <header class="p-4 pt-safe md:p-6 sticky top-0 bg-spotify-bg/80 backdrop-blur-xl z-10 flex justify-center items-center border-b border-white/5">
+    <!-- Main Content Area (Lists) -->
+    <main class="flex-1 flex flex-col h-full bg-brand-bg relative z-0">
+        <header class="p-4 pt-safe md:p-6 sticky top-0 bg-brand-bg/80 backdrop-blur-3xl z-10 flex justify-center items-center border-b border-white/5">
             <form id="searchForm" class="relative w-full max-w-2xl">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
-                <input type="text" id="searchInput" placeholder="Search artists, songs..." 
-                    class="w-full bg-white/10 text-white rounded-full py-3 pl-12 pr-4 font-medium focus:outline-none focus:bg-white/20 transition shadow-inner">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-5 top-1/2 transform -translate-y-1/2 text-white/40"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
+                <input type="text" id="searchInput" placeholder="Search artists, tracks..." class="w-full bg-white/5 border border-white/10 text-white rounded-full py-3 pl-12 pr-6 font-medium focus:outline-none focus:bg-white/10 focus:border-white/20 transition-all shadow-inner placeholder-white/30 text-sm tracking-wide">
             </form>
         </header>
 
         <div class="flex-1 overflow-y-auto px-4 md:px-6 pb-nav-safe" id="mainScrollArea">
-            <div id="loadingState" class="hidden flex-col items-center justify-center py-32 text-white/50">
-                <svg class="animate-spin h-10 w-10 text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <p>Fetching tracks...</p>
+            <div id="loadingState" class="hidden flex-col items-center justify-center py-40 text-white/50">
+                <div class="w-12 h-12 border-2 border-white/10 border-t-white rounded-full animate-spin mb-6"></div>
+                <p class="tracking-widest text-xs uppercase font-semibold text-white/40">Curating</p>
             </div>
-
-            <div id="resultsState" class="mt-4 hidden">
-                <h2 class="text-2xl font-bold mb-6 tracking-tight" id="resultsTitle">Trending Music</h2>
-                <div class="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4" id="songsList"></div>
+            <div id="resultsState" class="mt-4 hidden pb-10">
+                <h2 class="text-3xl font-extrabold mb-8 tracking-tighter" id="resultsTitle">Discover</h2>
+                <div class="flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" id="songsList"></div>
             </div>
         </div>
     </main>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="md:hidden glass fixed bottom-0 left-0 w-full h-[80px] z-20 flex items-start justify-around pb-safe px-2 pt-2">
-        <a href="#" class="flex flex-col items-center gap-1 text-white/60 hover:text-white p-2" onclick="fetchTrending()">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3l10 9h-3v9H5v-9H2z"/></svg>
-            <span class="text-[10px] font-medium">Home</span>
-        </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-white p-2" onclick="document.getElementById('searchInput').focus()">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
-            <span class="text-[10px] font-medium">Search</span>
-        </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-white/60 hover:text-white p-2" onclick="showFavorites()">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            <span class="text-[10px] font-medium">Favorites</span>
-        </a>
-    </nav>
-
-    <!-- Mini Player -->
-    <div id="miniPlayer" class="glass fixed bottom-[85px] md:bottom-0 left-2 right-2 md:left-64 md:right-0 md:w-auto h-16 z-30 flex items-center justify-between px-3 cursor-pointer hidden rounded-xl md:rounded-none shadow-2xl slide-down transition-transform duration-300 border border-white/10 md:border-t">
-        <div class="absolute top-0 left-0 w-full h-[2px] bg-white/10 rounded-t-xl md:rounded-none overflow-hidden">
-            <div id="miniProgress" class="h-full bg-white w-0 transition-all duration-100"></div>
+    <!-- Mini Player (Glass) -->
+    <div id="miniPlayer" class="glass fixed bottom-[20px] left-4 right-4 md:w-[400px] md:left-auto md:right-8 h-[68px] z-30 flex items-center justify-between px-3 cursor-pointer hidden rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] slide-down transition-all duration-500 overflow-hidden border border-white/10" onclick="openFullScreenPlayer()">
+        <div class="absolute bottom-0 left-0 w-full h-[2px] bg-white/5 overflow-hidden">
+            <div id="miniProgress" class="h-full bg-white w-0 shadow-[0_0_10px_white]"></div>
         </div>
-
-        <div class="flex items-center gap-3 w-2/3 md:w-1/2 min-w-0" onclick="openFullScreenPlayer()">
-            <img id="miniArt" src="" class="w-10 h-10 rounded-md shadow object-cover bg-white/10">
-            <div class="flex flex-col overflow-hidden w-full">
-                <span id="miniTitle" class="text-white text-sm font-semibold truncate"></span>
-                <span id="miniArtist" class="text-white/60 text-xs truncate"></span>
+        <div class="flex items-center gap-3 w-2/3 min-w-0">
+            <img id="miniArt" src="" class="w-11 h-11 rounded-xl shadow-lg object-cover bg-white/10 border border-white/10">
+            <div class="flex flex-col overflow-hidden w-full justify-center">
+                <span id="miniTitle" class="text-white text-sm font-bold truncate tracking-tight"></span>
+                <span id="miniArtist" class="text-white/50 text-[11px] font-medium truncate uppercase tracking-wider mt-0.5"></span>
             </div>
         </div>
-        
-        <div class="flex items-center justify-end gap-2 w-1/3 md:w-1/2">
-            <button class="text-white w-10 h-10 flex items-center justify-center hover:scale-110 active:scale-95" onclick="togglePlay(event)" id="miniPlayBtn">
-                <svg id="miniPlayIcon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                <svg id="miniPauseIcon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                <svg id="miniBufferingIcon" class="animate-spin hidden" width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-            </button>
-            <button class="text-white w-10 h-10 flex items-center justify-center hover:scale-110 active:scale-95 hidden sm:flex" onclick="playNext(event)">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        <div class="flex items-center justify-end gap-1">
+            <button class="text-white w-12 h-12 flex items-center justify-center rounded-full hover:bg-white/10 transition active:scale-90" onclick="togglePlay(event)" id="miniPlayBtn">
+                <svg id="miniPlayIcon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="miniPauseIcon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <div id="miniBufferingIcon" class="hidden w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
             </button>
         </div>
     </div>
 
-    <!-- Full Screen "Now Playing" Overlay -->
-    <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-transform duration-500 pt-safe pb-safe h-[100dvh]">
-        <div class="absolute inset-0 z-[-1] overflow-hidden opacity-60">
-            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-3xl scale-125 brightness-50">
-            <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90"></div>
+    <!-- Cinematic Full Screen Player -->
+    <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-all duration-500 pt-safe pb-safe h-[100dvh] overflow-hidden">
+        
+        <!-- Animated Background -->
+        <div class="absolute inset-0 z-[-2] overflow-hidden bg-black">
+            <img id="fullBgArt" src="" class="w-full h-full object-cover blur-[60px] opacity-40 animate-pan-bg scale-150 transform-gpu">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+            <div class="absolute inset-0 bg-black/30 backdrop-saturate-200"></div>
         </div>
 
-        <div class="flex flex-shrink-0 items-center justify-between px-6 py-4">
-            <button class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition" onclick="closeFullScreenPlayer()">
-                <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+        <!-- Top Navigation -->
+        <div class="flex flex-shrink-0 items-center justify-between px-6 py-4 z-10">
+            <button class="w-10 h-10 flex items-center justify-center text-white/50 hover:text-white transition rounded-full hover:bg-white/10" onclick="closeFullScreenPlayer()">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
             </button>
             <div class="flex flex-col items-center">
-                <span class="text-[10px] font-bold text-white/50 tracking-[0.2em] uppercase">Now Playing</span>
+                <span class="text-[9px] font-bold text-white/40 tracking-[0.3em] uppercase">Streamify</span>
             </div>
-            <button class="w-10 h-10 flex items-center justify-center text-white/70 hover:text-white transition" onclick="openQueue()">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M4 10h12v2H4zm0-4h16v2H4zm0 8h8v2H4zm10 0v6l5-3z"/></svg>
+            <!-- Lyrics Toggle Button -->
+            <button id="lyricsBtn" class="w-10 h-10 flex items-center justify-center text-white/50 hover:text-white transition rounded-full hover:bg-white/10" onclick="toggleLyrics()">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
             </button>
         </div>
 
-        <div class="flex-1 flex items-center justify-center px-8 min-h-0 py-2 relative">
-            <img id="fullArt" src="" class="w-full h-full max-w-[400px] max-h-[400px] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-transform duration-500 aspect-square">
+        <!-- Dynamic Visual Area (Art vs Lyrics) -->
+        <div class="flex-1 relative flex items-center justify-center w-full mt-4 mb-8">
             
-            <div id="adBadge" class="absolute bg-black/80 text-white border border-white/20 px-5 py-3 rounded-full font-bold text-sm hidden items-center gap-3 backdrop-blur-md shadow-2xl z-10">
-                <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Bypassing Ad...
+            <!-- Floating Album Art -->
+            <div id="fullArtContainer" class="w-full flex items-center justify-center px-8 transition-all duration-700 ease-in-out transform-gpu">
+                <div class="relative w-full max-w-[360px] aspect-square group rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.8)] border border-white/5 bg-white/5 p-2">
+                    <img id="fullArt" src="" class="w-full h-full object-cover rounded-2xl transition-transform duration-1000 ease-out">
+                    
+                    <!-- Playing Indicator overlay -->
+                    <div id="playingGlow" class="absolute inset-0 bg-white/5 rounded-2xl opacity-0 pointer-events-none transition-opacity duration-500"></div>
+
+                    <!-- Ad Badge -->
+                    <div id="adBadge" class="absolute top-4 left-4 bg-black/90 text-white border border-white/10 px-4 py-2 rounded-full font-bold text-xs hidden items-center gap-2 backdrop-blur-xl shadow-2xl z-10 tracking-widest uppercase">
+                        <div class="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        Bypass
+                    </div>
+                </div>
+            </div>
+
+            <!-- Immersive Lyrics View (Hidden by default) -->
+            <div id="lyricsContainer" class="absolute inset-0 flex flex-col px-8 overflow-hidden lyrics-mask opacity-0 scale-95 pointer-events-none transition-all duration-700 ease-in-out z-10">
+                <div class="flex-1 flex flex-col justify-center space-y-8 text-left h-full" id="mockLyrics">
+                    <!-- Lyrics will be injected here or scrolled -->
+                    <p class="text-white/30 text-2xl font-bold tracking-tight transition-all duration-500 hover:text-white/50 cursor-pointer">Searching for the truth</p>
+                    <p class="text-white text-4xl font-extrabold tracking-tighter drop-shadow-2xl scale-105 origin-left transition-all duration-500">Living in the luxury</p>
+                    <p class="text-white/30 text-2xl font-bold tracking-tight transition-all duration-500 hover:text-white/50 cursor-pointer">Walking through the fire</p>
+                    <p class="text-white/30 text-2xl font-bold tracking-tight transition-all duration-500 hover:text-white/50 cursor-pointer">Never looking back</p>
+                    <div class="mt-8 pt-8 border-t border-white/10 inline-block">
+                        <p class="text-[10px] uppercase tracking-widest text-white/30">Synced Lyrics powered by Musixmatch</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="flex-shrink-0 flex flex-col px-8 pb-8 mt-2 md:max-w-[600px] md:mx-auto md:w-full">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex flex-col min-w-0 pr-4">
-                    <h2 id="fullTitle" class="text-2xl font-bold text-white truncate"></h2>
-                    <h3 id="fullArtist" class="text-lg text-white/70 truncate mt-1"></h3>
-                </div>
-                <button class="text-white hover:scale-110 transition active:scale-95 flex-shrink-0" onclick="toggleFavorite()">
-                    <svg id="heartIcon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </button>
-            </div>
-
-            <div class="flex flex-col mb-6 group">
-                <div class="relative w-full h-6 flex items-center">
-                    <input type="range" min="0" max="100" value="0" step="0.1" class="absolute w-full h-full z-10 opacity-0 cursor-pointer touch-none" id="progressBar">
-                    <div class="progress-track"><div class="progress-fill" id="progressFillMain"></div></div>
-                </div>
-                <div class="flex justify-between text-[11px] font-medium text-white/50 mt-1 font-mono">
-                    <span id="currentTimeDisplay">0:00</span>
-                    <span id="durationDisplay">0:00</span>
-                </div>
-            </div>
-
-            <div class="flex items-center justify-between mb-4">
-                <button class="text-white/50 hover:text-white p-2 transition" id="shuffleBtn" onclick="toggleShuffle()">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
-                </button>
-                
-                <button class="text-white p-2 hover:scale-110 active:scale-95 transition" onclick="playPrevious()">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                </button>
-                
-                <button class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-black shadow-lg hover:scale-105 active:scale-95 transition relative" onclick="togglePlay(event)">
-                    <svg id="fullPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
-                    <svg id="fullPauseIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    <svg id="fullBufferingIcon" class="animate-spin hidden absolute" width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-                </button>
-                
-                <button class="text-white p-2 hover:scale-110 active:scale-95 transition" onclick="playNext()">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                </button>
-                
-                <button class="text-white/50 hover:text-white p-2 transition relative" id="loopBtn" onclick="toggleLoop()">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                    <span id="loopOneBadge" class="hidden absolute top-1 right-1 bg-white text-black text-[8px] font-bold rounded-full w-3 h-3 flex items-center justify-center">1</span>
-                </button>
-            </div>
+        <!-- Controls Area (Glass Panel) -->
+        <div class="flex-shrink-0 flex flex-col w-full md:max-w-[500px] md:mx-auto pb-8 z-10">
             
-            <div class="flex justify-between items-center mt-4 px-2">
-                <button class="text-white/70 hover:text-white transition active:scale-95 p-2" onclick="promptAudioRouting()">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg>
-                </button>
-                <button class="text-white/70 hover:text-white transition active:scale-95 p-2" onclick="showToast('Share feature ready')">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                </button>
+            <div class="px-8 flex flex-col bg-gradient-to-t from-black/60 to-transparent pt-12 pb-6">
+                <!-- Meta & Heart -->
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex flex-col min-w-0 pr-4">
+                        <h2 id="fullTitle" class="text-3xl font-extrabold text-white truncate tracking-tighter drop-shadow-lg"></h2>
+                        <h3 id="fullArtist" class="text-sm font-semibold text-white/50 truncate mt-1 tracking-widest uppercase"></h3>
+                    </div>
+                    <button class="text-white hover:scale-110 transition-transform active:scale-90 flex-shrink-0 drop-shadow-lg" onclick="toggleFavorite()">
+                        <svg id="heartIcon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="flex flex-col mb-8 group">
+                    <div class="relative w-full h-6 flex items-center">
+                        <input type="range" min="0" max="100" value="0" step="0.1" class="absolute w-full h-full z-10 opacity-0 cursor-pointer touch-none" id="progressBar">
+                        <div class="progress-track"><div class="progress-fill" id="progressFillMain"></div></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] font-bold text-white/40 mt-2 font-mono tracking-widest">
+                        <span id="currentTimeDisplay">0:00</span>
+                        <span id="durationDisplay">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Main Playback Buttons -->
+                <div class="flex items-center justify-between">
+                    <button class="text-white/40 hover:text-white p-2 transition-colors" id="shuffleBtn" onclick="toggleShuffle()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+                    </button>
+                    
+                    <div class="flex items-center gap-6">
+                        <button class="text-white p-2 hover:text-white/70 transition-colors active:scale-90" onclick="playPrevious()">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        </button>
+                        
+                        <button class="w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center text-black shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 transition-all relative" onclick="togglePlay(event)">
+                            <svg id="fullPlayIcon" viewBox="0 0 24 24" width="32" height="32" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="fullPauseIcon" viewBox="0 0 24 24" width="32" height="32" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            <div id="fullBufferingIcon" class="hidden absolute w-[76px] h-[76px] border-[3px] border-black/10 border-t-black rounded-full animate-spin"></div>
+                        </button>
+                        
+                        <button class="text-white p-2 hover:text-white/70 transition-colors active:scale-90" onclick="playNext()">
+                            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                        </button>
+                    </div>
+
+                    <button class="text-white/40 hover:text-white p-2 transition-colors relative" id="loopBtn" onclick="toggleLoop()">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        <span id="loopOneBadge" class="hidden absolute top-0.5 right-0.5 bg-white text-black text-[7px] font-extrabold rounded-full w-3.5 h-3.5 flex items-center justify-center">1</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Queue Drawer -->
-    <div id="queueDrawer" class="fixed inset-x-0 bottom-0 z-[60] bg-[#1c1c1e] rounded-t-3xl slide-down transition-transform duration-300 h-[65dvh] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/10 pb-safe">
-        <div class="flex items-center justify-between p-5 border-b border-white/10">
-            <h3 class="text-lg font-bold">Up Next</h3>
-            <button class="text-white/50 hover:text-white" onclick="closeQueue()">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
-            </button>
-        </div>
-        <div class="flex-1 overflow-y-auto p-2" id="queueList"></div>
-    </div>
-
-    <div id="toast-container" class="fixed top-safe mt-4 left-1/2 transform -translate-x-1/2 z-[100] bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-full px-6 py-3 text-sm font-medium text-white flex items-center gap-2 opacity-0 pointer-events-none -translate-y-4">
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed top-safe mt-4 left-1/2 transform -translate-x-1/2 z-[100] glass-btn rounded-full px-6 py-3 text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2 opacity-0 pointer-events-none -translate-y-4 transition-all duration-300 shadow-2xl">
         <span id="toast-message">Notification</span>
     </div>
 
-    <!-- YouTube IFrame API -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const API_KEY = 'AIzaSyA1NzhaIxHuCo_M-YYjK6c5Y0FhCj-2QMs';
@@ -334,58 +261,43 @@
         let isShuffle = false;
         let loopState = 0;
         let syncInterval;
+        let isLyricsMode = false;
         let favorites = JSON.parse(localStorage.getItem('ytFavorites')) || [];
         const bgCarrier = document.getElementById('bgAudioCarrier');
 
-        function activateAudioCarrier() {
-            if (bgCarrier && bgCarrier.paused) {
-                bgCarrier.volume = 0.01;
-                bgCarrier.play().catch(() => {});
-            }
+        document.body.addEventListener('touchstart', forceAudioUnlock, { once: false, passive: true });
+        document.body.addEventListener('click', forceAudioUnlock, { once: false, passive: true });
+
+        function forceAudioUnlock() {
+            if (bgCarrier && bgCarrier.paused) { bgCarrier.volume = 0.01; bgCarrier.play().catch(() => {}); }
         }
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('ytplayer', {
                 height: '100%', width: '100%',
-                playerVars: { 
-                    'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 
-                    'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3,
-                    'origin': window.location.origin // Prevents CORS block in WebView
-                },
+                playerVars: { 'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3, 'origin': window.location.origin },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
             });
         }
 
-        function onPlayerReady() {
-            isPlayerReady = true;
-            fetchTrending();
-        }
-        
-        function onPlayerError() {
-            showToast("Track unavailable. Skipping...");
-            playNext();
-        }
+        function onPlayerReady() { isPlayerReady = true; fetchTrending(); }
+        function onPlayerError() { showToast("Track unavailable. Skipping..."); playNext(); }
 
         async function fetchTrending() {
             showLoading(true);
             try {
-                const q = encodeURIComponent("latest trending bollywood indian songs official music video");
+                const q = encodeURIComponent("latest trending dark pop hip hop visualizer official");
                 const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&videoCategoryId=10&maxResults=20&key=${API_KEY}`);
                 const data = await res.json();
-                
                 if(data.error) throw new Error(data.error.message);
-                
                 const tracks = data.items.map(item => ({
                     id: item.id.videoId,
-                    title: decodeHTMLEntities(item.snippet.title),
-                    artist: item.snippet.channelTitle.replace(' - Topic', ''),
+                    title: decodeHTMLEntities(item.snippet.title).replace(/(\(Official.*?\)|\[Official.*?\])/gi, '').trim(),
+                    artist: item.snippet.channelTitle.replace(' - Topic', '').replace('VEVO', ''),
                     art: item.snippet.thumbnails.high.url
                 }));
-                
-                renderSongs(tracks, 'Trending Music');
-            } catch (err) {
-                showToast("Failed to fetch trending music.");
-            }
+                renderSongs(tracks, 'Discover');
+            } catch (err) { showToast("Network error."); }
             showLoading(false);
         }
 
@@ -394,25 +306,19 @@
             const q = document.getElementById('searchInput').value.trim();
             if(!q) return;
             document.getElementById('searchInput').blur();
-            
             showLoading(true);
             try {
                 const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=25&key=${API_KEY}`);
                 const data = await res.json();
-                
                 if(data.error) throw new Error(data.error.message);
-
                 const tracks = data.items.map(item => ({
                     id: item.id.videoId,
-                    title: decodeHTMLEntities(item.snippet.title),
-                    artist: item.snippet.channelTitle,
+                    title: decodeHTMLEntities(item.snippet.title).replace(/(\(Official.*?\)|\[Official.*?\])/gi, '').trim(),
+                    artist: item.snippet.channelTitle.replace(' - Topic', '').replace('VEVO', ''),
                     art: item.snippet.thumbnails.high.url
                 }));
-                
-                renderSongs(tracks, `Results for "${q}"`);
-            } catch (err) {
-                showToast("Search failed.");
-            }
+                renderSongs(tracks, `Results: ${q}`);
+            } catch (err) { showToast("Search failed."); }
             showLoading(false);
         });
 
@@ -420,27 +326,22 @@
             document.getElementById('resultsTitle').textContent = title;
             const songsList = document.getElementById('songsList');
             songsList.innerHTML = '';
-            if(tracks.length === 0) songsList.innerHTML = '<p class="text-white/50">No tracks found.</p>';
-            
+            if(tracks.length === 0) songsList.innerHTML = '<p class="text-white/30 text-sm">No tracks found.</p>';
             tracks.forEach((track, idx) => {
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-3 p-3 rounded-2xl hover:bg-white/10 transition cursor-pointer group bg-white/5";
-                div.onclick = () => {
-                    activateAudioCarrier();
-                    currentQueue = tracks;
-                    loadTrack(idx);
-                };
-                
+                div.className = "flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition-all cursor-pointer group border border-transparent hover:border-white/5";
+                div.onclick = () => { forceAudioUnlock(); currentQueue = tracks; loadTrack(idx); };
                 div.innerHTML = `
-                    <div class="relative w-14 h-14 shrink-0">
-                        <img src="${track.art}" class="w-full h-full rounded-xl object-cover shadow-md">
-                        <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center rounded-xl">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                    <div class="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden shadow-lg">
+                        <img src="${track.art}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="white"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                     </div>
                     <div class="flex flex-col min-w-0 flex-1 pr-2">
-                        <span class="text-white font-semibold text-sm truncate">${track.title}</span>
-                        <span class="text-white/50 text-xs truncate mt-0.5">${track.artist}</span>
+                        <span class="text-white font-bold text-sm truncate">${track.title}</span>
+                        <span class="text-white/40 text-[11px] font-semibold uppercase tracking-wider truncate mt-1">${track.artist}</span>
                     </div>
                 `;
                 songsList.appendChild(div);
@@ -459,9 +360,16 @@
             
             document.getElementById('fullTitle').textContent = track.title;
             document.getElementById('fullArtist').textContent = track.artist;
-            document.getElementById('fullArt').src = track.art;
-            document.getElementById('fullBgArt').src = track.art;
             
+            // Crossfade art transition
+            const fullArt = document.getElementById('fullArt');
+            fullArt.style.opacity = 0;
+            setTimeout(() => { 
+                fullArt.src = track.art; 
+                document.getElementById('fullBgArt').src = track.art;
+                fullArt.style.opacity = 1; 
+            }, 300);
+
             updateHeartUI();
             
             const progressBar = document.getElementById('progressBar');
@@ -475,95 +383,79 @@
             miniPlayer.classList.remove('hidden', 'slide-down');
             miniPlayer.classList.add('slide-up');
 
-            activateAudioCarrier();
+            forceAudioUnlock();
             player.loadVideoById(track.id);
             isPlaying = false;
             isBuffering = true;
             updatePlayPauseUI();
-            
             setupMediaSession(track);
+            resetVisualizer();
+        }
+
+        function toggleLyrics() {
+            isLyricsMode = !isLyricsMode;
+            const art = document.getElementById('fullArtContainer');
+            const lyrics = document.getElementById('lyricsContainer');
+            const btn = document.getElementById('lyricsBtn');
+
+            if(isLyricsMode) {
+                btn.classList.add('text-white', 'bg-white/10');
+                btn.classList.remove('text-white/50');
+                art.classList.add('opacity-0', 'scale-90', 'blur-xl');
+                lyrics.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+            } else {
+                btn.classList.remove('text-white', 'bg-white/10');
+                btn.classList.add('text-white/50');
+                art.classList.remove('opacity-0', 'scale-90', 'blur-xl');
+                lyrics.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+            }
         }
 
         function setupMediaSession(track) {
             if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: track.title,
-                    artist: track.artist,
-                    artwork: [
-                        { src: track.art, sizes: '96x96', type: 'image/jpeg' },
-                        { src: track.art, sizes: '128x128', type: 'image/jpeg' },
-                        { src: track.art, sizes: '256x256', type: 'image/jpeg' },
-                        { src: track.art, sizes: '512x512', type: 'image/jpeg' }
-                    ]
-                });
-
-                navigator.mediaSession.setActionHandler('play', () => {
-                    activateAudioCarrier();
-                    if(player && player.playVideo) player.playVideo();
-                });
-                navigator.mediaSession.setActionHandler('pause', () => {
-                    if(bgCarrier) bgCarrier.pause();
-                    if(player && player.pauseVideo) player.pauseVideo();
-                });
+                navigator.mediaSession.metadata = new MediaMetadata({ title: track.title, artist: track.artist, artwork: [{ src: track.art, sizes: '512x512', type: 'image/jpeg' }] });
+                navigator.mediaSession.setActionHandler('play', () => { forceAudioUnlock(); if(player) player.playVideo(); });
+                navigator.mediaSession.setActionHandler('pause', () => { if(bgCarrier) bgCarrier.pause(); if(player) player.pauseVideo(); });
                 navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
                 navigator.mediaSession.setActionHandler('nexttrack', playNext);
-                navigator.mediaSession.setActionHandler('seekto', (details) => {
-                    if (details.seekTime && player && player.seekTo) {
-                        player.seekTo(details.seekTime, true);
-                    }
-                });
             }
         }
 
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && isPlaying && player && player.getPlayerState) {
-                if (player.getPlayerState() !== YT.PlayerState.PLAYING) {
-                    player.playVideo();
-                    activateAudioCarrier();
-                }
+            if (!document.hidden && isPlaying && player) {
+                if (player.getPlayerState() !== YT.PlayerState.PLAYING) player.playVideo();
             }
         });
 
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.PLAYING) {
-                isPlaying = true;
-                isBuffering = false;
-                activateAudioCarrier();
-                updatePlayPauseUI();
-                startSync();
-                document.getElementById('fullArt').style.transform = 'scale(1)';
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+                isPlaying = true; isBuffering = false;
+                forceAudioUnlock(); updatePlayPauseUI(); startSync();
+                document.getElementById('fullArtContainer').classList.add('animate-float-art');
+                document.getElementById('playingGlow').classList.add('animate-pulse-glow');
             } else if (event.data === YT.PlayerState.PAUSED) {
-                isPlaying = false;
-                isBuffering = false;
+                isPlaying = false; isBuffering = false;
                 if(bgCarrier) bgCarrier.pause();
-                updatePlayPauseUI();
-                stopSync();
-                document.getElementById('fullArt').style.transform = 'scale(0.95)';
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+                updatePlayPauseUI(); stopSync();
+                resetVisualizer();
             } else if (event.data === YT.PlayerState.BUFFERING) {
-                isBuffering = true;
-                updatePlayPauseUI();
+                isBuffering = true; updatePlayPauseUI();
             } else if (event.data === YT.PlayerState.ENDED) {
-                if(loopState === 2) {
-                    player.seekTo(0);
-                    player.playVideo();
-                } else {
-                    playNext();
-                }
+                if(loopState === 2) { player.seekTo(0); player.playVideo(); } else { playNext(); }
             }
+        }
+
+        function resetVisualizer() {
+            document.getElementById('fullArtContainer').classList.remove('animate-float-art');
+            document.getElementById('playingGlow').classList.remove('animate-pulse-glow');
         }
 
         function togglePlay(e) {
             if(e) e.stopPropagation();
             if(!isPlayerReady) return;
-            activateAudioCarrier();
-            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-                if(bgCarrier) bgCarrier.pause();
-            } else {
-                player.playVideo();
-            }
+            forceAudioUnlock();
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) player.pauseVideo();
+            else player.playVideo();
         }
 
         function playNext(e) {
@@ -572,22 +464,13 @@
             let nextIdx = currentIndex + 1;
             if(isShuffle) nextIdx = Math.floor(Math.random() * currentQueue.length);
             else if(nextIdx >= currentQueue.length) nextIdx = (loopState === 1) ? 0 : currentIndex;
-            
             if(nextIdx !== currentIndex) loadTrack(nextIdx);
-            else if(loopState === 0) {
-                player.stopVideo();
-                if(bgCarrier) bgCarrier.pause();
-                isPlaying = false;
-                updatePlayPauseUI();
-            }
+            else if(loopState === 0) { player.stopVideo(); isPlaying = false; updatePlayPauseUI(); resetVisualizer(); }
         }
 
         function playPrevious() {
             if(currentQueue.length === 0) return;
-            if(player.getCurrentTime() > 3) {
-                player.seekTo(0);
-                return;
-            }
+            if(player.getCurrentTime() > 3) { player.seekTo(0); return; }
             let prevIdx = currentIndex - 1;
             if(prevIdx < 0) prevIdx = currentQueue.length - 1;
             loadTrack(prevIdx);
@@ -597,51 +480,35 @@
             loopState = (loopState + 1) % 3;
             const btn = document.getElementById('loopBtn');
             const badge = document.getElementById('loopOneBadge');
-            
-            if(loopState === 0) {
-                btn.classList.replace('text-white', 'text-white/50');
-                badge.classList.add('hidden');
-            } else if (loopState === 1) {
-                btn.classList.replace('text-white/50', 'text-white');
-                badge.classList.add('hidden');
-            } else {
-                badge.classList.remove('hidden');
-            }
+            if(loopState === 0) { btn.classList.replace('text-white', 'text-white/40'); badge.classList.add('hidden'); } 
+            else if (loopState === 1) { btn.classList.replace('text-white/40', 'text-white'); badge.classList.add('hidden'); } 
+            else { badge.classList.remove('hidden'); }
         }
 
         function toggleShuffle() {
             isShuffle = !isShuffle;
             const btn = document.getElementById('shuffleBtn');
-            if(isShuffle) btn.classList.replace('text-white/50', 'text-white');
-            else btn.classList.replace('text-white', 'text-white/50');
+            if(isShuffle) btn.classList.replace('text-white/40', 'text-white');
+            else btn.classList.replace('text-white', 'text-white/40');
         }
 
         function startSync() {
             clearInterval(syncInterval);
             syncInterval = setInterval(() => {
                 if(!player || !player.getCurrentTime || isScrubbing) return;
-                
                 if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                    
                     const url = player.getVideoUrl() || "";
                     const trackId = currentQueue[currentIndex]?.id || "";
-                    
                     const isAd = url && trackId && !url.includes(trackId);
                     const adBadge = document.getElementById('adBadge');
                     
                     if (isAd) {
-                        if (!adBadge.classList.contains('flex')) {
-                            player.mute(); 
-                            adBadge.classList.remove('hidden');
-                            adBadge.classList.add('flex');
-                        }
+                        if (!adBadge.classList.contains('flex')) { player.mute(); adBadge.classList.remove('hidden'); adBadge.classList.add('flex'); }
                         if (player.getDuration() > 0) player.seekTo(player.getDuration() - 0.5, true);
                         return; 
                     } else {
-                        if (adBadge.classList.contains('flex')) {
-                            player.unMute(); 
-                            adBadge.classList.add('hidden');
-                            adBadge.classList.remove('flex');
-                        }
+                        if (adBadge.classList.contains('flex')) { player.unMute(); adBadge.classList.add('hidden'); adBadge.classList.remove('flex'); }
                     }
 
                     const curr = player.getCurrentTime();
@@ -653,16 +520,11 @@
                         progressBar.value = pct;
                         document.getElementById('progressFillMain').style.width = pct + '%';
                         document.getElementById('miniProgress').style.width = pct + '%';
-                        
                         document.getElementById('currentTimeDisplay').textContent = formatTime(curr);
                         document.getElementById('durationDisplay').textContent = formatTime(dur);
 
                         if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
-                            navigator.mediaSession.setPositionState({
-                                duration: dur,
-                                playbackRate: 1,
-                                position: curr
-                            });
+                            navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: curr });
                         }
                     }
                 }
@@ -673,50 +535,24 @@
         const progressBar = document.getElementById('progressBar');
         progressBar.addEventListener('mousedown', () => { isScrubbing = true; });
         progressBar.addEventListener('touchstart', () => { isScrubbing = true; }, {passive: true});
-        
         progressBar.addEventListener('input', (e) => {
             document.getElementById('progressFillMain').style.width = e.target.value + '%';
-            if(player && player.getDuration) {
-                document.getElementById('currentTimeDisplay').textContent = formatTime((e.target.value / 100) * player.getDuration());
-            }
+            if(player && player.getDuration) document.getElementById('currentTimeDisplay').textContent = formatTime((e.target.value / 100) * player.getDuration());
         });
-        
         const finishScrub = (e) => {
             if(!isScrubbing) return;
             isScrubbing = false;
-            if(player && player.getDuration) {
-                player.seekTo((e.target.value / 100) * player.getDuration(), true);
-            }
+            if(player && player.getDuration) player.seekTo((e.target.value / 100) * player.getDuration(), true);
         };
         progressBar.addEventListener('mouseup', finishScrub);
         progressBar.addEventListener('touchend', finishScrub);
-
-        async function promptAudioRouting() {
-            if ('setSinkId' in HTMLMediaElement.prototype && navigator.mediaDevices && navigator.mediaDevices.selectAudioOutput) {
-                try {
-                    const audioDevice = await navigator.mediaDevices.selectAudioOutput();
-                    showToast(`Routing to: ${audioDevice.label}`);
-                } catch (err) {
-                    console.log(err);
-                }
-            } else {
-                showToast("Use Control Center for AirPlay / Bluetooth on iOS.");
-            }
-        }
 
         function toggleFavorite() {
             if(currentIndex < 0) return;
             const track = currentQueue[currentIndex];
             const existsIdx = favorites.findIndex(t => t.id === track.id);
-            
-            if(existsIdx > -1) {
-                favorites.splice(existsIdx, 1);
-                showToast("Removed from Favorites");
-            } else {
-                favorites.push(track);
-                showToast("Added to Favorites");
-            }
-            
+            if(existsIdx > -1) { favorites.splice(existsIdx, 1); showToast("Removed"); } 
+            else { favorites.push(track); showToast("Added to Library"); }
             localStorage.setItem('ytFavorites', JSON.stringify(favorites));
             updateHeartUI();
         }
@@ -726,20 +562,13 @@
             const track = currentQueue[currentIndex];
             const isFav = favorites.some(t => t.id === track.id);
             const icon = document.getElementById('heartIcon');
-            
-            if(isFav) {
-                icon.setAttribute('fill', '#ffffff');
-            } else {
-                icon.setAttribute('fill', 'none');
-            }
+            if(isFav) { icon.setAttribute('fill', '#ffffff'); icon.setAttribute('stroke', '#ffffff'); } 
+            else { icon.setAttribute('fill', 'none'); icon.setAttribute('stroke', 'currentColor'); }
         }
 
         function showFavorites() {
-            if(favorites.length === 0) {
-                showToast("No favorites yet. Tap the heart to add some!");
-                return;
-            }
-            renderSongs(favorites, 'Your Favorites');
+            if(favorites.length === 0) { showToast("Library is empty"); return; }
+            renderSongs(favorites, 'Your Library');
         }
 
         function updatePlayPauseUI() {
@@ -747,91 +576,30 @@
                 { play: document.getElementById('miniPlayIcon'), pause: document.getElementById('miniPauseIcon'), buff: document.getElementById('miniBufferingIcon') },
                 { play: document.getElementById('fullPlayIcon'), pause: document.getElementById('fullPauseIcon'), buff: document.getElementById('fullBufferingIcon') }
             ];
-
             arr.forEach(ui => {
-                if (isBuffering) {
-                    ui.play.classList.add('hidden');
-                    ui.pause.classList.add('hidden');
-                    ui.buff.classList.remove('hidden');
-                } else if (isPlaying) {
-                    ui.play.classList.add('hidden');
-                    ui.pause.classList.remove('hidden');
-                    ui.buff.classList.add('hidden');
-                } else {
-                    ui.play.classList.remove('hidden');
-                    ui.pause.classList.add('hidden');
-                    ui.buff.classList.add('hidden');
-                }
+                if (isBuffering) { ui.play.classList.add('hidden'); ui.pause.classList.add('hidden'); ui.buff.classList.remove('hidden'); } 
+                else if (isPlaying) { ui.play.classList.add('hidden'); ui.pause.classList.remove('hidden'); ui.buff.classList.add('hidden'); } 
+                else { ui.play.classList.remove('hidden'); ui.pause.classList.add('hidden'); ui.buff.classList.add('hidden'); }
             });
         }
 
-        function openFullScreenPlayer() {
-            const fullPlayer = document.getElementById('fullPlayer');
-            fullPlayer.classList.remove('slide-down');
-            fullPlayer.classList.add('slide-up');
-        }
-        function closeFullScreenPlayer() {
-            const fullPlayer = document.getElementById('fullPlayer');
-            fullPlayer.classList.remove('slide-up');
-            fullPlayer.classList.add('slide-down');
-        }
-
-        function openQueue() {
-            document.getElementById('queueDrawer').classList.remove('slide-down');
-            const list = document.getElementById('queueList');
-            list.innerHTML = '';
-            currentQueue.forEach((track, i) => {
-                const active = i === currentIndex;
-                list.innerHTML += `
-                    <div class="flex items-center gap-4 p-3 mx-2 my-1 rounded-xl hover:bg-white/10 cursor-pointer ${active ? 'bg-white/10' : ''}" onclick="loadTrack(${i}); closeQueue()">
-                        <img src="${track.art}" class="w-12 h-12 rounded-md object-cover shadow-sm">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold truncate ${active ? 'text-white' : 'text-white/80'}">${track.title}</p>
-                            <p class="text-xs text-white/50 truncate">${track.artist}</p>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        function closeQueue() {
-            document.getElementById('queueDrawer').classList.add('slide-down');
-        }
-
-        function formatTime(s) {
-            if(isNaN(s)) return "0:00";
-            const m = Math.floor(s/60);
-            const sec = Math.floor(s%60);
-            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
-        }
-        function decodeHTMLEntities(text) {
-            const t = document.createElement("textarea");
-            t.innerHTML = text;
-            return t.value;
-        }
+        function openFullScreenPlayer() { const fp = document.getElementById('fullPlayer'); fp.classList.remove('slide-down'); fp.classList.add('slide-up'); }
+        function closeFullScreenPlayer() { const fp = document.getElementById('fullPlayer'); fp.classList.remove('slide-up'); fp.classList.add('slide-down'); }
+        function formatTime(s) { if(isNaN(s)) return "0:00"; const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${sec < 10 ? '0' : ''}${sec}`; }
+        function decodeHTMLEntities(text) { const t = document.createElement("textarea"); t.innerHTML = text; return t.value; }
         function showLoading(show) {
-            const loadingState = document.getElementById('loadingState');
-            const resultsState = document.getElementById('resultsState');
-            if(show) {
-                loadingState.classList.remove('hidden');
-                resultsState.classList.add('hidden');
-            } else {
-                loadingState.classList.add('hidden');
-            }
+            const ls = document.getElementById('loadingState'), rs = document.getElementById('resultsState');
+            if(show) { ls.classList.remove('hidden'); ls.classList.add('flex'); rs.classList.add('hidden'); } 
+            else { ls.classList.add('hidden'); ls.classList.remove('flex'); }
         }
-
+        
         let toastTimeout;
         function showToast(message) {
             const toast = document.getElementById('toast-container');
             document.getElementById('toast-message').textContent = message;
-            
-            toast.classList.remove('opacity-0', '-translate-y-4');
-            toast.classList.add('opacity-100', 'translate-y-0');
-            
+            toast.classList.remove('opacity-0', '-translate-y-4'); toast.classList.add('opacity-100', 'translate-y-0');
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', '-translate-y-4');
-            }, 3000);
+            toastTimeout = setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', '-translate-y-4'); }, 3000);
         }
     </script>
 </body>
