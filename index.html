@@ -74,6 +74,9 @@
         .slide-down { transform: translateY(100%); opacity: 0; pointer-events: none; }
         .fade-in { opacity: 1; pointer-events: auto; }
         .fade-out { opacity: 0; pointer-events: none; }
+        
+        /* Cover Art Crossfade Transition */
+        .track-image-loader { transition: opacity 0.3s ease; }
 
         /* Liquid Mesh Background */
         .mesh-bg {
@@ -180,7 +183,7 @@
     <!-- Floating Mini Player (iOS 17 Pill Style) -->
     <div id="miniPlayer" class="glass-pill fixed bottom-[95px] md:bottom-6 left-3 right-3 md:left-auto md:right-8 md:w-[380px] h-[64px] z-30 flex items-center justify-between px-3 cursor-pointer hidden rounded-2xl fade-out transition-all duration-300 transform scale-95" onclick="openFullScreenPlayer()">
         <div class="flex items-center gap-3 w-[60%] min-w-0">
-            <img id="miniArt" src="" class="w-12 h-12 rounded-lg shadow-md object-cover bg-white/10">
+            <img id="miniArt" src="" class="w-12 h-12 rounded-lg shadow-md object-cover bg-white/10 transition-opacity duration-300">
             <div class="flex flex-col overflow-hidden w-full">
                 <span id="miniTitle" class="text-white text-sm font-semibold truncate"></span>
                 <span id="miniArtist" class="text-white/50 text-xs truncate"></span>
@@ -231,7 +234,7 @@
             <!-- Reactive Audio Visualizer Canvas -->
             <canvas id="audioVisualizer" class="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500"></canvas>
             
-            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-full h-full max-w-[340px] max-h-[340px] md:max-w-[380px] md:max-h-[380px] object-cover rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.65)] transition-all duration-500 aspect-square border border-white/10">
+            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-full h-full max-w-[340px] max-h-[340px] md:max-w-[380px] md:max-h-[380px] object-cover rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.65)] transition-all duration-500 aspect-square border border-white/10 track-image-loader">
             
             <div id="adBadge" class="absolute top-6 bg-black/70 text-white border border-white/15 px-5 py-2.5 rounded-full font-semibold text-sm hidden items-center gap-3 backdrop-blur-xl shadow-2xl z-20">
                 <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -377,6 +380,28 @@
         }
 
         // ==========================================
+        // ORIGINAL ALBUM ART FETCHER (ITUNES API)
+        // ==========================================
+        async function getOfficialArt(title, artist, fallbackUrl) {
+            try {
+                // Clean up video titles to get better audio track matches
+                const cleanTitle = title.replace(/\(.*\)|\[.*\]|official|video|audio|lyric|remix|full/gi, '').trim();
+                const query = encodeURIComponent(`${cleanTitle} ${artist}`);
+                
+                const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
+                const data = await res.json();
+                
+                if (data.results && data.results.length > 0) {
+                    // Upgrade the 100x100 default response to a crisp 600x600 HD square cover
+                    return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
+                }
+            } catch (e) {
+                console.warn("iTunes art fetch failed, using fallback");
+            }
+            return fallbackUrl;
+        }
+
+        // ==========================================
         // 1. SPONSORBLOCK API INTEGRATION
         // ==========================================
         function toggleSponsorBlock() {
@@ -421,7 +446,7 @@
                     renderSponsorMarkers();
                 }
             } catch (e) {
-                // 404 is normal when a video has no SponsorBlock submissions
+                // Normal if video has no submissions
             }
         }
 
@@ -456,7 +481,6 @@
 
                 for (let i = 0; i < data.length; i += 16) {
                     const pr = data[i], pg = data[i+1], pb = data[i+2];
-                    // Skip near-black or near-white pixels for vibrant tint
                     if ((pr + pg + pb) > 60 && (pr + pg + pb) < 680) {
                         r += pr; g += pg; b += pb; count++;
                     }
@@ -510,16 +534,11 @@
                 const artEl = document.getElementById('fullArt');
                 const baseRadius = (artEl ? artEl.offsetWidth / 2 : 150) * 0.96;
 
-                if (isPlaying && !isBuffering) {
-                    visPhase += 0.045;
-                } else {
-                    visPhase += 0.008;
-                }
+                if (isPlaying && !isBuffering) { visPhase += 0.045; } else { visPhase += 0.008; }
 
                 const energy = (isPlaying && !isBuffering) ? 1 : 0.15;
                 const { r, g, b } = dominantColor;
 
-                // Draw 3 concentric harmonic liquid rings + radial spectrum bars
                 for (let ring = 0; ring < 3; ring++) {
                     ctx.beginPath();
                     const segments = 72;
@@ -541,7 +560,6 @@
                     ctx.stroke();
                 }
 
-                // Subtle radial equalizer ticks around artwork perimeter
                 const bars = 64;
                 for (let i = 0; i < bars; i++) {
                     const angle = (i / bars) * Math.PI * 2;
@@ -558,7 +576,6 @@
                     ctx.lineCap = 'round';
                     ctx.stroke();
                 }
-
                 ctx.restore();
             }
             draw();
@@ -626,7 +643,8 @@
                 };
                 div.innerHTML = `
                     <div class="relative w-12 h-12 shrink-0 md:w-14 md:h-14">
-                        <img src="${track.art}" class="w-full h-full rounded-md object-cover shadow-sm">
+                        <!-- track-image-loader class added here for crossfade -->
+                        <img src="${track.art}" class="w-full h-full rounded-md object-cover shadow-sm track-image-loader">
                         <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center rounded-md">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
                         </div>
@@ -636,6 +654,20 @@
                         <span class="text-white/50 text-[13px] truncate mt-0.5 group-hover:text-white/80 transition-colors">${track.artist}</span>
                     </div>
                 `;
+
+                // Fetch high-quality Apple Music cover art in the background
+                const imgEl = div.querySelector('.track-image-loader');
+                getOfficialArt(track.title, track.artist, track.art).then(officialArt => {
+                    // Smooth crossfade swap to HD image
+                    imgEl.style.opacity = '0';
+                    setTimeout(() => {
+                        imgEl.src = officialArt;
+                        imgEl.style.opacity = '1';
+                    }, 300);
+                    // Update queue object so the full-screen player uses the HD version too!
+                    track.art = officialArt; 
+                });
+
                 songsList.appendChild(div);
             });
             document.getElementById('resultsState').classList.remove('hidden');
@@ -648,8 +680,13 @@
             
             document.getElementById('miniTitle').textContent = track.title;
             document.getElementById('miniArtist').textContent = track.artist;
-            document.getElementById('miniArt').src = track.art;
             
+            // Mini Player Art Update
+            const miniArt = document.getElementById('miniArt');
+            miniArt.style.opacity = '0';
+            setTimeout(() => { miniArt.src = track.art; miniArt.style.opacity = '1'; }, 150);
+            
+            // Full Player Art Update (Triggers Visualizer Color Update)
             const fullArtEl = document.getElementById('fullArt');
             fullArtEl.onload = () => extractDominantColor(fullArtEl);
             fullArtEl.src = track.art;
@@ -770,7 +807,6 @@
                     const isAd = url && trackId && !url.includes(trackId);
                     const adBadge = document.getElementById('adBadge');
                     
-                    // 1. Pre-roll Ad Bypass
                     if (isAd) {
                         if (!adBadge.classList.contains('flex')) { player.mute(); adBadge.classList.remove('hidden'); adBadge.classList.add('flex'); }
                         if (player.getDuration() > 0) player.seekTo(player.getDuration() - 0.5, true);
@@ -782,7 +818,6 @@
                     const curr = player.getCurrentTime();
                     const dur = player.getDuration();
 
-                    // 2. SponsorBlock Non-Music / Intro / Outro Skip
                     if (sponsorBlockEnabled && activeSkipSegments.length > 0) {
                         for (const seg of activeSkipSegments) {
                             if (curr >= seg.start && curr < (seg.end - 0.5) && !skippedSegmentUUIDs.has(seg.uuid)) {
