@@ -26,13 +26,13 @@
                         apple: { bg: '#000000', surface: '#1C1C1E', elevated: '#2C2C2E', text: '#F5F5F7', accent: '#FA243C' } 
                     },
                     animation: {
-                        'liquid-slow': 'liquid 15s ease-in-out infinite alternate',
+                        'liquid-slow': 'liquid 18s ease-in-out infinite alternate',
                     },
                     keyframes: {
                         liquid: {
-                            '0%': { transform: 'scale(1.2) rotate(0deg) translate(0, 0)' },
-                            '50%': { transform: 'scale(1.4) rotate(5deg) translate(2%, 2%)' },
-                            '100%': { transform: 'scale(1.2) rotate(-5deg) translate(-2%, -2%)' }
+                            '0%': { transform: 'scale(1.15) rotate(0deg)' },
+                            '50%': { transform: 'scale(1.28) rotate(4deg)' },
+                            '100%': { transform: 'scale(1.15) rotate(-4deg)' }
                         }
                     }
                 } 
@@ -53,7 +53,58 @@
         .top-safe { top: calc(env(safe-area-inset-top, 20px) + 8px); }
 
         .ios-top-fade {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 100%);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        /* ==========================================
+           FULL-SCREEN VERTICAL VIDEO STAGE (ZERO-RELOAD)
+        ========================================== */
+        #ytStage {
+            position: fixed;
+            width: 1px;
+            height: 1px;
+            top: 0;
+            left: 0;
+            opacity: 0.001;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -10;
+            transition: opacity 0.45s ease;
+        }
+        #ytStage.video-active {
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            opacity: 1;
+            z-index: 51; /* Sits cleanly above fullPlayer black base, below fullPlayer UI */
+        }
+        #ytStage.video-active iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: max(100vw, 177.78dvh);
+            height: max(100dvh, 56.25vw);
+            transform: translate(-50%, -50%) scale(1.12); /* Slight zoom hides YT watermarks/bars */
+            pointer-events: none;
+        }
+        #videoScrim {
+            position: fixed;
+            inset: 0;
+            z-index: 52;
+            pointer-events: none;
+            opacity: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.55) 0%,
+                rgba(0, 0, 0, 0.05) 32%,
+                rgba(0, 0, 0, 0.25) 62%,
+                rgba(0, 0, 0, 0.88) 88%,
+                rgba(0, 0, 0, 0.98) 100%
+            );
+            transition: opacity 0.4s ease;
+        }
+        #videoScrim.video-active {
+            opacity: 1;
         }
 
         /* ==========================================
@@ -79,14 +130,14 @@
         }
         .splash-orb {
             position: absolute;
-            width: 340px;
-            height: 340px;
+            width: 320px;
+            height: 320px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(250, 36, 60, 0.42) 0%, rgba(255, 75, 130, 0.16) 45%, rgba(0, 0, 0, 0) 72%);
-            filter: blur(42px);
+            filter: blur(36px);
             opacity: 0;
             transform: scale(0.5);
-            animation: orbBloom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: orbBloom 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .splash-squircle {
             position: relative;
@@ -94,8 +145,8 @@
             height: 96px;
             border-radius: 26px;
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.16) 0%, rgba(250, 36, 60, 0.22) 55%, rgba(20, 20, 24, 0.75) 100%);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.22);
             box-shadow: 0 24px 60px rgba(250, 36, 60, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.45);
             display: flex;
@@ -177,25 +228,25 @@
             100% { opacity: 1; transform: translateY(0); }
         }
         
-        /* Apple Liquid Glassmorphism */
+        /* Battery-Optimized Apple Liquid Glassmorphism (24px blur saves GPU bandwidth) */
         .glass { 
-            background: rgba(40, 40, 40, 0.45); 
-            backdrop-filter: blur(40px) saturate(200%); 
-            -webkit-backdrop-filter: blur(40px) saturate(200%); 
+            background: rgba(34, 34, 36, 0.58); 
+            backdrop-filter: blur(24px) saturate(180%); 
+            -webkit-backdrop-filter: blur(24px) saturate(180%); 
             border-top: 1px solid rgba(255, 255, 255, 0.1); 
         }
         .glass-pill {
-            background: rgba(30, 30, 30, 0.65);
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(28, 28, 30, 0.72);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         /* Apple Music Progress Bar */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; height: 24px; display: flex; align-items: center; }
         input[type=range]:focus { outline: none; }
-        .progress-track { background: rgba(255,255,255,0.2); height: 4px; border-radius: 2px; width: 100%; position: relative; transition: height 0.2s ease; }
+        .progress-track { background: rgba(255,255,255,0.22); height: 4px; border-radius: 2px; width: 100%; position: relative; transition: height 0.2s ease; }
         .progress-fill { background: #ffffff; height: 100%; width: 0%; border-radius: 2px; position: absolute; top: 0; left: 0; pointer-events: none; transition: width 0.1s linear; }
         input[type=range]:active + .progress-track, .group:hover .progress-track { height: 8px; border-radius: 4px; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 0; width: 0; }
@@ -208,13 +259,17 @@
         
         .track-image-loader { transition: opacity 0.3s ease; }
 
-        /* Liquid Mesh Background */
+        /* Battery-Optimized Liquid Mesh Background (Paused when hidden or Eco) */
         .mesh-bg {
-            position: absolute; inset: -20%; width: 140%; height: 140%;
+            position: absolute; inset: -15%; width: 130%; height: 130%;
             background-size: cover; background-position: center;
-            filter: blur(80px) saturate(200%) brightness(0.65);
+            filter: blur(52px) saturate(190%) brightness(0.62);
             z-index: -1;
-            transition: background-image 0.8s ease-in-out;
+            transition: background-image 0.8s ease-in-out, opacity 0.4s ease;
+            animation-play-state: paused;
+        }
+        .mesh-bg.mesh-running {
+            animation-play-state: running;
         }
         .mesh-overlay {
             position: absolute; inset: 0; z-index: 0;
@@ -252,16 +307,18 @@
 
     <canvas id="colorCanvas" width="32" height="32" class="hidden"></canvas>
 
-    <!-- Hidden YouTube Player Container -->
-    <div style="position: absolute; width: 1px; height: 1px; top: -9999px; left: -9999px; opacity: 0; pointer-events: none; overflow: hidden; z-index: -9999;">
+    <!-- YouTube Player Stage (Expands to Full-Screen Vertical Video without reloading!) -->
+    <div id="ytStage">
         <div id="ytplayer"></div>
     </div>
+    <!-- Dark Gradient Scrim over Video so Controls & Title stay 100% crisp -->
+    <div id="videoScrim"></div>
 
     <!-- Main App Shell -->
     <div id="appShell" class="flex flex-col md:flex-row w-full h-full">
 
-        <!-- Desktop Sidebar (macOS Music App Style) -->
-        <aside class="hidden md:flex flex-col w-72 bg-[#191919]/80 backdrop-blur-3xl h-full z-10 p-5 border-r border-white/5">
+        <!-- Desktop Sidebar -->
+        <aside class="hidden md:flex flex-col w-72 bg-[#191919]/85 backdrop-blur-2xl h-full z-10 p-5 border-r border-white/5">
             <div class="text-xl font-bold text-white mb-10 px-2 mt-4 flex items-center gap-3">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="#FA243C"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                 Streamify
@@ -284,7 +341,7 @@
                 </button>
             </nav>
 
-            <!-- Bottom Controls: Cloud Sync + SponsorBlock -->
+            <!-- Bottom Controls: Cloud Sync + Battery Saver + SponsorBlock -->
             <div class="mt-auto pt-4 border-t border-white/10 px-1 flex flex-col gap-2">
                 <button onclick="openAuthModal()" class="w-full flex items-center justify-between text-xs text-white/80 hover:text-white py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 transition border border-white/5">
                     <span class="flex items-center gap-2 truncate">
@@ -292,6 +349,14 @@
                         <span id="cloudLabelDesktop" class="truncate font-medium">Cloud Sync: Sign In</span>
                     </span>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+
+                <button onclick="toggleEcoMode()" class="w-full flex items-center justify-between text-xs text-white/70 hover:text-white py-2 px-3 rounded-xl bg-white/5 transition">
+                    <span class="flex items-center gap-2">
+                        <span id="ecoDotDesk" class="w-2 h-2 rounded-full bg-white/30"></span>
+                        Battery Saver (Eco)
+                    </span>
+                    <span id="ecoStatusDesk" class="font-semibold text-white/40">OFF</span>
                 </button>
 
                 <button id="sbToggleBtn" onclick="toggleSponsorBlock()" class="w-full flex items-center justify-between text-xs text-white/70 hover:text-white py-2 px-3 rounded-xl bg-white/5 transition">
@@ -306,7 +371,7 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full bg-apple-bg relative z-0">
-            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-2">
+            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/90 backdrop-blur-xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-2">
                 <form id="searchForm" class="relative w-full max-w-xl">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
                     <input type="text" id="searchInput" placeholder="Artists, Songs, Lyrics and More" class="w-full bg-[#1C1C1E] text-white rounded-xl py-2.5 pl-11 pr-4 font-medium focus:outline-none focus:bg-[#2C2C2E] transition-colors placeholder:text-white/40 border border-white/5 shadow-inner">
@@ -356,7 +421,7 @@
         </main>
     </div>
 
-    <!-- Mobile Bottom Navigation (iOS Style) -->
+    <!-- Mobile Bottom Navigation -->
     <nav class="md:hidden glass fixed bottom-0 left-0 w-full h-[85px] z-20 flex items-start justify-around pb-safe px-4 pt-2">
         <a href="#" id="navHome" class="flex flex-col items-center gap-1 text-[#FA243C] p-2 transition" onclick="fetchTrending()">
             <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 3l10 9h-3v9H5v-9H2z"/></svg>
@@ -372,7 +437,7 @@
         </a>
     </nav>
 
-    <!-- Floating Mini Player (iOS 17 Pill Style) -->
+    <!-- Floating Mini Player -->
     <div id="miniPlayer" class="glass-pill fixed bottom-[95px] md:bottom-6 left-3 right-3 md:left-auto md:right-8 md:w-[380px] h-[64px] z-30 flex items-center justify-between px-3 cursor-pointer hidden rounded-2xl fade-out transition-all duration-300 transform scale-95" onclick="openFullScreenPlayer()">
         <div class="flex items-center gap-3 w-[60%] min-w-0">
             <img id="miniArt" src="" class="w-11 h-11 rounded-lg shadow-md object-cover bg-white/10 transition-opacity duration-300">
@@ -396,32 +461,46 @@
         </div>
     </div>
 
-    <!-- Full Screen Liquid Glass Player -->
-    <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-all duration-500 h-[100dvh]">
-        <div class="absolute inset-0 overflow-hidden">
-            <div id="fullBgArt" class="mesh-bg animate-liquid-slow"></div>
-            <div class="mesh-overlay"></div>
-        </div>
+    <!-- Full Screen Liquid Glass / Canvas Video Player -->
+    <!-- z-[50] base layer (holds mesh), z-[53] UI controls sit above z-[51] video & z-[52] scrim -->
+    <div id="fullPlayerBgBase" class="fixed inset-0 z-50 bg-black slide-down transition-all duration-500 h-[100dvh] overflow-hidden pointer-events-none">
+        <div id="fullBgArt" class="mesh-bg animate-liquid-slow"></div>
+        <div class="mesh-overlay"></div>
+    </div>
 
-        <div class="flex flex-col flex-shrink-0 px-6 pt-safe pb-2 relative z-20 ios-top-fade">
+    <div id="fullPlayer" class="fixed inset-0 z-[53] flex flex-col slide-down transition-all duration-500 h-[100dvh]">
+        <!-- Native iOS Top Bar -->
+        <div class="flex flex-col flex-shrink-0 px-5 pt-safe pb-2 relative z-20 ios-top-fade">
             <div class="w-10 h-[4px] bg-white/30 rounded-full mx-auto mb-3"></div>
-            <div class="flex items-center justify-between">
-                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:text-white active:scale-90 transition" onclick="closeFullScreenPlayer()">
+            <div class="flex items-center justify-between gap-2">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white/90 hover:text-white active:scale-90 transition shrink-0" onclick="closeFullScreenPlayer()">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                 </button>
                 
-                <button id="visToggleBtn" onclick="toggleVisualizer()" class="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-[11px] font-semibold tracking-wider uppercase text-white transition flex items-center gap-1.5 shadow-sm">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3v18M8 8v8M16 6v12M4 11v2M20 9v6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                    <span id="visLabel">Visualizer: On</span>
-                </button>
+                <!-- Center Mode Switcher Pills: Video Canvas | Visualizer | Eco -->
+                <div class="flex items-center gap-1.5 bg-black/35 backdrop-blur-md p-1 rounded-full border border-white/15">
+                    <button id="videoModeBtn" onclick="toggleVideoMode()" class="px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide text-white/70 hover:text-white transition flex items-center gap-1">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>
+                        <span>Video</span>
+                    </button>
+                    <button id="visToggleBtn" onclick="toggleVisualizer()" class="px-3 py-1.5 rounded-full bg-white/15 text-[11px] font-semibold tracking-wide text-white transition flex items-center gap-1">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 3v18M8 8v8M16 6v12M4 11v2M20 9v6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                        <span id="visLabel">Wave</span>
+                    </button>
+                    <button id="ecoModeBtn" onclick="toggleEcoMode()" class="px-2.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wide text-white/60 hover:text-white transition flex items-center gap-1" title="iPhone Battery Saver">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        <span>Eco</span>
+                    </button>
+                </div>
 
-                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:text-white active:scale-90 transition" onclick="openQueue()">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-white/90 hover:text-white active:scale-90 transition shrink-0" onclick="openQueue()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 10h12v2H4zm0-4h16v2H4zm0 8h8v2H4zm10 0v6l5-3z"/></svg>
                 </button>
             </div>
         </div>
 
-        <div class="flex-1 flex items-center justify-center px-8 py-4 relative z-10 min-h-0">
+        <!-- Center Stage: Hidden gracefully in Video Mode so full-screen video shines -->
+        <div id="artCenterStage" class="flex-1 flex items-center justify-center px-8 py-4 relative z-10 min-h-0 transition-opacity duration-300">
             <canvas id="audioVisualizer" class="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500"></canvas>
             <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-[68vw] h-[68vw] max-w-[270px] max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[320px] md:max-h-[320px] object-cover rounded-[1.25rem] shadow-[0_24px_55px_rgba(0,0,0,0.65)] transition-transform duration-500 ease-out aspect-square border border-white/10 track-image-loader">
             
@@ -431,18 +510,23 @@
             </div>
         </div>
 
-        <div class="flex-shrink-0 flex flex-col px-8 pb-safe pt-2 md:max-w-[540px] md:mx-auto md:w-full relative z-10">
-            <div class="flex items-end justify-between mb-6">
-                <div class="flex flex-col min-w-0 pr-4">
-                    <h2 id="fullTitle" class="text-[22px] font-bold text-white truncate drop-shadow-md"></h2>
-                    <h3 id="fullArtist" class="text-[16px] text-white/60 truncate mt-0.5"></h3>
+        <!-- Bottom Controls (Matches Reference Compact Art + Title when Video Mode is ON) -->
+        <div class="flex-shrink-0 flex flex-col px-7 pb-safe pt-2 md:max-w-[540px] md:mx-auto md:w-full relative z-10">
+            <div class="flex items-center justify-between mb-5 gap-3">
+                <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                    <!-- Compact Square Thumbnail (Appears in Video Canvas Mode just like Spotify) -->
+                    <img id="videoCompactArt" src="" class="hidden w-12 h-12 rounded-lg object-cover shadow-lg border border-white/15 shrink-0">
+                    <div class="flex flex-col min-w-0">
+                        <h2 id="fullTitle" class="text-[22px] font-bold text-white truncate drop-shadow-md"></h2>
+                        <h3 id="fullArtist" class="text-[15px] text-white/70 truncate mt-0.5 drop-shadow"></h3>
+                    </div>
                 </div>
-                <button class="text-white/80 hover:text-white hover:scale-110 transition active:scale-90 flex-shrink-0 mb-1" onclick="toggleFavorite()">
+                <button class="text-white/90 hover:text-white hover:scale-110 transition active:scale-90 flex-shrink-0" onclick="toggleFavorite()">
                     <svg id="heartIcon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </button>
             </div>
 
-            <div class="flex flex-col mb-7 group">
+            <div class="flex flex-col mb-6 group">
                 <div class="relative w-full h-6 flex items-center">
                     <input type="range" min="0" max="100" value="0" step="0.1" class="absolute w-full h-full z-20 opacity-0 cursor-pointer touch-none" id="progressBar">
                     <div class="progress-track overflow-hidden">
@@ -450,20 +534,20 @@
                         <div class="progress-fill z-20" id="progressFillMain"></div>
                     </div>
                 </div>
-                <div class="flex justify-between text-xs font-semibold text-white/50 mt-2">
+                <div class="flex justify-between text-xs font-semibold text-white/60 mt-1.5">
                     <span id="currentTimeDisplay">0:00</span>
                     <span id="durationDisplay">0:00</span>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between mb-6 px-2">
-                <button class="text-white/50 hover:text-white p-2 transition active:opacity-50" id="shuffleBtn" onclick="toggleShuffle()">
+            <div class="flex items-center justify-between mb-5 px-2">
+                <button class="text-white/60 hover:text-white p-2 transition active:opacity-50" id="shuffleBtn" onclick="toggleShuffle()">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
                 </button>
                 <button class="text-white p-2 hover:scale-110 active:opacity-50 transition" onclick="playPrevious()">
                     <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                 </button>
-                <button class="w-[74px] h-[74px] bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition-all relative border border-white/10" onclick="togglePlay(event)">
+                <button class="w-[74px] h-[74px] bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition-all relative border border-white/15 shadow-lg" onclick="togglePlay(event)">
                     <svg id="fullPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="fullPauseIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                     <svg id="fullBufferingIcon" class="animate-spin hidden absolute" width="38" height="38" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
@@ -471,18 +555,19 @@
                 <button class="text-white p-2 hover:scale-110 active:opacity-50 transition" onclick="playNext()">
                     <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                 </button>
-                <button class="text-white/50 hover:text-white p-2 transition relative active:opacity-50" id="loopBtn" onclick="toggleLoop()">
+                <button class="text-white/60 hover:text-white p-2 transition relative active:opacity-50" id="loopBtn" onclick="toggleLoop()">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                     <span id="loopOneBadge" class="hidden absolute top-1 right-1 bg-white text-black text-[9px] font-bold rounded-full w-[14px] h-[14px] flex items-center justify-center">1</span>
                 </button>
             </div>
             
-            <div class="flex justify-between items-center mt-1 px-6 pb-2">
-                <button class="text-white/50 hover:text-white transition active:scale-95" onclick="promptAudioRouting()">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg>
+            <div class="flex justify-between items-center mt-1 px-4 pb-2">
+                <button class="text-white/60 hover:text-white transition active:scale-95 flex items-center gap-1.5 text-xs font-medium" onclick="promptAudioRouting()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg>
+                    <span>Audio Out</span>
                 </button>
-                <button class="text-white/50 hover:text-white transition active:scale-95" onclick="showToast('AirPlay & Cast integration')">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/><polygon points="12 15 17 21 7 21 12 15"/></svg>
+                <button class="text-white/60 hover:text-white transition active:scale-95" onclick="showToast('AirPlay & Cast integration')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"/><polygon points="12 15 17 21 7 21 12 15"/></svg>
                 </button>
             </div>
         </div>
@@ -518,7 +603,6 @@
                 </button>
             </div>
 
-            <!-- Logged Out View -->
             <div id="authLoggedOutView">
                 <div class="flex bg-black/40 p-1 rounded-xl mb-4 border border-white/5">
                     <button id="tabLogin" onclick="setAuthMode('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-white/15 text-white transition">Sign In</button>
@@ -541,7 +625,6 @@
                 </button>
             </div>
 
-            <!-- Logged In View -->
             <div id="authLoggedInView" class="hidden">
                 <div class="p-4 rounded-2xl bg-black/40 border border-white/10 mb-5 flex items-center justify-between">
                     <div>
@@ -633,12 +716,314 @@
             auth.onAuthStateChanged(async (user) => {
                 currentUser = user;
                 updateAuthUI();
-                if (user) {
-                    await syncLibraryFromCloud(false);
-                }
+                if (user) { await syncLibraryFromCloud(false); }
             });
-        } catch (e) {
-            console.warn("Firebase init error:", e);
+        } catch (e) { console.warn("Firebase init error:", e); }
+
+        // ==========================================
+        // CORE PLAYER, VIDEO CANVAS & BATTERY STATE
+        // ==========================================
+        const API_KEY = 'AIzaSyA1NzhaIxHuCo_M-YYjK6c5Y0FhCj-2QMs';
+        let player;
+        let isPlayerReady = false;
+        let currentQueue = [];
+        let currentIndex = -1;
+        let isPlaying = false;
+        let isBuffering = false;
+        let isScrubbing = false;
+        let isShuffle = false;
+        let loopState = 0;
+        let syncInterval;
+        let favorites = JSON.parse(localStorage.getItem('ytFavorites')) || [];
+
+        // Full Player / Video / Eco State
+        let isFullPlayerOpen = false;
+        let isVideoMode = false;
+        let isEcoMode = localStorage.getItem('streamifyEco') === 'true';
+
+        // SponsorBlock State
+        let sponsorBlockEnabled = true;
+        let activeSkipSegments = [];
+        let skippedSegmentUUIDs = new Set();
+
+        // Visualizer & Color State (Zero-CPU when idle)
+        let visualizerEnabled = true;
+        let dominantColor = { r: 250, g: 36, b: 60 };
+        let visAnimFrame = null;
+        let visPhase = 0;
+        let lastVisFrameTime = 0;
+        
+        const bgCarrier = document.getElementById('bgAudioCarrier');
+
+        // ==========================================
+        // LAUNCH SPLASH & INIT
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            const splash = document.getElementById('splashScreen');
+            const appShell = document.getElementById('appShell');
+            applyEcoUI();
+
+            setTimeout(() => {
+                if (splash) splash.classList.add('splash-exit');
+                if (appShell) appShell.classList.add('app-ready');
+                setTimeout(() => { if (splash) splash.remove(); }, 700);
+            }, 1450);
+        });
+
+        document.body.addEventListener('touchstart', forceAudioUnlock, { once: false, passive: true });
+        document.body.addEventListener('click', forceAudioUnlock, { once: false, passive: true });
+
+        function forceAudioUnlock() {
+            if (bgCarrier && bgCarrier.paused) {
+                bgCarrier.volume = 0.01;
+                bgCarrier.play().catch(() => {});
+            }
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('ytplayer', {
+                height: '100%', width: '100%',
+                playerVars: { 
+                    'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 
+                    'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3 
+                },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
+            });
+        }
+
+        function onPlayerReady() {
+            isPlayerReady = true;
+            fetchTrending();
+        }
+        
+        function onPlayerError() {
+            showToast("Track unavailable. Skipping...");
+            playNext();
+        }
+
+        // ==========================================
+        // FULL-SCREEN VIDEO CANVAS & BATTERY MANAGER
+        // ==========================================
+        function toggleVideoMode() {
+            if (isEcoMode && !isVideoMode) {
+                isEcoMode = false;
+                localStorage.setItem('streamifyEco', 'false');
+                applyEcoUI();
+            }
+            isVideoMode = !isVideoMode;
+            updateVisualPowerState();
+            showToast(isVideoMode ? "Full-Screen Video ON" : "Audio Artwork Mode");
+        }
+
+        function toggleEcoMode() {
+            isEcoMode = !isEcoMode;
+            localStorage.setItem('streamifyEco', isEcoMode ? 'true' : 'false');
+            if (isEcoMode && isVideoMode) isVideoMode = false;
+            applyEcoUI();
+            updateVisualPowerState();
+            showToast(isEcoMode ? "Battery Saver ON (Low GPU & Data)" : "Battery Saver OFF");
+        }
+
+        function applyEcoUI() {
+            const ecoBtn = document.getElementById('ecoModeBtn');
+            const ecoDotDesk = document.getElementById('ecoDotDesk');
+            const ecoStatusDesk = document.getElementById('ecoStatusDesk');
+
+            if (isEcoMode) {
+                ecoBtn.className = 'px-2.5 py-1.5 rounded-full bg-emerald-500/25 text-emerald-300 text-[11px] font-semibold tracking-wide transition flex items-center gap-1';
+                ecoDotDesk.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                ecoStatusDesk.textContent = 'ON';
+                ecoStatusDesk.className = 'font-semibold text-emerald-400';
+            } else {
+                ecoBtn.className = 'px-2.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wide text-white/60 hover:text-white transition flex items-center gap-1';
+                ecoDotDesk.className = 'w-2 h-2 rounded-full bg-white/30';
+                ecoStatusDesk.textContent = 'OFF';
+                ecoStatusDesk.className = 'font-semibold text-white/40';
+            }
+        }
+
+        function updateVisualPowerState() {
+            const ytStage = document.getElementById('ytStage');
+            const videoScrim = document.getElementById('videoScrim');
+            const artCenter = document.getElementById('artCenterStage');
+            const compactArt = document.getElementById('videoCompactArt');
+            const videoBtn = document.getElementById('videoModeBtn');
+            const visBtn = document.getElementById('visToggleBtn');
+            const meshBg = document.getElementById('fullBgArt');
+
+            const showVideoNow = isFullPlayerOpen && isVideoMode && !document.hidden && !isEcoMode;
+
+            // 1. Toggle Full-Screen Video Stage (Zero Reload)
+            if (showVideoNow) {
+                ytStage.classList.add('video-active');
+                videoScrim.classList.add('video-active');
+                artCenter.style.opacity = '0';
+                artCenter.style.pointerEvents = 'none';
+                compactArt.classList.remove('hidden');
+                videoBtn.className = 'px-3 py-1.5 rounded-full bg-[#FA243C] text-[11px] font-semibold tracking-wide text-white transition flex items-center gap-1 shadow';
+            } else {
+                ytStage.classList.remove('video-active');
+                videoScrim.classList.remove('video-active');
+                artCenter.style.opacity = '1';
+                artCenter.style.pointerEvents = 'auto';
+                compactArt.classList.add('hidden');
+                videoBtn.className = 'px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide text-white/70 hover:text-white transition flex items-center gap-1';
+            }
+
+            // 2. YouTube Stream Quality Throttling (Huge iPhone Battery & 5G Saver)
+            if (player && typeof player.setPlaybackQuality === 'function') {
+                try {
+                    player.setPlaybackQuality(showVideoNow ? 'hd720' : 'small');
+                } catch (e) {}
+            }
+
+            // 3. Mesh Background Animation (Only run when visible, playing, not video, not eco)
+            if (isFullPlayerOpen && isPlaying && !showVideoNow && !isEcoMode && !document.hidden) {
+                meshBg.classList.add('mesh-running');
+            } else {
+                meshBg.classList.remove('mesh-running');
+            }
+
+            // 4. Visualizer Loop (Strictly 0% CPU when closed, paused, video, eco, or locked)
+            const shouldRunVis = isFullPlayerOpen && isPlaying && !isBuffering && visualizerEnabled && !showVideoNow && !isEcoMode && !document.hidden;
+            if (shouldRunVis) {
+                startVisualizerLoop();
+                visBtn.className = 'px-3 py-1.5 rounded-full bg-white/15 text-[11px] font-semibold tracking-wide text-white transition flex items-center gap-1';
+            } else {
+                stopVisualizerLoop();
+                visBtn.className = visualizerEnabled && !isEcoMode && !showVideoNow
+                    ? 'px-3 py-1.5 rounded-full bg-white/15 text-[11px] font-semibold tracking-wide text-white transition flex items-center gap-1'
+                    : 'px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide text-white/50 hover:text-white transition flex items-center gap-1';
+            }
+
+            // 5. Adaptive Sync Polling Rate
+            if (isPlaying) startSync();
+        }
+
+        // ==========================================
+        // ZERO-IDLE 30FPS BATTERY-SAFE VISUALIZER
+        // ==========================================
+        function toggleVisualizer() {
+            if (isEcoMode) {
+                isEcoMode = false;
+                localStorage.setItem('streamifyEco', 'false');
+                applyEcoUI();
+            }
+            if (isVideoMode) isVideoMode = false;
+            visualizerEnabled = !visualizerEnabled;
+            const canvas = document.getElementById('audioVisualizer');
+            canvas.style.opacity = visualizerEnabled ? '1' : '0';
+            updateVisualPowerState();
+        }
+
+        function startVisualizerLoop() {
+            if (visAnimFrame !== null) return;
+            const canvas = document.getElementById('audioVisualizer');
+            const ctx = canvas.getContext('2d');
+
+            function draw(timestamp) {
+                visAnimFrame = requestAnimationFrame(draw);
+
+                // Cap to ~30fps on mobile to save iPhone battery while staying fluid
+                if (timestamp - lastVisFrameTime < 33) return;
+                lastVisFrameTime = timestamp;
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+                const rect = canvas.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) return;
+
+                if (canvas.width !== Math.round(rect.width * dpr) || canvas.height !== Math.round(rect.height * dpr)) {
+                    canvas.width = Math.round(rect.width * dpr);
+                    canvas.height = Math.round(rect.height * dpr);
+                }
+
+                ctx.save();
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, rect.width, rect.height);
+
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+                const artEl = document.getElementById('fullArt');
+                const baseRadius = (artEl ? artEl.offsetWidth / 2 : 135) * 1.04;
+
+                visPhase += 0.085;
+                const { r, g, b } = dominantColor;
+
+                for (let ring = 0; ring < 2; ring++) {
+                    ctx.beginPath();
+                    const segments = 56;
+                    for (let i = 0; i <= segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const wave1 = Math.sin(angle * 4 + visPhase + ring) * 7;
+                        const wave2 = Math.cos(angle * 7 - visPhase * 1.3) * 4;
+                        const pulse = Math.sin(visPhase * 2) * 5;
+                        const radius = baseRadius + 10 + (ring * 14) + wave1 + wave2 + pulse;
+
+                        const x = cx + Math.cos(angle) * radius;
+                        const y = cy + Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.36 - ring * 0.14})`;
+                    ctx.lineWidth = 2.2 - ring * 0.5;
+                    ctx.stroke();
+                }
+
+                const bars = 48;
+                for (let i = 0; i < bars; i++) {
+                    const angle = (i / bars) * Math.PI * 2;
+                    const freqSim = Math.abs(Math.sin(i * 0.45 + visPhase * 1.6) * Math.cos(i * 0.25 - visPhase));
+                    const barHeight = 4 + freqSim * 20;
+                    const rStart = baseRadius + 6;
+                    const rEnd = rStart + barHeight;
+
+                    ctx.beginPath();
+                    ctx.moveTo(cx + Math.cos(angle) * rStart, cy + Math.sin(angle) * rStart);
+                    ctx.lineTo(cx + Math.cos(angle) * rEnd, cy + Math.sin(angle) * rEnd);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.14 + freqSim * 0.3})`;
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+            visAnimFrame = requestAnimationFrame(draw);
+        }
+
+        function stopVisualizerLoop() {
+            if (visAnimFrame !== null) {
+                cancelAnimationFrame(visAnimFrame);
+                visAnimFrame = null;
+            }
+            const canvas = document.getElementById('audioVisualizer');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function extractDominantColor(imgElement) {
+            try {
+                const canvas = document.getElementById('colorCanvas');
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(imgElement, 0, 0, 32, 32);
+                const data = ctx.getImageData(0, 0, 32, 32).data;
+                let r = 0, g = 0, b = 0, count = 0;
+                for (let i = 0; i < data.length; i += 16) {
+                    const pr = data[i], pg = data[i+1], pb = data[i+2];
+                    if ((pr + pg + pb) > 60 && (pr + pg + pb) < 680) {
+                        r += pr; g += pg; b += pb; count++;
+                    }
+                }
+                if (count > 0) {
+                    dominantColor = {
+                        r: Math.min(255, Math.round((r / count) * 1.2)),
+                        g: Math.min(255, Math.round((g / count) * 1.2)),
+                        b: Math.min(255, Math.round((b / count) * 1.2))
+                    };
+                }
+            } catch (e) { dominantColor = { r: 250, g: 36, b: 60 }; }
         }
 
         // ==========================================
@@ -650,19 +1035,16 @@
             modal.classList.add('flex');
             updateAuthUI();
         }
-
         function closeAuthModal() {
             const modal = document.getElementById('authModal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
-
         function setAuthMode(mode) {
             authMode = mode;
             const tabLogin = document.getElementById('tabLogin');
             const tabRegister = document.getElementById('tabRegister');
             const btn = document.getElementById('authSubmitBtn');
-
             if (mode === 'login') {
                 tabLogin.className = 'flex-1 py-2 text-xs font-semibold rounded-lg bg-white/15 text-white transition';
                 tabRegister.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-white/50 hover:text-white transition';
@@ -673,7 +1055,6 @@
                 btn.textContent = 'Create Account & Backup';
             }
         }
-
         function updateAuthUI() {
             const loggedOutView = document.getElementById('authLoggedOutView');
             const loggedInView = document.getElementById('authLoggedInView');
@@ -698,15 +1079,10 @@
                 dotMob.className = 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-white/30';
             }
         }
-
         async function handlePhoneAuth() {
-            if (!auth || !db) {
-                showToast("Firebase not initialized");
-                return;
-            }
+            if (!auth || !db) { showToast("Firebase not initialized"); return; }
             const phone = document.getElementById('authPhoneInput').value.replace(/\D/g, '');
             const pin = document.getElementById('authPinInput').value.replace(/\D/g, '');
-
             if (phone.length !== 10) { showToast("Enter a valid 10-digit phone number"); return; }
             if (pin.length !== 4) { showToast("Enter a 4-digit PIN"); return; }
 
@@ -735,14 +1111,12 @@
                 setAuthMode(authMode);
             }
         }
-
         async function handleSignOut() {
             if (!auth) return;
             await auth.signOut();
             showToast("Signed out (local library kept)");
             closeAuthModal();
         }
-
         async function saveLibraryToCloud() {
             localStorage.setItem('ytFavorites', JSON.stringify(favorites));
             if (!db || !currentUser) return;
@@ -751,11 +1125,8 @@
                     favorites: favorites,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
-            } catch (e) {
-                console.warn("Cloud save failed:", e);
-            }
+            } catch (e) {}
         }
-
         async function syncLibraryFromCloud(showNotice = false) {
             if (!db || !currentUser) return;
             try {
@@ -781,88 +1152,14 @@
         }
 
         // ==========================================
-        // PREMIUM LAUNCH SPLASH CONTROLLER
-        // ==========================================
-        window.addEventListener('DOMContentLoaded', () => {
-            const splash = document.getElementById('splashScreen');
-            const appShell = document.getElementById('appShell');
-
-            setTimeout(() => {
-                if (splash) splash.classList.add('splash-exit');
-                if (appShell) appShell.classList.add('app-ready');
-                setTimeout(() => { if (splash) splash.remove(); }, 700);
-            }, 1450);
-        });
-
-        const API_KEY = 'AIzaSyA1NzhaIxHuCo_M-YYjK6c5Y0FhCj-2QMs';
-        let player;
-        let isPlayerReady = false;
-        let currentQueue = [];
-        let currentIndex = -1;
-        let isPlaying = false;
-        let isBuffering = false;
-        let isScrubbing = false;
-        let isShuffle = false;
-        let loopState = 0;
-        let syncInterval;
-        let favorites = JSON.parse(localStorage.getItem('ytFavorites')) || [];
-
-        // SponsorBlock State
-        let sponsorBlockEnabled = true;
-        let activeSkipSegments = [];
-        let skippedSegmentUUIDs = new Set();
-
-        // Visualizer & Color State
-        let visualizerEnabled = true;
-        let dominantColor = { r: 250, g: 36, b: 60 };
-        let visAnimFrame;
-        let visPhase = 0;
-        
-        const bgCarrier = document.getElementById('bgAudioCarrier');
-
-        document.body.addEventListener('touchstart', forceAudioUnlock, { once: false, passive: true });
-        document.body.addEventListener('click', forceAudioUnlock, { once: false, passive: true });
-
-        function forceAudioUnlock() {
-            if (bgCarrier && bgCarrier.paused) {
-                bgCarrier.volume = 0.01;
-                bgCarrier.play().catch(() => {});
-            }
-        }
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('ytplayer', {
-                height: '100%', width: '100%',
-                playerVars: { 
-                    'autoplay': 1, 'controls': 0, 'disablekb': 1, 'fs': 0, 
-                    'modestbranding': 1, 'playsinline': 1, 'rel': 0, 'iv_load_policy': 3 
-                },
-                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange, 'onError': onPlayerError }
-            });
-        }
-
-        function onPlayerReady() {
-            isPlayerReady = true;
-            fetchTrending();
-            initVisualizerLoop();
-        }
-        
-        function onPlayerError() {
-            showToast("Track unavailable. Skipping...");
-            playNext();
-        }
-
-        // ==========================================
-        // ORIGINAL ALBUM ART FETCHER (ITUNES API)
+        // ITUNES HD ALBUM ART FETCHER
         // ==========================================
         async function getOfficialArt(title, artist, fallbackUrl) {
             try {
                 const cleanTitle = title.replace(/\(.*\)|\[.*\]|official|video|audio|lyric|remix|full/gi, '').trim();
                 const query = encodeURIComponent(`${cleanTitle} ${artist}`);
-                
                 const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=1`);
                 const data = await res.json();
-                
                 if (data.results && data.results.length > 0) {
                     return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                 }
@@ -879,7 +1176,6 @@
             modal.classList.add('flex');
             document.getElementById('spotifyInput').focus();
         }
-
         function closeSpotifyModal() {
             const modal = document.getElementById('spotifyModal');
             modal.classList.add('hidden');
@@ -888,7 +1184,6 @@
             document.getElementById('spotifyImportBtn').disabled = false;
             document.getElementById('spotifyImportBtn').innerHTML = '<span>Import to Library</span>';
         }
-
         async function fetchViaCorsFallback(targetUrl) {
             const proxies = [
                 (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -902,20 +1197,14 @@
             }
             throw new Error("Could not reach Spotify");
         }
-
         async function extractQueriesFromSpotify(rawInput) {
             const input = rawInput.trim();
             const spotifyMatch = input.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|playlist|album)\/([a-zA-Z0-9]+)/i);
-
-            if (!spotifyMatch) {
-                return input.split('\n').map(l => l.trim()).filter(l => l.length > 1).slice(0, 15);
-            }
+            if (!spotifyMatch) return input.split('\n').map(l => l.trim()).filter(l => l.length > 1).slice(0, 15);
 
             const type = spotifyMatch[1].toLowerCase();
             const id = spotifyMatch[2];
-            const embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
-            const html = await fetchViaCorsFallback(embedUrl);
-
+            const html = await fetchViaCorsFallback(`https://open.spotify.com/embed/${type}/${id}`);
             const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
             if (nextDataMatch) {
                 const json = JSON.parse(nextDataMatch[1]);
@@ -930,7 +1219,6 @@
                     }
                 }
             }
-
             const titleMatch = html.match(/<title>(.*?)<\/title>/i);
             if (titleMatch) {
                 const clean = decodeHTMLEntities(titleMatch[1]).replace(/\| Spotify/i, '').replace(/- song and lyrics by/i, '').trim();
@@ -938,7 +1226,6 @@
             }
             throw new Error("No tracks found");
         }
-
         async function handleSpotifyImport() {
             const raw = document.getElementById('spotifyInput').value.trim();
             if (!raw) { showToast("Paste a Spotify link or song names"); return; }
@@ -968,7 +1255,7 @@
                     progBar.style.width = `${Math.round(((i + 1) / queries.length) * 100)}%`;
 
                     try {
-                        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=1&key=${API_KEY}`);
+                        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official music video')}&type=video&videoCategoryId=10&maxResults=1&key=${API_KEY}`);
                         const data = await res.json();
                         if (data.items && data.items.length > 0) {
                             const item = data.items[0];
@@ -1010,11 +1297,11 @@
                     [list[i], list[j]] = [list[j], list[i]];
                 }
                 isShuffle = true;
-                document.getElementById('shuffleBtn').classList.replace('text-white/50', 'text-white');
+                document.getElementById('shuffleBtn').classList.replace('text-white/60', 'text-white');
                 showToast("Shuffling Library");
             } else {
                 isShuffle = false;
-                document.getElementById('shuffleBtn').classList.replace('text-white', 'text-white/50');
+                document.getElementById('shuffleBtn').classList.replace('text-white', 'text-white/60');
             }
             currentQueue = list;
             loadTrack(0);
@@ -1027,7 +1314,6 @@
             sponsorBlockEnabled = !sponsorBlockEnabled;
             const statusText = document.getElementById('sbStatusText');
             const dot = document.getElementById('sbDot');
-
             if (sponsorBlockEnabled) {
                 statusText.textContent = 'ON';
                 statusText.className = 'font-semibold text-emerald-400';
@@ -1041,36 +1327,29 @@
             }
             renderSponsorMarkers();
         }
-
         async function fetchSponsorSegments(videoId) {
             activeSkipSegments = [];
             skippedSegmentUUIDs.clear();
             document.getElementById('sbMarkersContainer').innerHTML = '';
             if (!videoId) return;
-
             try {
                 const categories = encodeURIComponent(JSON.stringify(["music_offtopic", "sponsor", "intro", "outro"]));
                 const res = await fetch(`https://sponsor.ajay.app/api/skipSegments?videoID=${videoId}&categories=${categories}`);
                 if (res.status === 200) {
                     const data = await res.json();
                     activeSkipSegments = data.map(item => ({
-                        uuid: item.UUID,
-                        start: item.segment[0],
-                        end: item.segment[1],
-                        category: item.category
+                        uuid: item.UUID, start: item.segment[0], end: item.segment[1], category: item.category
                     }));
                     renderSponsorMarkers();
                 }
             } catch (e) {}
         }
-
         function renderSponsorMarkers() {
             const container = document.getElementById('sbMarkersContainer');
             container.innerHTML = '';
             if (!sponsorBlockEnabled || !player || !player.getDuration) return;
             const dur = player.getDuration();
             if (!dur || dur <= 0) return;
-
             activeSkipSegments.forEach(seg => {
                 const leftPct = (seg.start / dur) * 100;
                 const widthPct = ((seg.end - seg.start) / dur) * 100;
@@ -1080,114 +1359,6 @@
                 marker.className = 'absolute top-0 bottom-0 bg-emerald-400/70';
                 container.appendChild(marker);
             });
-        }
-
-        // ==========================================
-        // REACTIVE LIQUID VISUALIZER
-        // ==========================================
-        function extractDominantColor(imgElement) {
-            try {
-                const canvas = document.getElementById('colorCanvas');
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(imgElement, 0, 0, 32, 32);
-                const data = ctx.getImageData(0, 0, 32, 32).data;
-                let r = 0, g = 0, b = 0, count = 0;
-
-                for (let i = 0; i < data.length; i += 16) {
-                    const pr = data[i], pg = data[i+1], pb = data[i+2];
-                    if ((pr + pg + pb) > 60 && (pr + pg + pb) < 680) {
-                        r += pr; g += pg; b += pb; count++;
-                    }
-                }
-                if (count > 0) {
-                    dominantColor = {
-                        r: Math.min(255, Math.round((r / count) * 1.2)),
-                        g: Math.min(255, Math.round((g / count) * 1.2)),
-                        b: Math.min(255, Math.round((b / count) * 1.2))
-                    };
-                }
-            } catch (e) {
-                dominantColor = { r: 250, g: 36, b: 60 };
-            }
-        }
-
-        function toggleVisualizer() {
-            visualizerEnabled = !visualizerEnabled;
-            const canvas = document.getElementById('audioVisualizer');
-            const label = document.getElementById('visLabel');
-            if (visualizerEnabled) { canvas.style.opacity = '1'; label.textContent = 'Visualizer: On'; }
-            else { canvas.style.opacity = '0'; label.textContent = 'Visualizer: Off'; }
-        }
-
-        function initVisualizerLoop() {
-            const canvas = document.getElementById('audioVisualizer');
-            const ctx = canvas.getContext('2d');
-
-            function draw() {
-                visAnimFrame = requestAnimationFrame(draw);
-                if (!visualizerEnabled) return;
-
-                const dpr = window.devicePixelRatio || 1;
-                const rect = canvas.getBoundingClientRect();
-                if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-                    canvas.width = rect.width * dpr;
-                    canvas.height = rect.height * dpr;
-                }
-
-                ctx.save();
-                ctx.scale(dpr, dpr);
-                ctx.clearRect(0, 0, rect.width, rect.height);
-
-                const cx = rect.width / 2;
-                const cy = rect.height / 2;
-                const artEl = document.getElementById('fullArt');
-                const baseRadius = (artEl ? artEl.offsetWidth / 2 : 135) * 1.04;
-
-                if (isPlaying && !isBuffering) { visPhase += 0.045; } else { visPhase += 0.008; }
-
-                const energy = (isPlaying && !isBuffering) ? 1 : 0.15;
-                const { r, g, b } = dominantColor;
-
-                for (let ring = 0; ring < 3; ring++) {
-                    ctx.beginPath();
-                    const segments = 72;
-                    for (let i = 0; i <= segments; i++) {
-                        const angle = (i / segments) * Math.PI * 2;
-                        const wave1 = Math.sin(angle * 4 + visPhase + ring) * (7 * energy);
-                        const wave2 = Math.cos(angle * 7 - visPhase * 1.4) * (4 * energy);
-                        const pulse = Math.sin(visPhase * 2.2) * (5 * energy);
-                        const radius = baseRadius + 10 + (ring * 12) + wave1 + wave2 + pulse;
-
-                        const x = cx + Math.cos(angle) * radius;
-                        const y = cy + Math.sin(angle) * radius;
-                        if (i === 0) ctx.moveTo(x, y);
-                        else ctx.lineTo(x, y);
-                    }
-                    ctx.closePath();
-                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${(0.35 - ring * 0.1) * (energy + 0.2)})`;
-                    ctx.lineWidth = 2.2 - ring * 0.5;
-                    ctx.stroke();
-                }
-
-                const bars = 64;
-                for (let i = 0; i < bars; i++) {
-                    const angle = (i / bars) * Math.PI * 2;
-                    const freqSim = Math.abs(Math.sin(i * 0.4 + visPhase * 1.8) * Math.cos(i * 0.25 - visPhase));
-                    const barHeight = (4 + freqSim * 22) * energy;
-                    const rStart = baseRadius + 6;
-                    const rEnd = rStart + barHeight;
-
-                    ctx.beginPath();
-                    ctx.moveTo(cx + Math.cos(angle) * rStart, cy + Math.sin(angle) * rStart);
-                    ctx.lineTo(cx + Math.cos(angle) * rEnd, cy + Math.sin(angle) * rEnd);
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.14 + freqSim * 0.32 * energy})`;
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    ctx.stroke();
-                }
-                ctx.restore();
-            }
-            draw();
         }
 
         // ==========================================
@@ -1202,7 +1373,6 @@
                 else { el.classList.remove('text-[#FA243C]'); el.classList.add('text-white/50'); }
             });
         }
-
         async function fetchTrending() {
             setActiveNav('home');
             showLoading(true);
@@ -1218,12 +1388,9 @@
                     art: item.snippet.thumbnails.high.url
                 }));
                 renderSongs(tracks, 'Listen Now', false);
-            } catch (err) {
-                showToast("Failed to fetch trending music.");
-            }
+            } catch (err) { showToast("Failed to fetch trending music."); }
             showLoading(false);
         }
-
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const q = document.getElementById('searchInput').value.trim();
@@ -1232,22 +1399,20 @@
             document.getElementById('searchInput').blur();
             showLoading(true);
             try {
-                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=25&key=${API_KEY}`);
+                // Search returns official music videos so Video Mode works seamlessly
+                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official music video')}&type=video&videoCategoryId=10&maxResults=25&key=${API_KEY}`);
                 const data = await res.json();
                 if(data.error) throw new Error(data.error.message);
                 const tracks = data.items.map(item => ({
                     id: item.id.videoId,
                     title: decodeHTMLEntities(item.snippet.title).split('|')[0].trim(),
-                    artist: item.snippet.channelTitle,
+                    artist: item.snippet.channelTitle.replace(' - Topic', '').replace('VEVO', ''),
                     art: item.snippet.thumbnails.high.url
                 }));
                 renderSongs(tracks, `Results for "${q}"`, false);
-            } catch (err) {
-                showToast("Search failed.");
-            }
+            } catch (err) { showToast("Search failed."); }
             showLoading(false);
         });
-
         function renderSongs(tracks, title, isLibraryView = false) {
             currentViewIsLibrary = isLibraryView;
             document.getElementById('resultsTitle').textContent = title;
@@ -1307,6 +1472,7 @@
             
             document.getElementById('miniTitle').textContent = track.title;
             document.getElementById('miniArtist').textContent = track.artist;
+            document.getElementById('videoCompactArt').src = track.art;
             
             const miniArt = document.getElementById('miniArt');
             miniArt.style.opacity = '0';
@@ -1333,7 +1499,10 @@
             miniPlayer.classList.add('fade-in', 'scale-100');
 
             forceAudioUnlock();
-            player.loadVideoById(track.id);
+            player.loadVideoById({
+                videoId: track.id,
+                suggestedQuality: (isFullPlayerOpen && isVideoMode && !isEcoMode) ? 'hd720' : 'small'
+            });
             isPlaying = false;
             isBuffering = true;
             updatePlayPauseUI();
@@ -1356,7 +1525,9 @@
             }
         }
 
+        // Battery-Aware Visibility Handler (Pauses GPU loops & throttles quality when screen locks)
         document.addEventListener('visibilitychange', () => {
+            updateVisualPowerState();
             if (!document.hidden && isPlaying && player && player.getPlayerState() !== YT.PlayerState.PLAYING) {
                 player.playVideo();
             }
@@ -1369,13 +1540,16 @@
                 renderSponsorMarkers();
                 document.getElementById('fullArt').style.transform = 'scale(1)';
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+                updateVisualPowerState();
             } else if (event.data === YT.PlayerState.PAUSED) {
                 isPlaying = false; isBuffering = false;
                 updatePlayPauseUI(); stopSync();
                 document.getElementById('fullArt').style.transform = 'scale(0.84)';
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+                updateVisualPowerState();
             } else if (event.data === YT.PlayerState.BUFFERING) {
                 isBuffering = true; updatePlayPauseUI();
+                updateVisualPowerState();
             } else if (event.data === YT.PlayerState.ENDED) {
                 if(loopState === 2) { player.seekTo(0); player.playVideo(); } else { playNext(); }
             }
@@ -1387,18 +1561,15 @@
             forceAudioUnlock();
             player.getPlayerState() === YT.PlayerState.PLAYING ? player.pauseVideo() : player.playVideo();
         }
-
         function playNext(e) {
             if(e) e.stopPropagation();
             if(currentQueue.length === 0) return;
             let nextIdx = currentIndex + 1;
             if(isShuffle) nextIdx = Math.floor(Math.random() * currentQueue.length);
             else if(nextIdx >= currentQueue.length) nextIdx = (loopState === 1) ? 0 : currentIndex;
-            
             if(nextIdx !== currentIndex) loadTrack(nextIdx);
-            else if(loopState === 0) { player.stopVideo(); isPlaying = false; updatePlayPauseUI(); }
+            else if(loopState === 0) { player.stopVideo(); isPlaying = false; updatePlayPauseUI(); updateVisualPowerState(); }
         }
-
         function playPrevious() {
             if(currentQueue.length === 0) return;
             if(player.getCurrentTime() > 3) { player.seekTo(0); return; }
@@ -1406,24 +1577,24 @@
             if(prevIdx < 0) prevIdx = currentQueue.length - 1;
             loadTrack(prevIdx);
         }
-
         function toggleLoop() {
             loopState = (loopState + 1) % 3;
             const btn = document.getElementById('loopBtn');
             const badge = document.getElementById('loopOneBadge');
-            if(loopState === 0) { btn.classList.replace('text-white', 'text-white/50'); badge.classList.add('hidden'); } 
-            else if (loopState === 1) { btn.classList.replace('text-white/50', 'text-white'); badge.classList.add('hidden'); } 
+            if(loopState === 0) { btn.classList.replace('text-white', 'text-white/60'); badge.classList.add('hidden'); } 
+            else if (loopState === 1) { btn.classList.replace('text-white/60', 'text-white'); badge.classList.add('hidden'); } 
             else { badge.classList.remove('hidden'); }
         }
-
         function toggleShuffle() {
             isShuffle = !isShuffle;
             const btn = document.getElementById('shuffleBtn');
-            isShuffle ? btn.classList.replace('text-white/50', 'text-white') : btn.classList.replace('text-white', 'text-white/50');
+            isShuffle ? btn.classList.replace('text-white/60', 'text-white') : btn.classList.replace('text-white', 'text-white/60');
         }
 
         function startSync() {
             clearInterval(syncInterval);
+            // Adaptive polling: 1500ms in background/eco, 500ms when active on screen
+            const intervalMs = (document.hidden || isEcoMode || !isFullPlayerOpen) ? 1500 : 500;
             syncInterval = setInterval(() => {
                 if(!player || !player.getCurrentTime || isScrubbing) return;
                 if (player.getPlayerState() === YT.PlayerState.PLAYING) {
@@ -1455,21 +1626,21 @@
                         }
                     }
 
-                    const progressBar = document.getElementById('progressBar');
                     if(dur > 0) {
                         const pct = (curr / dur) * 100;
-                        progressBar.value = pct;
-                        document.getElementById('progressFillMain').style.width = pct + '%';
-                        document.getElementById('miniProgress').style.width = pct + '%';
-                        document.getElementById('currentTimeDisplay').textContent = formatTime(curr);
-                        document.getElementById('durationDisplay').textContent = formatTime(dur);
-
+                        if (!document.hidden) {
+                            document.getElementById('progressBar').value = pct;
+                            document.getElementById('progressFillMain').style.width = pct + '%';
+                            document.getElementById('miniProgress').style.width = pct + '%';
+                            document.getElementById('currentTimeDisplay').textContent = formatTime(curr);
+                            document.getElementById('durationDisplay').textContent = formatTime(dur);
+                        }
                         if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
                             navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: curr });
                         }
                     }
                 }
-            }, 400); 
+            }, intervalMs); 
         }
         function stopSync() { clearInterval(syncInterval); }
 
@@ -1504,7 +1675,6 @@
             updateHeartUI();
             if (currentViewIsLibrary) renderSongs(favorites, 'Library', true);
         }
-
         function updateHeartUI() {
             if(currentIndex < 0) return;
             const track = currentQueue[currentIndex];
@@ -1513,12 +1683,10 @@
             isFav ? icon.setAttribute('fill', '#FA243C') : icon.setAttribute('fill', 'none');
             isFav ? icon.setAttribute('stroke', '#FA243C') : icon.setAttribute('stroke', 'currentColor');
         }
-
         function showFavorites() {
             setActiveNav('library');
             renderSongs(favorites, 'Library', true);
         }
-
         function updatePlayPauseUI() {
             const arr = [
                 { play: document.getElementById('miniPlayIcon'), pause: document.getElementById('miniPauseIcon'), buff: document.getElementById('miniBufferingIcon') },
@@ -1531,8 +1699,22 @@
             });
         }
 
-        function openFullScreenPlayer() { const fullPlayer = document.getElementById('fullPlayer'); fullPlayer.classList.remove('slide-down'); fullPlayer.classList.add('slide-up'); }
-        function closeFullScreenPlayer() { const fullPlayer = document.getElementById('fullPlayer'); fullPlayer.classList.remove('slide-up'); fullPlayer.classList.add('slide-down'); }
+        function openFullScreenPlayer() {
+            isFullPlayerOpen = true;
+            document.getElementById('fullPlayerBgBase').classList.remove('slide-down');
+            document.getElementById('fullPlayerBgBase').classList.add('slide-up');
+            document.getElementById('fullPlayer').classList.remove('slide-down');
+            document.getElementById('fullPlayer').classList.add('slide-up');
+            updateVisualPowerState();
+        }
+        function closeFullScreenPlayer() {
+            isFullPlayerOpen = false;
+            document.getElementById('fullPlayerBgBase').classList.remove('slide-up');
+            document.getElementById('fullPlayerBgBase').classList.add('slide-down');
+            document.getElementById('fullPlayer').classList.remove('slide-up');
+            document.getElementById('fullPlayer').classList.add('slide-down');
+            updateVisualPowerState();
+        }
         function openQueue() {
             document.getElementById('queueDrawer').classList.remove('slide-down');
             document.getElementById('queueDrawer').classList.add('slide-up');
