@@ -11,6 +11,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
     <script>
         tailwind.config = { 
             darkMode: 'class', 
@@ -37,7 +42,7 @@
 
     <style>
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -ms-overflow-style: none; scrollbar-width: none; }
-        input[type="text"], textarea { -webkit-user-select: auto; user-select: auto; }
+        input[type="text"], input[type="tel"], input[type="password"], textarea { -webkit-user-select: auto; user-select: auto; }
         body { background-color: #000000; color: #F5F5F7; overscroll-behavior-y: none; height: 100dvh; width: 100vw; overflow: hidden; }
         ::-webkit-scrollbar { display: none; }
         
@@ -279,9 +284,17 @@
                 </button>
             </nav>
 
-            <!-- SponsorBlock Toggle Status -->
-            <div class="mt-auto pt-4 border-t border-white/10 px-2">
-                <button id="sbToggleBtn" onclick="toggleSponsorBlock()" class="w-full flex items-center justify-between text-xs text-white/70 hover:text-white py-2 px-3 rounded-lg bg-white/5 transition">
+            <!-- Bottom Controls: Cloud Sync + SponsorBlock -->
+            <div class="mt-auto pt-4 border-t border-white/10 px-1 flex flex-col gap-2">
+                <button onclick="openAuthModal()" class="w-full flex items-center justify-between text-xs text-white/80 hover:text-white py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 transition border border-white/5">
+                    <span class="flex items-center gap-2 truncate">
+                        <span id="cloudDotDesktop" class="w-2 h-2 rounded-full bg-white/30 shrink-0"></span>
+                        <span id="cloudLabelDesktop" class="truncate font-medium">Cloud Sync: Sign In</span>
+                    </span>
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+
+                <button id="sbToggleBtn" onclick="toggleSponsorBlock()" class="w-full flex items-center justify-between text-xs text-white/70 hover:text-white py-2 px-3 rounded-xl bg-white/5 transition">
                     <span class="flex items-center gap-2">
                         <span id="sbDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         SponsorBlock Skip
@@ -293,19 +306,21 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full bg-apple-bg relative z-0">
-            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-2.5">
+            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-2">
                 <form id="searchForm" class="relative w-full max-w-xl">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
                     <input type="text" id="searchInput" placeholder="Artists, Songs, Lyrics and More" class="w-full bg-[#1C1C1E] text-white rounded-xl py-2.5 pl-11 pr-4 font-medium focus:outline-none focus:bg-[#2C2C2E] transition-colors placeholder:text-white/40 border border-white/5 shadow-inner">
                 </form>
+
+                <!-- Mobile Cloud Sync Account Button -->
+                <button onclick="openAuthModal()" class="md:hidden relative p-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-white/80 shrink-0 active:scale-95 transition" title="Cloud Sync Account">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span id="cloudDotMobile" class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-white/30"></span>
+                </button>
+
                 <!-- Mobile Spotify Import Quick Button -->
                 <button onclick="openSpotifyModal()" class="md:hidden p-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-[#1DB954] shrink-0 active:scale-95 transition" title="Import from Spotify">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.335.132-.67.469-.746 3.809-.87 7.076-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.106-.973-.517-.125-.413.108-.848.52-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.256 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166 3.532-1.073 9.404-.865 13.115 1.338.445.264.59.838.327 1.282-.264.443-.839.59-1.28.322z"/></svg>
-                </button>
-                <!-- Mobile SponsorBlock Quick Pill -->
-                <button onclick="toggleSponsorBlock()" class="md:hidden px-3 py-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Toggle SponsorBlock">
-                    <span id="sbDotMobile" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>SB</span>
                 </button>
             </header>
 
@@ -319,7 +334,7 @@
                         <span id="trackCountBadge" class="text-xs font-medium text-white/40"></span>
                     </div>
 
-                    <!-- Apple Music Style Library Action Bar (Play, Auto Shuffle, Spotify Import) -->
+                    <!-- Apple Music Style Library Action Bar -->
                     <div id="libraryActions" class="hidden flex-wrap items-center gap-3 mb-6">
                         <button onclick="playLibrary(false)" class="flex-1 sm:flex-none sm:w-40 py-3 px-5 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] active:scale-95 transition flex items-center justify-center gap-2 text-[#FA243C] font-semibold text-[15px] border border-white/5">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -383,13 +398,11 @@
 
     <!-- Full Screen Liquid Glass Player -->
     <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-all duration-500 h-[100dvh]">
-        <!-- Liquid Mesh Background -->
         <div class="absolute inset-0 overflow-hidden">
             <div id="fullBgArt" class="mesh-bg animate-liquid-slow"></div>
             <div class="mesh-overlay"></div>
         </div>
 
-        <!-- Native iOS Top Bar -->
         <div class="flex flex-col flex-shrink-0 px-6 pt-safe pb-2 relative z-20 ios-top-fade">
             <div class="w-10 h-[4px] bg-white/30 rounded-full mx-auto mb-3"></div>
             <div class="flex items-center justify-between">
@@ -408,11 +421,8 @@
             </div>
         </div>
 
-        <!-- Center Stage: Apple Music Proportioned Album Art + Reactive Visualizer -->
         <div class="flex-1 flex items-center justify-center px-8 py-4 relative z-10 min-h-0">
             <canvas id="audioVisualizer" class="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500"></canvas>
-            
-            <!-- Refined Apple Music Proportions (Clean square, crisp corners, breathing room for visualizer) -->
             <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-[68vw] h-[68vw] max-w-[270px] max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[320px] md:max-h-[320px] object-cover rounded-[1.25rem] shadow-[0_24px_55px_rgba(0,0,0,0.65)] transition-transform duration-500 ease-out aspect-square border border-white/10 track-image-loader">
             
             <div id="adBadge" class="absolute top-4 bg-black/70 text-white border border-white/15 px-5 py-2.5 rounded-full font-semibold text-sm hidden items-center gap-3 backdrop-blur-xl shadow-2xl z-20">
@@ -421,7 +431,6 @@
             </div>
         </div>
 
-        <!-- Bottom Controls -->
         <div class="flex-shrink-0 flex flex-col px-8 pb-safe pt-2 md:max-w-[540px] md:mx-auto md:w-full relative z-10">
             <div class="flex items-end justify-between mb-6">
                 <div class="flex flex-col min-w-0 pr-4">
@@ -433,7 +442,6 @@
                 </button>
             </div>
 
-            <!-- Scrubber with SponsorBlock Segment Markers -->
             <div class="flex flex-col mb-7 group">
                 <div class="relative w-full h-6 flex items-center">
                     <input type="range" min="0" max="100" value="0" step="0.1" class="absolute w-full h-full z-20 opacity-0 cursor-pointer touch-none" id="progressBar">
@@ -480,7 +488,7 @@
         </div>
     </div>
 
-    <!-- Apple Music Style Queue Drawer -->
+    <!-- Queue Drawer -->
     <div id="queueDrawer" class="fixed inset-x-0 bottom-0 z-[60] bg-[#1C1C1E]/95 backdrop-blur-2xl rounded-t-[2rem] slide-down transition-all duration-400 h-[70dvh] flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.5)] border-t border-white/10 pb-safe">
         <div class="flex items-center justify-between p-6 border-b border-white/5 relative">
             <div class="w-12 h-[5px] bg-white/20 rounded-full absolute top-3 left-1/2 transform -translate-x-1/2"></div>
@@ -492,7 +500,69 @@
         <div class="flex-1 overflow-y-auto p-3" id="queueList"></div>
     </div>
 
-    <!-- IMPORT FROM SPOTIFY MODAL (Liquid Glass) -->
+    <!-- PHONE + 4-DIGIT PIN CLOUD SYNC MODAL -->
+    <div id="authModal" class="fixed inset-0 z-[85] bg-black/70 backdrop-blur-xl hidden items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="w-full sm:max-w-md bg-[#1C1C1E]/95 border border-white/15 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-safe shadow-2xl">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-[#FA243C]/15 flex items-center justify-center text-[#FA243C]">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Library Cloud Sync</h3>
+                        <p class="text-xs text-white/50">Never lose songs on app updates</p>
+                    </div>
+                </div>
+                <button onclick="closeAuthModal()" class="w-8 h-8 rounded-full bg-white/10 text-white/60 hover:text-white flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+
+            <!-- Logged Out View -->
+            <div id="authLoggedOutView">
+                <div class="flex bg-black/40 p-1 rounded-xl mb-4 border border-white/5">
+                    <button id="tabLogin" onclick="setAuthMode('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-white/15 text-white transition">Sign In</button>
+                    <button id="tabRegister" onclick="setAuthMode('register')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-white/50 hover:text-white transition">New Account</button>
+                </div>
+
+                <div class="space-y-3 mb-5">
+                    <div>
+                        <label class="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1.5">Phone Number</label>
+                        <input type="tel" id="authPhoneInput" maxlength="10" inputmode="numeric" placeholder="10-digit mobile number" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA243C]">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-white/50 uppercase tracking-wider block mb-1.5">4-Digit PIN</label>
+                        <input type="password" id="authPinInput" maxlength="4" inputmode="numeric" placeholder="••••" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white tracking-[0.5em] placeholder:text-white/30 focus:outline-none focus:border-[#FA243C]">
+                    </div>
+                </div>
+
+                <button id="authSubmitBtn" onclick="handlePhoneAuth()" class="w-full py-3.5 rounded-xl bg-[#FA243C] hover:bg-[#ff374e] text-white font-bold text-sm active:scale-[0.98] transition">
+                    Sign In & Sync Library
+                </button>
+            </div>
+
+            <!-- Logged In View -->
+            <div id="authLoggedInView" class="hidden">
+                <div class="p-4 rounded-2xl bg-black/40 border border-white/10 mb-5 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5 mb-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Cloud Sync Active
+                        </div>
+                        <div id="syncedPhoneDisplay" class="text-base font-bold text-white">+91 ••••••••••</div>
+                    </div>
+                    <button onclick="syncLibraryFromCloud(true)" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition">
+                        Sync Now
+                    </button>
+                </div>
+
+                <button onclick="handleSignOut()" class="w-full py-3 rounded-xl bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold text-sm transition border border-red-500/20">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT FROM SPOTIFY MODAL -->
     <div id="spotifyModal" class="fixed inset-0 z-[80] bg-black/70 backdrop-blur-xl hidden items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
         <div class="w-full sm:max-w-md bg-[#1C1C1E]/95 border border-white/15 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-safe shadow-2xl">
             <div class="flex items-center justify-between mb-4">
@@ -537,6 +607,180 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         // ==========================================
+        // FIREBASE CONFIG (LIVE CONNECTED)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDO6YSZWOELt3AjA8uqqF4Gu6fbWo6kOSU",
+            authDomain: "music-d7d1a.firebaseapp.com",
+            projectId: "music-d7d1a",
+            storageBucket: "music-d7d1a.firebasestorage.app",
+            messagingSenderId: "1034404782486",
+            appId: "1:1034404782486:web:1faf86f503bbb3a01a7db7",
+            measurementId: "G-6GG0XTGSFF"
+        };
+
+        let auth = null;
+        let db = null;
+        let currentUser = null;
+        let authMode = 'login';
+        let currentViewIsLibrary = false;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+
+            auth.onAuthStateChanged(async (user) => {
+                currentUser = user;
+                updateAuthUI();
+                if (user) {
+                    await syncLibraryFromCloud(false);
+                }
+            });
+        } catch (e) {
+            console.warn("Firebase init error:", e);
+        }
+
+        // ==========================================
+        // PHONE + 4-DIGIT PIN CLOUD SYNC LOGIC
+        // ==========================================
+        function openAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            updateAuthUI();
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const btn = document.getElementById('authSubmitBtn');
+
+            if (mode === 'login') {
+                tabLogin.className = 'flex-1 py-2 text-xs font-semibold rounded-lg bg-white/15 text-white transition';
+                tabRegister.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-white/50 hover:text-white transition';
+                btn.textContent = 'Sign In & Sync Library';
+            } else {
+                tabRegister.className = 'flex-1 py-2 text-xs font-semibold rounded-lg bg-white/15 text-white transition';
+                tabLogin.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-white/50 hover:text-white transition';
+                btn.textContent = 'Create Account & Backup';
+            }
+        }
+
+        function updateAuthUI() {
+            const loggedOutView = document.getElementById('authLoggedOutView');
+            const loggedInView = document.getElementById('authLoggedInView');
+            const dotDesk = document.getElementById('cloudDotDesktop');
+            const labelDesk = document.getElementById('cloudLabelDesktop');
+            const dotMob = document.getElementById('cloudDotMobile');
+            const phoneDisplay = document.getElementById('syncedPhoneDisplay');
+
+            if (currentUser) {
+                const phone = currentUser.email.split('@')[0];
+                loggedOutView.classList.add('hidden');
+                loggedInView.classList.remove('hidden');
+                phoneDisplay.textContent = `+91 ${phone}`;
+                dotDesk.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+                labelDesk.textContent = `Synced: ${phone}`;
+                dotMob.className = 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400';
+            } else {
+                loggedOutView.classList.remove('hidden');
+                loggedInView.classList.add('hidden');
+                dotDesk.className = 'w-2 h-2 rounded-full bg-white/30 shrink-0';
+                labelDesk.textContent = 'Cloud Sync: Sign In';
+                dotMob.className = 'absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-white/30';
+            }
+        }
+
+        async function handlePhoneAuth() {
+            if (!auth || !db) {
+                showToast("Firebase not initialized");
+                return;
+            }
+            const phone = document.getElementById('authPhoneInput').value.replace(/\D/g, '');
+            const pin = document.getElementById('authPinInput').value.replace(/\D/g, '');
+
+            if (phone.length !== 10) { showToast("Enter a valid 10-digit phone number"); return; }
+            if (pin.length !== 4) { showToast("Enter a 4-digit PIN"); return; }
+
+            const email = `${phone}@streamify.app`;
+            const password = `st_pin_${pin}`;
+            const btn = document.getElementById('authSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+
+            try {
+                if (authMode === 'login') {
+                    await auth.signInWithEmailAndPassword(email, password);
+                    showToast("Signed in! Library synced.");
+                } else {
+                    await auth.createUserWithEmailAndPassword(email, password);
+                    showToast("Account created! Library backed up.");
+                }
+                document.getElementById('authPinInput').value = '';
+                closeAuthModal();
+            } catch (err) {
+                if (err.code === 'auth/email-already-in-use') showToast("Number already registered. Switch to Sign In.");
+                else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') showToast("Wrong number/PIN, or create a New Account.");
+                else showToast("Auth error: " + (err.code || "Check Firebase settings"));
+            } finally {
+                btn.disabled = false;
+                setAuthMode(authMode);
+            }
+        }
+
+        async function handleSignOut() {
+            if (!auth) return;
+            await auth.signOut();
+            showToast("Signed out (local library kept)");
+            closeAuthModal();
+        }
+
+        async function saveLibraryToCloud() {
+            localStorage.setItem('ytFavorites', JSON.stringify(favorites));
+            if (!db || !currentUser) return;
+            try {
+                await db.collection('users').doc(currentUser.uid).set({
+                    favorites: favorites,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.warn("Cloud save failed:", e);
+            }
+        }
+
+        async function syncLibraryFromCloud(showNotice = false) {
+            if (!db || !currentUser) return;
+            try {
+                const doc = await db.collection('users').doc(currentUser.uid).get();
+                if (doc.exists && Array.isArray(doc.data().favorites)) {
+                    const cloudFavs = doc.data().favorites;
+                    const map = new Map();
+                    cloudFavs.forEach(t => map.set(t.id, t));
+                    favorites.forEach(t => { if (!map.has(t.id)) map.set(t.id, t); });
+                    favorites = Array.from(map.values());
+                    localStorage.setItem('ytFavorites', JSON.stringify(favorites));
+                    await saveLibraryToCloud();
+                    if (currentViewIsLibrary) renderSongs(favorites, 'Library', true);
+                    updateHeartUI();
+                    if (showNotice) showToast(`Synced ${favorites.length} songs from Cloud`);
+                } else {
+                    await saveLibraryToCloud();
+                    if (showNotice) showToast("Local library backed up to Cloud");
+                }
+            } catch (e) {
+                if (showNotice) showToast("Sync failed. Check Firestore rules.");
+            }
+        }
+
+        // ==========================================
         // PREMIUM LAUNCH SPLASH CONTROLLER
         // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
@@ -546,9 +790,7 @@
             setTimeout(() => {
                 if (splash) splash.classList.add('splash-exit');
                 if (appShell) appShell.classList.add('app-ready');
-                setTimeout(() => {
-                    if (splash) splash.remove();
-                }, 700);
+                setTimeout(() => { if (splash) splash.remove(); }, 700);
             }, 1450);
         });
 
@@ -629,7 +871,7 @@
         }
 
         // ==========================================
-        // IMPORT FROM SPOTIFY (TRACK / PLAYLIST / TEXT)
+        // IMPORT FROM SPOTIFY
         // ==========================================
         function openSpotifyModal() {
             const modal = document.getElementById('spotifyModal');
@@ -666,14 +908,11 @@
             const spotifyMatch = input.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|playlist|album)\/([a-zA-Z0-9]+)/i);
 
             if (!spotifyMatch) {
-                // Treat as manual song list (one per line)
                 return input.split('\n').map(l => l.trim()).filter(l => l.length > 1).slice(0, 15);
             }
 
             const type = spotifyMatch[1].toLowerCase();
             const id = spotifyMatch[2];
-
-            // Fetch Spotify Embed page which cleanly holds JSON metadata for tracks, albums, and playlists
             const embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
             const html = await fetchViaCorsFallback(embedUrl);
 
@@ -687,19 +926,17 @@
                         return [`${entity.name} ${artists}`.trim()];
                     }
                     if (entity.trackList && Array.isArray(entity.trackList)) {
-                        // Limit to 15 per import to protect YouTube API quota
                         return entity.trackList.slice(0, 15).map(t => `${t.title} ${t.subtitle || ''}`.trim());
                     }
                 }
             }
 
-            // Fallback: Parse HTML <title>
             const titleMatch = html.match(/<title>(.*?)<\/title>/i);
             if (titleMatch) {
                 const clean = decodeHTMLEntities(titleMatch[1]).replace(/\| Spotify/i, '').replace(/- song and lyrics by/i, '').trim();
                 if (clean) return [clean];
             }
-            throw new Error("No tracks found in Spotify link");
+            throw new Error("No tracks found");
         }
 
         async function handleSpotifyImport() {
@@ -747,11 +984,11 @@
                     } catch (e) {}
                 }
 
-                localStorage.setItem('ytFavorites', JSON.stringify(favorites));
+                await saveLibraryToCloud();
                 document.getElementById('spotifyInput').value = '';
                 closeSpotifyModal();
                 showFavorites();
-                showToast(addedCount > 0 ? `Imported ${addedCount} song${addedCount > 1 ? 's' : ''} from Spotify!` : "Songs already in Library");
+                showToast(addedCount > 0 ? `Imported ${addedCount} song${addedCount > 1 ? 's' : ''}!` : "Songs already in Library");
             } catch (err) {
                 showToast("Couldn't read link. Try pasting song names!");
                 btn.disabled = false;
@@ -764,14 +1001,10 @@
         // LIBRARY AUTO-SHUFFLE & PLAY
         // ==========================================
         function playLibrary(shouldShuffle) {
-            if (favorites.length === 0) {
-                showToast("Your Library is empty.");
-                return;
-            }
+            if (favorites.length === 0) { showToast("Your Library is empty."); return; }
             forceAudioUnlock();
             let list = [...favorites];
             if (shouldShuffle) {
-                // Fisher-Yates shuffle for true randomized playback
                 for (let i = list.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [list[i], list[j]] = [list[j], list[i]];
@@ -788,25 +1021,22 @@
         }
 
         // ==========================================
-        // 1. SPONSORBLOCK API INTEGRATION
+        // SPONSORBLOCK API INTEGRATION
         // ==========================================
         function toggleSponsorBlock() {
             sponsorBlockEnabled = !sponsorBlockEnabled;
             const statusText = document.getElementById('sbStatusText');
             const dot = document.getElementById('sbDot');
-            const dotMob = document.getElementById('sbDotMobile');
 
             if (sponsorBlockEnabled) {
                 statusText.textContent = 'ON';
                 statusText.className = 'font-semibold text-emerald-400';
                 dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-                dotMob.className = 'w-2 h-2 rounded-full bg-emerald-400';
                 showToast("SponsorBlock: Skipping non-music segments");
             } else {
                 statusText.textContent = 'OFF';
                 statusText.className = 'font-semibold text-white/40';
                 dot.className = 'w-2 h-2 rounded-full bg-white/30';
-                dotMob.className = 'w-2 h-2 rounded-full bg-white/30';
                 showToast("SponsorBlock: Disabled");
             }
             renderSponsorMarkers();
@@ -853,7 +1083,7 @@
         }
 
         // ==========================================
-        // 2. REACTIVE LIQUID VISUALIZER
+        // REACTIVE LIQUID VISUALIZER
         // ==========================================
         function extractDominantColor(imgElement) {
             try {
@@ -885,13 +1115,8 @@
             visualizerEnabled = !visualizerEnabled;
             const canvas = document.getElementById('audioVisualizer');
             const label = document.getElementById('visLabel');
-            if (visualizerEnabled) {
-                canvas.style.opacity = '1';
-                label.textContent = 'Visualizer: On';
-            } else {
-                canvas.style.opacity = '0';
-                label.textContent = 'Visualizer: Off';
-            }
+            if (visualizerEnabled) { canvas.style.opacity = '1'; label.textContent = 'Visualizer: On'; }
+            else { canvas.style.opacity = '0'; label.textContent = 'Visualizer: Off'; }
         }
 
         function initVisualizerLoop() {
@@ -966,7 +1191,7 @@
         }
 
         // ==========================================
-        // 3. SEARCH, TRENDING & LIBRARY VIEWS
+        // SEARCH, TRENDING & LIBRARY VIEWS
         // ==========================================
         function setActiveNav(tab) {
             const tabs = { home: 'navHome', search: 'navSearch', library: 'navLibrary' };
@@ -1024,17 +1249,13 @@
         });
 
         function renderSongs(tracks, title, isLibraryView = false) {
+            currentViewIsLibrary = isLibraryView;
             document.getElementById('resultsTitle').textContent = title;
             document.getElementById('trackCountBadge').textContent = tracks.length ? `${tracks.length} songs` : '';
             
             const libActions = document.getElementById('libraryActions');
-            if (isLibraryView) {
-                libActions.classList.remove('hidden');
-                libActions.classList.add('flex');
-            } else {
-                libActions.classList.add('hidden');
-                libActions.classList.remove('flex');
-            }
+            if (isLibraryView) { libActions.classList.remove('hidden'); libActions.classList.add('flex'); }
+            else { libActions.classList.add('hidden'); libActions.classList.remove('flex'); }
 
             const songsList = document.getElementById('songsList');
             songsList.innerHTML = '';
@@ -1069,10 +1290,7 @@
                     const imgEl = div.querySelector('.track-image-loader');
                     getOfficialArt(track.title, track.artist, track.art).then(officialArt => {
                         imgEl.style.opacity = '0';
-                        setTimeout(() => {
-                            imgEl.src = officialArt;
-                            imgEl.style.opacity = '1';
-                        }, 250);
+                        setTimeout(() => { imgEl.src = officialArt; imgEl.style.opacity = '1'; }, 250);
                         track.art = officialArt; 
                     });
                 }
@@ -1281,9 +1499,10 @@
             const track = currentQueue[currentIndex];
             const existsIdx = favorites.findIndex(t => t.id === track.id);
             if(existsIdx > -1) { favorites.splice(existsIdx, 1); showToast("Removed from Library"); } 
-            else { favorites.unshift(track); showToast("Added to Library"); }
-            localStorage.setItem('ytFavorites', JSON.stringify(favorites));
+            else { favorites.unshift(track); showToast(currentUser ? "Saved & Synced to Cloud" : "Added to Library"); }
+            saveLibraryToCloud();
             updateHeartUI();
+            if (currentViewIsLibrary) renderSongs(favorites, 'Library', true);
         }
 
         function updateHeartUI() {
