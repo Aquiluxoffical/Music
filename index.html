@@ -41,10 +41,16 @@
         body { background-color: #000000; color: #F5F5F7; overscroll-behavior-y: none; height: 100dvh; width: 100vw; overflow: hidden; }
         ::-webkit-scrollbar { display: none; }
         
-        /* Dynamic Safe Areas */
-        .pt-safe { padding-top: max(1rem, env(safe-area-inset-top)); }
-        .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-        .pb-nav-safe { padding-bottom: max(7.5rem, calc(6.5rem + env(safe-area-inset-bottom))); }
+        /* Native iOS / Android Safe Areas */
+        .pt-safe { padding-top: calc(env(safe-area-inset-top, 20px) + 12px); }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 12px); }
+        .pb-nav-safe { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 16px)); }
+        .top-safe { top: calc(env(safe-area-inset-top, 20px) + 8px); }
+
+        /* Native-like subtle top fade so status bar stays crisp without muddying buttons */
+        .ios-top-fade {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 100%);
+        }
         
         /* Apple Liquid Glassmorphism */
         .glass { 
@@ -70,7 +76,7 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 0; width: 0; }
         
         /* Transitions */
-        .slide-up { transform: translateY(0%); }
+        .slide-up { transform: translateY(0%); opacity: 1; pointer-events: auto; }
         .slide-down { transform: translateY(100%); opacity: 0; pointer-events: none; }
         .fade-in { opacity: 1; pointer-events: auto; }
         .fade-out { opacity: 0; pointer-events: none; }
@@ -141,13 +147,13 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-full bg-apple-bg relative z-0">
-        <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/80 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-3">
-            <form id="searchForm" class="relative w-full max-w-xl mt-2 md:mt-0">
+        <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-3">
+            <form id="searchForm" class="relative w-full max-w-xl">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
                 <input type="text" id="searchInput" placeholder="Artists, Songs, Lyrics and More" class="w-full bg-[#1C1C1E] text-white rounded-xl py-2.5 pl-11 pr-4 font-medium focus:outline-none focus:bg-[#2C2C2E] transition-colors placeholder:text-white/40 border border-white/5 shadow-inner">
             </form>
             <!-- Mobile SponsorBlock Quick Pill -->
-            <button onclick="toggleSponsorBlock()" class="md:hidden mt-2 px-3 py-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Toggle SponsorBlock">
+            <button onclick="toggleSponsorBlock()" class="md:hidden px-3 py-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Toggle SponsorBlock">
                 <span id="sbDotMobile" class="w-2 h-2 rounded-full bg-emerald-400"></span>
                 <span>SB</span>
             </button>
@@ -205,36 +211,41 @@
     </div>
 
     <!-- Full Screen Liquid Glass Player -->
-    <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-transform duration-500 h-[100dvh]">
+    <div id="fullPlayer" class="fixed inset-0 z-50 bg-black flex flex-col slide-down transition-all duration-500 h-[100dvh]">
         <!-- Liquid Mesh Background -->
         <div class="absolute inset-0 overflow-hidden">
             <div id="fullBgArt" class="mesh-bg animate-liquid-slow"></div>
             <div class="mesh-overlay"></div>
         </div>
 
-        <div class="flex flex-shrink-0 items-center justify-between px-6 pt-safe h-20 relative z-10">
-            <button class="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition" onclick="closeFullScreenPlayer()">
-                <div class="w-10 h-[5px] bg-white/30 rounded-full mb-8 absolute top-3 left-1/2 transform -translate-x-1/2"></div>
-                <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-            </button>
+        <!-- Full Screen Player Top Bar (Native iOS Alignment) -->
+        <div class="flex flex-col flex-shrink-0 px-6 pt-safe pb-2 relative z-20 ios-top-fade">
+            <!-- Native iOS Drag Handle (Notch ke neeche) -->
+            <div class="w-10 h-[4px] bg-white/30 rounded-full mx-auto mb-3"></div>
             
-            <!-- Visualizer Mode Toggle Pill -->
-            <button id="visToggleBtn" onclick="toggleVisualizer()" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-[11px] font-semibold tracking-wider uppercase text-white/80 transition flex items-center gap-1.5">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3v18M8 8v8M16 6v12M4 11v2M20 9v6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                <span id="visLabel">Visualizer: On</span>
-            </button>
+            <div class="flex items-center justify-between">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:text-white active:scale-90 transition" onclick="closeFullScreenPlayer()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </button>
+                
+                <!-- Visualizer Mode Toggle Pill -->
+                <button id="visToggleBtn" onclick="toggleVisualizer()" class="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-[11px] font-semibold tracking-wider uppercase text-white transition flex items-center gap-1.5 shadow-sm">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3v18M8 8v8M16 6v12M4 11v2M20 9v6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+                    <span id="visLabel">Visualizer: On</span>
+                </button>
 
-            <button class="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white transition" onclick="openQueue()">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M4 10h12v2H4zm0-4h16v2H4zm0 8h8v2H4zm10 0v6l5-3z"/></svg>
-            </button>
+                <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:text-white active:scale-90 transition" onclick="openQueue()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M4 10h12v2H4zm0-4h16v2H4zm0 8h8v2H4zm10 0v6l5-3z"/></svg>
+                </button>
+            </div>
         </div>
 
         <!-- Center Stage: Album Art + Reactive Audio Visualizer Canvas -->
-        <div class="flex-1 flex items-center justify-center px-8 md:px-12 py-4 relative z-10">
+        <div class="flex-1 flex items-center justify-center px-8 md:px-12 py-4 relative z-10 min-h-0">
             <!-- Reactive Audio Visualizer Canvas -->
             <canvas id="audioVisualizer" class="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500"></canvas>
             
-            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-full h-full max-w-[340px] max-h-[340px] md:max-w-[380px] md:max-h-[380px] object-cover rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.65)] transition-all duration-500 aspect-square border border-white/10 track-image-loader">
+            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-full h-full max-w-[330px] max-h-[330px] md:max-w-[380px] md:max-h-[380px] object-cover rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.65)] transition-all duration-500 aspect-square border border-white/10 track-image-loader">
             
             <div id="adBadge" class="absolute top-6 bg-black/70 text-white border border-white/15 px-5 py-2.5 rounded-full font-semibold text-sm hidden items-center gap-3 backdrop-blur-xl shadow-2xl z-20">
                 <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -290,7 +301,7 @@
                 </button>
             </div>
             
-            <div class="flex justify-between items-center mt-2 px-6 pb-4">
+            <div class="flex justify-between items-center mt-2 px-6 pb-2">
                 <button class="text-white/50 hover:text-white transition active:scale-95" onclick="promptAudioRouting()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg>
                 </button>
@@ -302,7 +313,7 @@
     </div>
 
     <!-- Apple Music Style Queue Drawer -->
-    <div id="queueDrawer" class="fixed inset-x-0 bottom-0 z-[60] bg-[#1C1C1E]/95 backdrop-blur-2xl rounded-t-[2rem] slide-down transition-transform duration-400 h-[70dvh] flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.5)] border-t border-white/10 pb-safe">
+    <div id="queueDrawer" class="fixed inset-x-0 bottom-0 z-[60] bg-[#1C1C1E]/95 backdrop-blur-2xl rounded-t-[2rem] slide-down transition-all duration-400 h-[70dvh] flex flex-col shadow-[0_-20px_50px_rgba(0,0,0,0.5)] border-t border-white/10 pb-safe">
         <div class="flex items-center justify-between p-6 border-b border-white/5 relative">
             <div class="w-12 h-[5px] bg-white/20 rounded-full absolute top-3 left-1/2 transform -translate-x-1/2"></div>
             <h3 class="text-xl font-bold mt-2">Playing Next</h3>
@@ -314,7 +325,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast-container" class="fixed top-safe mt-6 left-1/2 transform -translate-x-1/2 z-[100] bg-[#2C2C2E]/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-full px-6 py-3 text-sm font-semibold text-white flex items-center gap-2 opacity-0 pointer-events-none -translate-y-4 transition-all duration-300">
+    <div id="toast-container" class="fixed top-safe left-1/2 transform -translate-x-1/2 z-[100] bg-[#2C2C2E]/90 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-full px-6 py-3 text-sm font-semibold text-white flex items-center gap-2 opacity-0 pointer-events-none -translate-y-4 transition-all duration-300">
         <span id="toast-message">Notification</span>
     </div>
 
@@ -341,7 +352,7 @@
 
         // Visualizer & Color State
         let visualizerEnabled = true;
-        let dominantColor = { r: 250, g: 36, b: 60 }; // Default Apple Music Red
+        let dominantColor = { r: 250, g: 36, b: 60 };
         let visAnimFrame;
         let visPhase = 0;
         
@@ -384,7 +395,6 @@
         // ==========================================
         async function getOfficialArt(title, artist, fallbackUrl) {
             try {
-                // Clean up video titles to get better audio track matches
                 const cleanTitle = title.replace(/\(.*\)|\[.*\]|official|video|audio|lyric|remix|full/gi, '').trim();
                 const query = encodeURIComponent(`${cleanTitle} ${artist}`);
                 
@@ -392,7 +402,6 @@
                 const data = await res.json();
                 
                 if (data.results && data.results.length > 0) {
-                    // Upgrade the 100x100 default response to a crisp 600x600 HD square cover
                     return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                 }
             } catch (e) {
@@ -445,9 +454,7 @@
                     }));
                     renderSponsorMarkers();
                 }
-            } catch (e) {
-                // Normal if video has no submissions
-            }
+            } catch (e) {}
         }
 
         function renderSponsorMarkers() {
@@ -643,7 +650,6 @@
                 };
                 div.innerHTML = `
                     <div class="relative w-12 h-12 shrink-0 md:w-14 md:h-14">
-                        <!-- track-image-loader class added here for crossfade -->
                         <img src="${track.art}" class="w-full h-full rounded-md object-cover shadow-sm track-image-loader">
                         <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center rounded-md">
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
@@ -655,16 +661,13 @@
                     </div>
                 `;
 
-                // Fetch high-quality Apple Music cover art in the background
                 const imgEl = div.querySelector('.track-image-loader');
                 getOfficialArt(track.title, track.artist, track.art).then(officialArt => {
-                    // Smooth crossfade swap to HD image
                     imgEl.style.opacity = '0';
                     setTimeout(() => {
                         imgEl.src = officialArt;
                         imgEl.style.opacity = '1';
                     }, 300);
-                    // Update queue object so the full-screen player uses the HD version too!
                     track.art = officialArt; 
                 });
 
@@ -681,12 +684,10 @@
             document.getElementById('miniTitle').textContent = track.title;
             document.getElementById('miniArtist').textContent = track.artist;
             
-            // Mini Player Art Update
             const miniArt = document.getElementById('miniArt');
             miniArt.style.opacity = '0';
             setTimeout(() => { miniArt.src = track.art; miniArt.style.opacity = '1'; }, 150);
             
-            // Full Player Art Update (Triggers Visualizer Color Update)
             const fullArtEl = document.getElementById('fullArt');
             fullArtEl.onload = () => extractDominantColor(fullArtEl);
             fullArtEl.src = track.art;
@@ -909,6 +910,7 @@
         function closeFullScreenPlayer() { const fullPlayer = document.getElementById('fullPlayer'); fullPlayer.classList.remove('slide-up'); fullPlayer.classList.add('slide-down'); }
         function openQueue() {
             document.getElementById('queueDrawer').classList.remove('slide-down');
+            document.getElementById('queueDrawer').classList.add('slide-up');
             const list = document.getElementById('queueList');
             list.innerHTML = '';
             currentQueue.forEach((track, i) => {
@@ -921,7 +923,10 @@
                     </div>`;
             });
         }
-        function closeQueue() { document.getElementById('queueDrawer').classList.add('slide-down'); }
+        function closeQueue() { 
+            document.getElementById('queueDrawer').classList.remove('slide-up');
+            document.getElementById('queueDrawer').classList.add('slide-down'); 
+        }
         function formatTime(s) { if(isNaN(s)) return "0:00"; const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${sec < 10 ? '0' : ''}${sec}`; }
         function decodeHTMLEntities(text) { const t = document.createElement("textarea"); t.innerHTML = text; return t.value; }
         function showLoading(show) {
