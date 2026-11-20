@@ -37,7 +37,7 @@
 
     <style>
         * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -ms-overflow-style: none; scrollbar-width: none; }
-        input[type="text"] { -webkit-user-select: auto; user-select: auto; }
+        input[type="text"], textarea { -webkit-user-select: auto; user-select: auto; }
         body { background-color: #000000; color: #F5F5F7; overscroll-behavior-y: none; height: 100dvh; width: 100vw; overflow: hidden; }
         ::-webkit-scrollbar { display: none; }
         
@@ -47,7 +47,6 @@
         .pb-nav-safe { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 16px)); }
         .top-safe { top: calc(env(safe-area-inset-top, 20px) + 8px); }
 
-        /* Native-like subtle top fade so status bar stays crisp without muddying buttons */
         .ios-top-fade {
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 100%);
         }
@@ -136,7 +135,6 @@
             animation: subReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
         }
 
-        /* Subtle App Shell Entrance */
         #appShell {
             transform: scale(0.97);
             opacity: 0.4;
@@ -203,7 +201,6 @@
         .fade-in { opacity: 1; pointer-events: auto; }
         .fade-out { opacity: 0; pointer-events: none; }
         
-        /* Cover Art Crossfade Transition */
         .track-image-loader { transition: opacity 0.3s ease; }
 
         /* Liquid Mesh Background */
@@ -248,7 +245,6 @@
         <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav">
     </audio>
 
-    <!-- Hidden Canvas for Album Art Dominant Color Extraction -->
     <canvas id="colorCanvas" width="32" height="32" class="hidden"></canvas>
 
     <!-- Hidden YouTube Player Container -->
@@ -256,7 +252,7 @@
         <div id="ytplayer"></div>
     </div>
 
-    <!-- Main App Shell (Reveals smoothly as splash exits) -->
+    <!-- Main App Shell -->
     <div id="appShell" class="flex flex-col md:flex-row w-full h-full">
 
         <!-- Desktop Sidebar (macOS Music App Style) -->
@@ -277,6 +273,10 @@
                 <a href="#" class="flex items-center gap-3 text-white/70 font-medium px-3 py-2.5 rounded-lg hover:bg-white/10 hover:text-white transition" onclick="showFavorites()">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Songs
                 </a>
+                <button onclick="openSpotifyModal()" class="flex items-center gap-3 text-[#1DB954] font-medium px-3 py-2.5 rounded-lg hover:bg-[#1DB954]/10 transition text-left">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.335.132-.67.469-.746 3.809-.87 7.076-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.106-.973-.517-.125-.413.108-.848.52-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.256 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166 3.532-1.073 9.404-.865 13.115 1.338.445.264.59.838.327 1.282-.264.443-.839.59-1.28.322z"/></svg>
+                    Import from Spotify
+                </button>
             </nav>
 
             <!-- SponsorBlock Toggle Status -->
@@ -293,11 +293,15 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full bg-apple-bg relative z-0">
-            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-3">
+            <header class="pt-safe md:p-6 sticky top-0 bg-apple-bg/85 backdrop-blur-2xl z-10 flex justify-center items-center border-b border-white/5 pb-3 md:pb-6 px-4 gap-2.5">
                 <form id="searchForm" class="relative w-full max-w-xl">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/40"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
                     <input type="text" id="searchInput" placeholder="Artists, Songs, Lyrics and More" class="w-full bg-[#1C1C1E] text-white rounded-xl py-2.5 pl-11 pr-4 font-medium focus:outline-none focus:bg-[#2C2C2E] transition-colors placeholder:text-white/40 border border-white/5 shadow-inner">
                 </form>
+                <!-- Mobile Spotify Import Quick Button -->
+                <button onclick="openSpotifyModal()" class="md:hidden p-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-[#1DB954] shrink-0 active:scale-95 transition" title="Import from Spotify">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.335.132-.67.469-.746 3.809-.87 7.076-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.106-.973-.517-.125-.413.108-.848.52-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.256 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166 3.532-1.073 9.404-.865 13.115 1.338.445.264.59.838.327 1.282-.264.443-.839.59-1.28.322z"/></svg>
+                </button>
                 <!-- Mobile SponsorBlock Quick Pill -->
                 <button onclick="toggleSponsorBlock()" class="md:hidden px-3 py-2.5 rounded-xl bg-[#1C1C1E] border border-white/5 text-xs font-semibold flex items-center gap-1.5 shrink-0" title="Toggle SponsorBlock">
                     <span id="sbDotMobile" class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -310,7 +314,27 @@
                     <svg class="animate-spin h-10 w-10 text-[#FA243C] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 </div>
                 <div id="resultsState" class="mt-6 hidden">
-                    <h2 class="text-3xl font-bold mb-6 tracking-tight text-white border-b border-white/10 pb-3" id="resultsTitle">Listen Now</h2>
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-5">
+                        <h2 class="text-3xl font-bold tracking-tight text-white" id="resultsTitle">Listen Now</h2>
+                        <span id="trackCountBadge" class="text-xs font-medium text-white/40"></span>
+                    </div>
+
+                    <!-- Apple Music Style Library Action Bar (Play, Auto Shuffle, Spotify Import) -->
+                    <div id="libraryActions" class="hidden flex-wrap items-center gap-3 mb-6">
+                        <button onclick="playLibrary(false)" class="flex-1 sm:flex-none sm:w-40 py-3 px-5 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] active:scale-95 transition flex items-center justify-center gap-2 text-[#FA243C] font-semibold text-[15px] border border-white/5">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            Play
+                        </button>
+                        <button onclick="playLibrary(true)" class="flex-1 sm:flex-none sm:w-40 py-3 px-5 rounded-xl bg-[#1C1C1E] hover:bg-[#2C2C2E] active:scale-95 transition flex items-center justify-center gap-2 text-[#FA243C] font-semibold text-[15px] border border-white/5">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+                            Shuffle
+                        </button>
+                        <button onclick="openSpotifyModal()" class="w-full sm:w-auto py-3 px-5 rounded-xl bg-[#1DB954]/15 hover:bg-[#1DB954]/25 active:scale-95 transition flex items-center justify-center gap-2 text-[#1DB954] font-semibold text-[14px] border border-[#1DB954]/25">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.335.132-.67.469-.746 3.809-.87 7.076-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.106-.973-.517-.125-.413.108-.848.52-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.256 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166 3.532-1.073 9.404-.865 13.115 1.338.445.264.59.838.327 1.282-.264.443-.839.59-1.28.322z"/></svg>
+                            + Add from Spotify
+                        </button>
+                    </div>
+
                     <div class="flex flex-col gap-1 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-x-6 md:gap-y-3" id="songsList"></div>
                 </div>
             </div>
@@ -319,15 +343,15 @@
 
     <!-- Mobile Bottom Navigation (iOS Style) -->
     <nav class="md:hidden glass fixed bottom-0 left-0 w-full h-[85px] z-20 flex items-start justify-around pb-safe px-4 pt-2">
-        <a href="#" class="flex flex-col items-center gap-1 text-[#FA243C] p-2" onclick="fetchTrending()">
+        <a href="#" id="navHome" class="flex flex-col items-center gap-1 text-[#FA243C] p-2 transition" onclick="fetchTrending()">
             <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 3l10 9h-3v9H5v-9H2z"/></svg>
             <span class="text-[10px] font-semibold">Listen Now</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 p-2 transition" onclick="document.getElementById('searchInput').focus()">
+        <a href="#" id="navSearch" class="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 p-2 transition" onclick="document.getElementById('searchInput').focus()">
             <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M10 2a8 8 0 0 1 6.32 12.9l4.39 4.39-1.42 1.42-4.39-4.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
             <span class="text-[10px] font-semibold">Search</span>
         </a>
-        <a href="#" class="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 p-2 transition" onclick="showFavorites()">
+        <a href="#" id="navLibrary" class="flex flex-col items-center gap-1 text-white/50 hover:text-white/80 p-2 transition" onclick="showFavorites()">
             <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             <span class="text-[10px] font-semibold">Library</span>
         </a>
@@ -336,7 +360,7 @@
     <!-- Floating Mini Player (iOS 17 Pill Style) -->
     <div id="miniPlayer" class="glass-pill fixed bottom-[95px] md:bottom-6 left-3 right-3 md:left-auto md:right-8 md:w-[380px] h-[64px] z-30 flex items-center justify-between px-3 cursor-pointer hidden rounded-2xl fade-out transition-all duration-300 transform scale-95" onclick="openFullScreenPlayer()">
         <div class="flex items-center gap-3 w-[60%] min-w-0">
-            <img id="miniArt" src="" class="w-12 h-12 rounded-lg shadow-md object-cover bg-white/10 transition-opacity duration-300">
+            <img id="miniArt" src="" class="w-11 h-11 rounded-lg shadow-md object-cover bg-white/10 transition-opacity duration-300">
             <div class="flex flex-col overflow-hidden w-full">
                 <span id="miniTitle" class="text-white text-sm font-semibold truncate"></span>
                 <span id="miniArtist" class="text-white/50 text-xs truncate"></span>
@@ -365,16 +389,14 @@
             <div class="mesh-overlay"></div>
         </div>
 
-        <!-- Full Screen Player Top Bar (Native iOS Alignment) -->
+        <!-- Native iOS Top Bar -->
         <div class="flex flex-col flex-shrink-0 px-6 pt-safe pb-2 relative z-20 ios-top-fade">
             <div class="w-10 h-[4px] bg-white/30 rounded-full mx-auto mb-3"></div>
-            
             <div class="flex items-center justify-between">
                 <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white/80 hover:text-white active:scale-90 transition" onclick="closeFullScreenPlayer()">
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                 </button>
                 
-                <!-- Visualizer Mode Toggle Pill -->
                 <button id="visToggleBtn" onclick="toggleVisualizer()" class="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 text-[11px] font-semibold tracking-wider uppercase text-white transition flex items-center gap-1.5 shadow-sm">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3v18M8 8v8M16 6v12M4 11v2M20 9v6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
                     <span id="visLabel">Visualizer: On</span>
@@ -386,24 +408,25 @@
             </div>
         </div>
 
-        <!-- Center Stage: Album Art + Reactive Audio Visualizer Canvas -->
-        <div class="flex-1 flex items-center justify-center px-8 md:px-12 py-4 relative z-10 min-h-0">
+        <!-- Center Stage: Apple Music Proportioned Album Art + Reactive Visualizer -->
+        <div class="flex-1 flex items-center justify-center px-8 py-4 relative z-10 min-h-0">
             <canvas id="audioVisualizer" class="absolute inset-0 w-full h-full pointer-events-none z-0 transition-opacity duration-500"></canvas>
             
-            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-full h-full max-w-[330px] max-h-[330px] md:max-w-[380px] md:max-h-[380px] object-cover rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.65)] transition-all duration-500 aspect-square border border-white/10 track-image-loader">
+            <!-- Refined Apple Music Proportions (Clean square, crisp corners, breathing room for visualizer) -->
+            <img id="fullArt" crossorigin="anonymous" src="" class="relative z-10 w-[68vw] h-[68vw] max-w-[270px] max-h-[270px] sm:max-w-[300px] sm:max-h-[300px] md:max-w-[320px] md:max-h-[320px] object-cover rounded-[1.25rem] shadow-[0_24px_55px_rgba(0,0,0,0.65)] transition-transform duration-500 ease-out aspect-square border border-white/10 track-image-loader">
             
-            <div id="adBadge" class="absolute top-6 bg-black/70 text-white border border-white/15 px-5 py-2.5 rounded-full font-semibold text-sm hidden items-center gap-3 backdrop-blur-xl shadow-2xl z-20">
+            <div id="adBadge" class="absolute top-4 bg-black/70 text-white border border-white/15 px-5 py-2.5 rounded-full font-semibold text-sm hidden items-center gap-3 backdrop-blur-xl shadow-2xl z-20">
                 <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 Bypassing Ad...
             </div>
         </div>
 
         <!-- Bottom Controls -->
-        <div class="flex-shrink-0 flex flex-col px-8 pb-safe pt-2 md:max-w-[600px] md:mx-auto md:w-full relative z-10">
+        <div class="flex-shrink-0 flex flex-col px-8 pb-safe pt-2 md:max-w-[540px] md:mx-auto md:w-full relative z-10">
             <div class="flex items-end justify-between mb-6">
                 <div class="flex flex-col min-w-0 pr-4">
-                    <h2 id="fullTitle" class="text-2xl font-bold text-white truncate drop-shadow-md"></h2>
-                    <h3 id="fullArtist" class="text-lg text-white/60 truncate mt-0.5"></h3>
+                    <h2 id="fullTitle" class="text-[22px] font-bold text-white truncate drop-shadow-md"></h2>
+                    <h3 id="fullArtist" class="text-[16px] text-white/60 truncate mt-0.5"></h3>
                 </div>
                 <button class="text-white/80 hover:text-white hover:scale-110 transition active:scale-90 flex-shrink-0 mb-1" onclick="toggleFavorite()">
                     <svg id="heartIcon" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -430,15 +453,15 @@
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
                 </button>
                 <button class="text-white p-2 hover:scale-110 active:opacity-50 transition" onclick="playPrevious()">
-                    <svg viewBox="0 0 24 24" width="42" height="42" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                 </button>
-                <button class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition-all relative border border-white/10" onclick="togglePlay(event)">
-                    <svg id="fullPlayIcon" viewBox="0 0 24 24" width="38" height="38" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
-                    <svg id="fullPauseIcon" viewBox="0 0 24 24" width="38" height="38" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    <svg id="fullBufferingIcon" class="animate-spin hidden absolute" width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+                <button class="w-[74px] h-[74px] bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 active:scale-95 transition-all relative border border-white/10" onclick="togglePlay(event)">
+                    <svg id="fullPlayIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="ml-1"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="fullPauseIcon" viewBox="0 0 24 24" width="36" height="36" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    <svg id="fullBufferingIcon" class="animate-spin hidden absolute" width="38" height="38" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
                 </button>
                 <button class="text-white p-2 hover:scale-110 active:opacity-50 transition" onclick="playNext()">
-                    <svg viewBox="0 0 24 24" width="42" height="42" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
                 </button>
                 <button class="text-white/50 hover:text-white p-2 transition relative active:opacity-50" id="loopBtn" onclick="toggleLoop()">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
@@ -446,7 +469,7 @@
                 </button>
             </div>
             
-            <div class="flex justify-between items-center mt-2 px-6 pb-2">
+            <div class="flex justify-between items-center mt-1 px-6 pb-2">
                 <button class="text-white/50 hover:text-white transition active:scale-95" onclick="promptAudioRouting()">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg>
                 </button>
@@ -467,6 +490,42 @@
             </button>
         </div>
         <div class="flex-1 overflow-y-auto p-3" id="queueList"></div>
+    </div>
+
+    <!-- IMPORT FROM SPOTIFY MODAL (Liquid Glass) -->
+    <div id="spotifyModal" class="fixed inset-0 z-[80] bg-black/70 backdrop-blur-xl hidden items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity">
+        <div class="w-full sm:max-w-md bg-[#1C1C1E]/95 border border-white/15 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-safe shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#1DB954]/15 flex items-center justify-center text-[#1DB954]">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.335.132-.67.469-.746 3.809-.87 7.076-.496 9.713 1.115.293.18.386.563.207.856zm1.223-2.723c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.106-.973-.517-.125-.413.108-.848.52-.973 3.632-1.102 8.147-.568 11.234 1.328.366.226.48.707.256 1.071zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.128-1.166-.62-.149-.493.129-1.016.621-1.166 3.532-1.073 9.404-.865 13.115 1.338.445.264.59.838.327 1.282-.264.443-.839.59-1.28.322z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Add from Spotify</h3>
+                        <p class="text-xs text-white/50">Paste Track/Playlist link or song names</p>
+                    </div>
+                </div>
+                <button onclick="closeSpotifyModal()" class="w-8 h-8 rounded-full bg-white/10 text-white/60 hover:text-white flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+
+            <textarea id="spotifyInput" rows="3" placeholder="https://open.spotify.com/track/...&#10;or https://open.spotify.com/playlist/...&#10;or paste song names (1 per line)" class="w-full bg-black/50 border border-white/10 rounded-xl p-3.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-[#1DB954]/60 resize-none mb-3"></textarea>
+
+            <div id="spotifyProgressBox" class="hidden mb-4">
+                <div class="flex justify-between text-xs text-white/70 mb-1.5">
+                    <span id="spotifyProgressText">Reading Spotify link...</span>
+                    <span id="spotifyProgressCount">0/0</span>
+                </div>
+                <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div id="spotifyProgressBar" class="h-full bg-[#1DB954] w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <button id="spotifyImportBtn" onclick="handleSpotifyImport()" class="w-full py-3.5 rounded-xl bg-[#1DB954] hover:bg-[#1ed760] text-black font-bold text-sm active:scale-[0.98] transition flex items-center justify-center gap-2">
+                <span>Import to Library</span>
+            </button>
+        </div>
     </div>
 
     <!-- Notification Toast -->
@@ -565,10 +624,167 @@
                 if (data.results && data.results.length > 0) {
                     return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
                 }
-            } catch (e) {
-                console.warn("iTunes art fetch failed, using fallback");
-            }
+            } catch (e) {}
             return fallbackUrl;
+        }
+
+        // ==========================================
+        // IMPORT FROM SPOTIFY (TRACK / PLAYLIST / TEXT)
+        // ==========================================
+        function openSpotifyModal() {
+            const modal = document.getElementById('spotifyModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('spotifyInput').focus();
+        }
+
+        function closeSpotifyModal() {
+            const modal = document.getElementById('spotifyModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.getElementById('spotifyProgressBox').classList.add('hidden');
+            document.getElementById('spotifyImportBtn').disabled = false;
+            document.getElementById('spotifyImportBtn').innerHTML = '<span>Import to Library</span>';
+        }
+
+        async function fetchViaCorsFallback(targetUrl) {
+            const proxies = [
+                (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+                (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+            ];
+            for (const makeProxy of proxies) {
+                try {
+                    const res = await fetch(makeProxy(targetUrl));
+                    if (res.ok) return await res.text();
+                } catch (e) {}
+            }
+            throw new Error("Could not reach Spotify");
+        }
+
+        async function extractQueriesFromSpotify(rawInput) {
+            const input = rawInput.trim();
+            const spotifyMatch = input.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|playlist|album)\/([a-zA-Z0-9]+)/i);
+
+            if (!spotifyMatch) {
+                // Treat as manual song list (one per line)
+                return input.split('\n').map(l => l.trim()).filter(l => l.length > 1).slice(0, 15);
+            }
+
+            const type = spotifyMatch[1].toLowerCase();
+            const id = spotifyMatch[2];
+
+            // Fetch Spotify Embed page which cleanly holds JSON metadata for tracks, albums, and playlists
+            const embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
+            const html = await fetchViaCorsFallback(embedUrl);
+
+            const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+            if (nextDataMatch) {
+                const json = JSON.parse(nextDataMatch[1]);
+                const entity = json?.props?.pageProps?.state?.data?.entity;
+                if (entity) {
+                    if (type === 'track') {
+                        const artists = (entity.artists || []).map(a => a.name).join(' ');
+                        return [`${entity.name} ${artists}`.trim()];
+                    }
+                    if (entity.trackList && Array.isArray(entity.trackList)) {
+                        // Limit to 15 per import to protect YouTube API quota
+                        return entity.trackList.slice(0, 15).map(t => `${t.title} ${t.subtitle || ''}`.trim());
+                    }
+                }
+            }
+
+            // Fallback: Parse HTML <title>
+            const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+            if (titleMatch) {
+                const clean = decodeHTMLEntities(titleMatch[1]).replace(/\| Spotify/i, '').replace(/- song and lyrics by/i, '').trim();
+                if (clean) return [clean];
+            }
+            throw new Error("No tracks found in Spotify link");
+        }
+
+        async function handleSpotifyImport() {
+            const raw = document.getElementById('spotifyInput').value.trim();
+            if (!raw) { showToast("Paste a Spotify link or song names"); return; }
+
+            const btn = document.getElementById('spotifyImportBtn');
+            const progBox = document.getElementById('spotifyProgressBox');
+            const progText = document.getElementById('spotifyProgressText');
+            const progCount = document.getElementById('spotifyProgressCount');
+            const progBar = document.getElementById('spotifyProgressBar');
+
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Importing...`;
+            progBox.classList.remove('hidden');
+            progText.textContent = "Reading Spotify metadata...";
+            progCount.textContent = "";
+            progBar.style.width = "10%";
+
+            try {
+                const queries = await extractQueriesFromSpotify(raw);
+                if (!queries.length) throw new Error("No songs detected");
+
+                let addedCount = 0;
+                for (let i = 0; i < queries.length; i++) {
+                    const q = queries[i];
+                    progText.textContent = `Matching: ${q}`;
+                    progCount.textContent = `${i + 1}/${queries.length}`;
+                    progBar.style.width = `${Math.round(((i + 1) / queries.length) * 100)}%`;
+
+                    try {
+                        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q + ' official audio')}&type=video&videoCategoryId=10&maxResults=1&key=${API_KEY}`);
+                        const data = await res.json();
+                        if (data.items && data.items.length > 0) {
+                            const item = data.items[0];
+                            const vidId = item.id.videoId;
+                            if (!favorites.some(f => f.id === vidId)) {
+                                const title = decodeHTMLEntities(item.snippet.title).split('|')[0].trim();
+                                const artist = item.snippet.channelTitle.replace(' - Topic', '').replace('VEVO', '');
+                                const art = await getOfficialArt(title, artist, item.snippet.thumbnails.high.url);
+                                favorites.unshift({ id: vidId, title, artist, art });
+                                addedCount++;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                localStorage.setItem('ytFavorites', JSON.stringify(favorites));
+                document.getElementById('spotifyInput').value = '';
+                closeSpotifyModal();
+                showFavorites();
+                showToast(addedCount > 0 ? `Imported ${addedCount} song${addedCount > 1 ? 's' : ''} from Spotify!` : "Songs already in Library");
+            } catch (err) {
+                showToast("Couldn't read link. Try pasting song names!");
+                btn.disabled = false;
+                btn.innerHTML = '<span>Import to Library</span>';
+                progBox.classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // LIBRARY AUTO-SHUFFLE & PLAY
+        // ==========================================
+        function playLibrary(shouldShuffle) {
+            if (favorites.length === 0) {
+                showToast("Your Library is empty.");
+                return;
+            }
+            forceAudioUnlock();
+            let list = [...favorites];
+            if (shouldShuffle) {
+                // Fisher-Yates shuffle for true randomized playback
+                for (let i = list.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [list[i], list[j]] = [list[j], list[i]];
+                }
+                isShuffle = true;
+                document.getElementById('shuffleBtn').classList.replace('text-white/50', 'text-white');
+                showToast("Shuffling Library");
+            } else {
+                isShuffle = false;
+                document.getElementById('shuffleBtn').classList.replace('text-white', 'text-white/50');
+            }
+            currentQueue = list;
+            loadTrack(0);
         }
 
         // ==========================================
@@ -637,7 +853,7 @@
         }
 
         // ==========================================
-        // 2. WEB AUDIO / REACTIVE LIQUID VISUALIZER
+        // 2. REACTIVE LIQUID VISUALIZER
         // ==========================================
         function extractDominantColor(imgElement) {
             try {
@@ -700,7 +916,7 @@
                 const cx = rect.width / 2;
                 const cy = rect.height / 2;
                 const artEl = document.getElementById('fullArt');
-                const baseRadius = (artEl ? artEl.offsetWidth / 2 : 150) * 0.96;
+                const baseRadius = (artEl ? artEl.offsetWidth / 2 : 135) * 1.04;
 
                 if (isPlaying && !isBuffering) { visPhase += 0.045; } else { visPhase += 0.008; }
 
@@ -712,10 +928,10 @@
                     const segments = 72;
                     for (let i = 0; i <= segments; i++) {
                         const angle = (i / segments) * Math.PI * 2;
-                        const wave1 = Math.sin(angle * 4 + visPhase + ring) * (8 * energy);
-                        const wave2 = Math.cos(angle * 7 - visPhase * 1.4) * (5 * energy);
-                        const pulse = Math.sin(visPhase * 2.2) * (6 * energy);
-                        const radius = baseRadius + 10 + (ring * 14) + wave1 + wave2 + pulse;
+                        const wave1 = Math.sin(angle * 4 + visPhase + ring) * (7 * energy);
+                        const wave2 = Math.cos(angle * 7 - visPhase * 1.4) * (4 * energy);
+                        const pulse = Math.sin(visPhase * 2.2) * (5 * energy);
+                        const radius = baseRadius + 10 + (ring * 12) + wave1 + wave2 + pulse;
 
                         const x = cx + Math.cos(angle) * radius;
                         const y = cy + Math.sin(angle) * radius;
@@ -724,7 +940,7 @@
                     }
                     ctx.closePath();
                     ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${(0.35 - ring * 0.1) * (energy + 0.2)})`;
-                    ctx.lineWidth = 2.5 - ring * 0.5;
+                    ctx.lineWidth = 2.2 - ring * 0.5;
                     ctx.stroke();
                 }
 
@@ -732,14 +948,14 @@
                 for (let i = 0; i < bars; i++) {
                     const angle = (i / bars) * Math.PI * 2;
                     const freqSim = Math.abs(Math.sin(i * 0.4 + visPhase * 1.8) * Math.cos(i * 0.25 - visPhase));
-                    const barHeight = (4 + freqSim * 26) * energy;
+                    const barHeight = (4 + freqSim * 22) * energy;
                     const rStart = baseRadius + 6;
                     const rEnd = rStart + barHeight;
 
                     ctx.beginPath();
                     ctx.moveTo(cx + Math.cos(angle) * rStart, cy + Math.sin(angle) * rStart);
                     ctx.lineTo(cx + Math.cos(angle) * rEnd, cy + Math.sin(angle) * rEnd);
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.15 + freqSim * 0.35 * energy})`;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.14 + freqSim * 0.32 * energy})`;
                     ctx.lineWidth = 2;
                     ctx.lineCap = 'round';
                     ctx.stroke();
@@ -750,9 +966,20 @@
         }
 
         // ==========================================
-        // 3. SEARCH, TRENDING & QUEUE LOGIC
+        // 3. SEARCH, TRENDING & LIBRARY VIEWS
         // ==========================================
+        function setActiveNav(tab) {
+            const tabs = { home: 'navHome', search: 'navSearch', library: 'navLibrary' };
+            Object.entries(tabs).forEach(([k, id]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (k === tab) { el.classList.remove('text-white/50'); el.classList.add('text-[#FA243C]'); }
+                else { el.classList.remove('text-[#FA243C]'); el.classList.add('text-white/50'); }
+            });
+        }
+
         async function fetchTrending() {
+            setActiveNav('home');
             showLoading(true);
             try {
                 const q = encodeURIComponent("latest trending bollywood indian songs official music video");
@@ -765,7 +992,7 @@
                     artist: item.snippet.channelTitle.replace(' - Topic', '').replace('VEVO', ''),
                     art: item.snippet.thumbnails.high.url
                 }));
-                renderSongs(tracks, 'Listen Now');
+                renderSongs(tracks, 'Listen Now', false);
             } catch (err) {
                 showToast("Failed to fetch trending music.");
             }
@@ -776,6 +1003,7 @@
             e.preventDefault();
             const q = document.getElementById('searchInput').value.trim();
             if(!q) return;
+            setActiveNav('search');
             document.getElementById('searchInput').blur();
             showLoading(true);
             try {
@@ -788,32 +1016,47 @@
                     artist: item.snippet.channelTitle,
                     art: item.snippet.thumbnails.high.url
                 }));
-                renderSongs(tracks, `Results for "${q}"`);
+                renderSongs(tracks, `Results for "${q}"`, false);
             } catch (err) {
                 showToast("Search failed.");
             }
             showLoading(false);
         });
 
-        function renderSongs(tracks, title) {
+        function renderSongs(tracks, title, isLibraryView = false) {
             document.getElementById('resultsTitle').textContent = title;
+            document.getElementById('trackCountBadge').textContent = tracks.length ? `${tracks.length} songs` : '';
+            
+            const libActions = document.getElementById('libraryActions');
+            if (isLibraryView) {
+                libActions.classList.remove('hidden');
+                libActions.classList.add('flex');
+            } else {
+                libActions.classList.add('hidden');
+                libActions.classList.remove('flex');
+            }
+
             const songsList = document.getElementById('songsList');
             songsList.innerHTML = '';
-            if(tracks.length === 0) songsList.innerHTML = '<p class="text-white/50 px-2">No tracks found.</p>';
+            if(tracks.length === 0) {
+                songsList.innerHTML = isLibraryView
+                    ? '<p class="text-white/45 px-1 py-6 text-sm">Your Library is empty. Tap the heart on any song or import from Spotify above.</p>'
+                    : '<p class="text-white/50 px-2">No tracks found.</p>';
+            }
             
             tracks.forEach((track, idx) => {
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-4 py-2 px-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group";
+                div.className = "flex items-center gap-3.5 py-2 px-2.5 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group";
                 div.onclick = () => {
                     forceAudioUnlock();
                     currentQueue = tracks;
                     loadTrack(idx);
                 };
                 div.innerHTML = `
-                    <div class="relative w-12 h-12 shrink-0 md:w-14 md:h-14">
-                        <img src="${track.art}" class="w-full h-full rounded-md object-cover shadow-sm track-image-loader">
-                        <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center rounded-md">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                    <div class="relative w-12 h-12 shrink-0">
+                        <img src="${track.art}" class="w-full h-full rounded-lg object-cover shadow-sm track-image-loader">
+                        <div class="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center rounded-lg">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M8 5v14l11-7z"/></svg>
                         </div>
                     </div>
                     <div class="flex flex-col min-w-0 flex-1 pr-2 border-b border-white/5 pb-2 md:border-none md:pb-0">
@@ -822,15 +1065,17 @@
                     </div>
                 `;
 
-                const imgEl = div.querySelector('.track-image-loader');
-                getOfficialArt(track.title, track.artist, track.art).then(officialArt => {
-                    imgEl.style.opacity = '0';
-                    setTimeout(() => {
-                        imgEl.src = officialArt;
-                        imgEl.style.opacity = '1';
-                    }, 300);
-                    track.art = officialArt; 
-                });
+                if (!track.art.includes('mzstatic.com')) {
+                    const imgEl = div.querySelector('.track-image-loader');
+                    getOfficialArt(track.title, track.artist, track.art).then(officialArt => {
+                        imgEl.style.opacity = '0';
+                        setTimeout(() => {
+                            imgEl.src = officialArt;
+                            imgEl.style.opacity = '1';
+                        }, 250);
+                        track.art = officialArt; 
+                    });
+                }
 
                 songsList.appendChild(div);
             });
@@ -909,7 +1154,7 @@
             } else if (event.data === YT.PlayerState.PAUSED) {
                 isPlaying = false; isBuffering = false;
                 updatePlayPauseUI(); stopSync();
-                document.getElementById('fullArt').style.transform = 'scale(0.88)';
+                document.getElementById('fullArt').style.transform = 'scale(0.84)';
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
             } else if (event.data === YT.PlayerState.BUFFERING) {
                 isBuffering = true; updatePlayPauseUI();
@@ -1036,7 +1281,7 @@
             const track = currentQueue[currentIndex];
             const existsIdx = favorites.findIndex(t => t.id === track.id);
             if(existsIdx > -1) { favorites.splice(existsIdx, 1); showToast("Removed from Library"); } 
-            else { favorites.push(track); showToast("Added to Library"); }
+            else { favorites.unshift(track); showToast("Added to Library"); }
             localStorage.setItem('ytFavorites', JSON.stringify(favorites));
             updateHeartUI();
         }
@@ -1051,8 +1296,8 @@
         }
 
         function showFavorites() {
-            if(favorites.length === 0) { showToast("Your Library is empty."); return; }
-            renderSongs(favorites, 'Library');
+            setActiveNav('library');
+            renderSongs(favorites, 'Library', true);
         }
 
         function updatePlayPauseUI() {
